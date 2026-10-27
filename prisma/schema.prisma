@@ -1,0 +1,269 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PaymentMethod {
+  COD
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum JerseyType {
+  HOME
+  AWAY
+  THIRD
+  RETRO
+}
+
+model Category {
+  id           String    @id @default(cuid())
+  name         String
+  slug         String    @unique
+  description  String?
+  imageUrl     String?
+  imagePublicId String?
+  displayOrder Int       @default(0)
+  enabled      Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  products     Product[]
+
+  @@index([enabled, displayOrder])
+}
+
+model Product {
+  id                 String   @id @default(cuid())
+  name               String
+  slug               String   @unique
+  description        String
+  categoryId         String
+  category           Category @relation(fields: [categoryId], references: [id])
+  type               JerseyType @default(HOME)
+  basePriceCents     Int
+  discountPriceCents Int?
+  sku                String   @unique
+  brand              String?
+  tags               String[] @default([])
+  featured           Boolean  @default(false)
+  newArrival         Boolean  @default(false)
+  published          Boolean  @default(false)
+  customizable       Boolean  @default(false)
+  showInHeroBanner   Boolean  @default(false)
+  // Optional short caption for the hero banner card — falls back to `name`
+  // when unset, since the full product name can be too long for that card.
+  heroBannerLabel    String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  images     ProductImage[]
+  variants   ProductVariant[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([published, featured])
+  @@index([published, newArrival])
+  @@index([published, showInHeroBanner])
+  @@index([categoryId, published])
+  @@index([type, published])
+}
+
+model ProductImage {
+  id           String   @id @default(cuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  publicId     String
+  secureUrl    String
+  altText      String?
+  displayOrder Int      @default(0)
+  isPrimary    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([productId, displayOrder])
+}
+
+model ProductVariant {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size        String
+  sku         String   @unique
+  priceCents  Int?
+  stock       Int      @default(0)
+  color       String?
+  edition     String?
+  playerName  String?
+  playerNumber String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+}
+
+model Cart {
+  id           String     @id @default(cuid())
+  sessionToken String     @unique
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  items        CartItem[]
+}
+
+model CartItem {
+  id        String         @id @default(cuid())
+  cartId    String
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity  Int
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([cartId, variantId])
+}
+
+model Order {
+  id                    String        @id @default(cuid())
+  orderNumber           String        @unique
+  customerName          String
+  customerPhone         String
+  customerEmail         String?
+  address               String
+  city                  String
+  area                  String
+  deliveryInstructions  String?
+  subtotalCents         Int
+  deliveryFeeCents      Int
+  discountCents         Int           @default(0)
+  totalCents            Int
+  paymentMethod         PaymentMethod @default(COD)
+  paymentStatus         PaymentStatus @default(PENDING)
+  status                OrderStatus   @default(PENDING)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  items                 OrderItem[]
+
+  // Invoice — generated right after checkout, stored for admin download and
+  // resend, emailed automatically when the customer gave an email address.
+  invoiceNumber         String?       @unique
+  invoicePdfUrl         String?
+  invoicePdfPublicId    String?
+  invoiceEmailSentAt    DateTime?
+  invoiceEmailError     String?
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id             String          @id @default(cuid())
+  orderId        String
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId      String?
+  product        Product?        @relation(fields: [productId], references: [id])
+  variantId      String?
+  variant        ProductVariant? @relation(fields: [variantId], references: [id])
+  productName    String
+  size           String
+  sku            String
+  unitPriceCents Int
+  quantity       Int
+  subtotalCents  Int
+  createdAt      DateTime        @default(now())
+}
+
+model StoreSetting {
+  id                        Int      @id @default(1)
+
+  // Announcement bar
+  announcementText          String   @default("NEW SEASON HAS ARRIVED • FREE DELIVERY ON SELECTED ORDERS")
+  announcementEnabled       Boolean  @default(true)
+
+  // Hero section
+  heroHeadline              String   @default("WE ARE THE ION TO FASHION")
+  heroSubheadline           String   @default("Premium football jerseys for the modern fan. Authentic fits, editorial style.")
+  heroImageUrl              String?
+  heroImagePublicId         String?
+  // Up to 3 product IDs chosen for the hero showcase slider, in order
+  // (a slot may be null to auto-fill from featured/newest published products).
+  heroShowcaseProductIds    Json     @default("[]")
+  // Per-slot image overrides for the hero showcase slider — shown instead of
+  // the chosen (or auto-filled) product's own catalog photo when set.
+  heroShowcase1ImageUrl      String?
+  heroShowcase1ImagePublicId String?
+  heroShowcase2ImageUrl      String?
+  heroShowcase2ImagePublicId String?
+  heroShowcase3ImageUrl      String?
+  heroShowcase3ImagePublicId String?
+
+  // Trust strip
+  trustStripItems           Json     @default("[{\"label\":\"Premium Quality\"},{\"label\":\"Fast Delivery\"},{\"label\":\"Secure Payment\"},{\"label\":\"Easy Exchange\"},{\"label\":\"Authentic Products\"}]")
+
+  // Editorial section
+  editorialEyebrow          String   @default("The Edit")
+  editorialHeading          String   @default("CULTURE ON THE PITCH & THE STREET")
+  editorialBody             String   @default("Every JAF jersey is built on the same tension that drives the game — discipline and flair, heritage and rebellion. Wear it on matchday. Wear it every day.")
+  editorialCtaLabel         String   @default("DISCOVER THE EDIT")
+  editorialImageUrl         String?
+  editorialImagePublicId    String?
+
+  // Brand statement section
+  brandStatementHeading     String   @default("WE ARE THE ION TO FASHION")
+  brandStatementBody        String   @default("JAF was built for fans who treat the jersey as more than merchandise. It is identity. We obsess over fit, fabric and finish so that every release feels as premium off the pitch as the clubs we celebrate feel on it. Football is our language — fashion is how we speak it.")
+
+  // Final CTA section
+  finalCtaHeadingLine1      String   @default("FIND YOUR JERSEY.")
+  finalCtaHeadingLine2      String   @default("WEAR YOUR GAME.")
+  finalCtaButtonLabel       String   @default("SHOP NOW")
+  finalCtaImageUrl          String?
+  finalCtaImagePublicId     String?
+
+  // Delivery & payment
+  deliveryFeeCents          Int      @default(6000)
+  freeDeliveryThresholdCents Int     @default(300000)
+  codEnabled                Boolean  @default(true)
+
+  socialLinks               Json     @default("{}")
+  updatedAt                 DateTime @updatedAt
+}
+
+model BlogPost {
+  id                  String    @id @default(cuid())
+  title               String
+  slug                String    @unique
+  excerpt             String?
+  content             String
+  coverImageUrl       String?
+  coverImagePublicId  String?
+  tags                String[]  @default([])
+  authorName          String    @default("JAF Team")
+  seoTitle            String?
+  seoDescription      String?
+  published           Boolean   @default(false)
+  publishedAt         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([published, publishedAt])
+}

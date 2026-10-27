@@ -1,26 +1,147 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-ink: #0a0b09;
+  --color-ink-raised: #121410;
+  --color-ink-border: #262b22;
+  --color-paper: #eef2ea;
+  --color-paper-dim: #8d9589;
+  --color-gold: #16a34a;
+  --color-gold-bright: #4ade80;
+  --color-gold-dim: #bbf7d0;
+  --color-danger: #f87171;
+  --color-success: #34d399;
+
+  --font-display: var(--font-anton);
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
+
+  /* shadcn/ui bridge — aliases our brand tokens to the names shadcn components expect */
+  --radius: 0rem;
+  --background: var(--color-ink);
+  --foreground: var(--color-paper);
+  --card: var(--color-ink-raised);
+  --card-foreground: var(--color-paper);
+  --popover: var(--color-ink-raised);
+  --popover-foreground: var(--color-paper);
+  --primary: var(--color-gold-bright);
+  /* light-green primary surface needs dark (not light) text for contrast */
+  --primary-foreground: var(--color-ink);
+  --secondary: var(--color-ink-raised);
+  --secondary-foreground: var(--color-paper);
+  --muted: var(--color-ink-raised);
+  --muted-foreground: var(--color-paper-dim);
+  --accent: var(--color-ink-raised);
+  --accent-foreground: var(--color-paper);
+  --destructive: var(--color-danger);
+  --destructive-foreground: var(--color-ink);
+  --border: var(--color-ink-border);
+  --input: var(--color-ink-border);
+  --ring: var(--color-gold-bright);
 }
 
 @theme inline {
+  --color-ink: var(--color-ink);
+  --color-ink-raised: var(--color-ink-raised);
+  --color-ink-border: var(--color-ink-border);
+  --color-paper: var(--color-paper);
+  --color-paper-dim: var(--color-paper-dim);
+  --color-gold: var(--color-gold);
+  --color-gold-bright: var(--color-gold-bright);
+  --color-gold-dim: var(--color-gold-dim);
+  --color-danger: var(--color-danger);
+  --color-success: var(--color-success);
+  --font-display: var(--font-display);
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--color-ink-border);
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+.font-serif-italic {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-paper);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+@keyframes hero-kenburns {
+  from {
+    transform: scale(1.1);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+.animate-kenburns {
+  animation: hero-kenburns 18s ease-out forwards;
 }
