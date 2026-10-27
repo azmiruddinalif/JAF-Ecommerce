@@ -15,10 +15,15 @@ export const metadata: Metadata = {
 // inherently dynamic, same as the rest of the session-gated admin area.
 export const instant = false;
 
-export default async function AdminLoginPage() {
+export default async function AdminLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const { userId } = await auth();
   const session = userId ? await getAdminSession() : null;
   const signedInWithWrongAccount = Boolean(userId) && !session;
+  const rejectedNonAdmin = (await searchParams).reason === "not-admin";
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -59,6 +64,15 @@ export default async function AdminLoginPage() {
             <h1 className="font-display mt-2 text-3xl text-paper">Sign in</h1>
             <p className="mt-2 text-sm text-paper-dim">Enter your administrator credentials to continue.</p>
           </div>
+          {rejectedNonAdmin && !signedInWithWrongAccount && (
+            <p
+              role="alert"
+              className="mb-6 border border-red-400/40 bg-red-400/10 px-4 py-3 text-sm text-red-300"
+            >
+              That account isn&apos;t the JAF admin. Sign in with the administrator email and
+              password instead.
+            </p>
+          )}
           {signedInWithWrongAccount ? (
             <WrongAccountGuard />
           ) : (

@@ -80,14 +80,14 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
 
   return (
     <>
-      <header className="flex items-center justify-between border-b border-ink-border bg-ink-raised px-4 py-4 lg:hidden">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-ink-border bg-ink-raised px-4 py-4 lg:hidden">
         <SidebarBrand />
         <button type="button" onClick={() => setMobileOpen(true)} aria-label="Open menu" className="text-paper">
           <Menu size={22} />
         </button>
       </header>
 
-      <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-ink-border bg-ink-raised lg:flex">
+      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-ink-border bg-ink-raised lg:flex">
         <div className="border-b border-ink-border px-6 py-6">
           <SidebarBrand />
         </div>

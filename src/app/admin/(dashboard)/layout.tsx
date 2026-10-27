@@ -16,12 +16,12 @@ export default async function AdminDashboardLayout({
     redirect("/admin/login");
   }
 
+  // The page itself is the only scroll container; the sidebar is sticky so it
+  // stays put without needing its own nested scroll area.
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-ink lg:flex-row">
+    <div className="flex min-h-dvh flex-col bg-ink lg:flex-row">
       <AdminSidebar adminName={session.name} />
-      <div className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
-        {children}
-      </div>
+      <div className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">{children}</div>
     </div>
   );
 }

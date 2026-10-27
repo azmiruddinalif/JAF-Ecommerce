@@ -14,7 +14,9 @@ export function WrongAccountGuard() {
   const { signOut } = useClerk();
 
   useEffect(() => {
-    void signOut({ redirectUrl: "/admin/login" });
+    // The query flag lets the login page explain why the visitor landed back
+    // on it, instead of silently showing the sign-in form again.
+    void signOut({ redirectUrl: "/admin/login?reason=not-admin" });
   }, [signOut]);
 
   return (
