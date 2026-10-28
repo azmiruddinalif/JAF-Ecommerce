@@ -1,6 +1,7 @@
 import type { SVGProps } from "react";
 import Link from "next/link";
 import { Brand, BrandSlogan } from "./brand";
+import { STORE_CONTACT } from "@/lib/constants";
 
 const currentYear = new Date().getFullYear();
 
@@ -96,6 +97,13 @@ export function Footer() {
                 <Icon className="h-4 w-4" />
               </a>
             ))}
+          </div>
+          <div className="mt-2 flex flex-col gap-1 text-xs text-paper-dim">
+            <p className="max-w-xs leading-relaxed">{STORE_CONTACT.address}</p>
+            <p>{STORE_CONTACT.phones.join(" · ")}</p>
+            <a href={`mailto:${STORE_CONTACT.email}`} className="w-fit hover:text-gold-bright">
+              {STORE_CONTACT.email}
+            </a>
           </div>
         </div>
 

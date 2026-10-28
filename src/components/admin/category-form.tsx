@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
-import Image from "next/image";
 import { Input, Textarea, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ImageInputWithPreview } from "@/components/admin/image-input-preview";
 import {
   createCategoryAction,
   updateCategoryAction,
@@ -66,22 +66,15 @@ export function CategoryForm({ category, onDone }: { category?: CategoryFormValu
         </div>
         <div>
           <Label htmlFor="image">Category Image</Label>
-          <div className="flex items-center gap-3">
-            {category?.imageUrl && (
-              <div className="relative h-14 w-14 shrink-0 overflow-hidden border border-ink-border bg-ink">
-                <Image src={category.imageUrl} alt={category.name} fill sizes="56px" className="object-cover" />
-              </div>
-            )}
-            <div className="flex w-full flex-col gap-2">
-              <input id="image" name="image" type="file" accept="image/*" className="w-full text-sm text-paper-dim" />
-              {category?.imageUrl && (
-                <label className="flex items-center gap-2 text-xs text-paper-dim">
-                  <Checkbox name="imageRemove" />
-                  Remove this image
-                </label>
-              )}
-            </div>
-          </div>
+          <ImageInputWithPreview
+            id="image"
+            name="image"
+            alt={category?.name ?? "Category image"}
+            currentUrl={category?.imageUrl}
+            removeName="imageRemove"
+            wrapperClassName="flex items-center gap-3"
+            boxClassName="h-14 w-14"
+          />
         </div>
       </div>
 

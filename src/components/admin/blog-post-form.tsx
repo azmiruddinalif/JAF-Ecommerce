@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
-import Image from "next/image";
 import { Input, Textarea, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ImageInputWithPreview } from "@/components/admin/image-input-preview";
 import { slugify } from "@/lib/slug";
 import {
   createBlogPostAction,
@@ -121,22 +121,15 @@ export function BlogPostForm({ post, onDone }: { post?: BlogPostFormValues; onDo
 
       <div>
         <Label htmlFor="coverImage">Cover Image</Label>
-        <div className="flex items-center gap-3">
-          {post?.coverImageUrl && (
-            <div className="relative h-14 w-14 shrink-0 overflow-hidden border border-ink-border bg-ink">
-              <Image src={post.coverImageUrl} alt={post.title} fill sizes="56px" className="object-cover" />
-            </div>
-          )}
-          <div className="flex w-full flex-col gap-2">
-            <input id="coverImage" name="coverImage" type="file" accept="image/*" className="w-full text-sm text-paper-dim" />
-            {post?.coverImageUrl && (
-              <label className="flex items-center gap-2 text-xs text-paper-dim">
-                <Checkbox name="coverImageRemove" />
-                Remove this image
-              </label>
-            )}
-          </div>
-        </div>
+        <ImageInputWithPreview
+          id="coverImage"
+          name="coverImage"
+          alt={post?.title ?? "Cover image"}
+          currentUrl={post?.coverImageUrl}
+          removeName="coverImageRemove"
+          wrapperClassName="flex items-center gap-3"
+          boxClassName="h-14 w-14"
+        />
       </div>
 
       <div className="border-t border-ink-border pt-4">

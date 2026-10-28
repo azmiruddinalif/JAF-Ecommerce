@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
-import Image from "next/image";
 import { Input, Textarea, Select, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ImageInputWithPreview } from "@/components/admin/image-input-preview";
 import { centsToUnits } from "@/lib/money";
 import { updateStoreSettingsAction, type SettingsActionResult } from "@/lib/actions/admin-settings-actions";
 import type { StoreSettingsView } from "@/lib/data/settings";
@@ -43,34 +43,15 @@ function ImageField({
   return (
     <div>
       <Label htmlFor={name}>{label}</Label>
-      <div className={compact ? "flex flex-col gap-2" : "flex items-center gap-4"}>
-        <div
-          className={`relative shrink-0 overflow-hidden border border-ink-border bg-ink ${
-            compact ? "aspect-3/4 w-full" : "h-20 w-28"
-          }`}
-        >
-          {currentUrl ? (
-            <Image src={currentUrl} alt={label} fill sizes="112px" className="object-cover" />
-          ) : (
-            <div className="flex h-full items-center justify-center text-[10px] text-paper-dim">No image</div>
-          )}
-        </div>
-        <div className="flex w-full flex-col gap-2">
-          <input
-            id={name}
-            name={name}
-            type="file"
-            accept="image/*"
-            className="w-full text-xs text-paper-dim file:mr-2 file:border file:border-ink-border file:bg-ink-raised file:px-2 file:py-1 file:text-xs"
-          />
-          {currentUrl && (
-            <label className="flex items-center gap-2 text-xs text-paper-dim">
-              <Checkbox name={`${name}Remove`} />
-              Remove this image
-            </label>
-          )}
-        </div>
-      </div>
+      <ImageInputWithPreview
+        id={name}
+        name={name}
+        alt={label}
+        currentUrl={currentUrl}
+        removeName={`${name}Remove`}
+        wrapperClassName={compact ? "flex flex-col gap-2" : "flex items-center gap-4"}
+        boxClassName={compact ? "aspect-3/4 w-full" : "h-20 w-28"}
+      />
     </div>
   );
 }

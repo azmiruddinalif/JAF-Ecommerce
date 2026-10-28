@@ -123,7 +123,7 @@ export function HeroInteractive({
         </div>
 
         <div
-          className={`relative h-105 overflow-hidden bg-[radial-gradient(ellipse_at_55%_45%,#2a2a2a_0%,#141414_55%,#0b0b0b_100%)] sm:h-130 lg:h-160 ${HERO_MASK}`}
+          className={`relative h-85 overflow-hidden bg-[radial-gradient(ellipse_at_55%_45%,#2a2a2a_0%,#141414_55%,#0b0b0b_100%)] sm:h-105 lg:h-165 ${HERO_MASK}`}
         >
           {count > 0 ? (
             <>
@@ -169,17 +169,25 @@ export function HeroInteractive({
                     href={`/product/${slide.slug}`}
                     aria-hidden={i !== active}
                     tabIndex={i === active ? undefined : -1}
-                    className={`absolute inset-x-0 bottom-4 z-10 mx-auto flex w-50 flex-col gap-2 rounded-2xl border border-gold-bright/25 bg-ink/65 px-3 py-3 shadow-[0_8px_30px_-12px_var(--color-gold-bright)] backdrop-blur-md backdrop-saturate-150 transition-opacity duration-1000 ease-in-out sm:inset-x-auto sm:right-0 sm:bottom-auto sm:top-1/2 sm:mx-0 sm:w-40.5 sm:-translate-y-1/2 sm:gap-2.5 sm:rounded-l-2xl sm:rounded-r-none sm:px-4 sm:py-4 ${
+                    className={`absolute inset-x-0 bottom-4 z-10 mx-auto flex w-50 flex-col gap-2 overflow-hidden rounded-2xl border border-gold-bright/25 bg-ink/65 px-3 py-3 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.35),inset_0_-10px_16px_-12px_rgba(255,255,255,0.15)] backdrop-blur-md backdrop-saturate-150 transition-opacity duration-1000 ease-in-out sm:inset-x-auto sm:right-0 sm:bottom-auto sm:top-1/2 sm:mx-0 sm:w-40.5 sm:-translate-y-1/2 sm:gap-2.5 sm:rounded-l-2xl sm:rounded-r-none sm:px-4 sm:py-4 ${
                       i === active
                         ? "opacity-100"
                         : "pointer-events-none opacity-0"
                     }`}
                   >
-                    <p className="text-[10px] font-semibold uppercase leading-normal tracking-widest text-paper sm:text-[11px]">
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/25 via-white/0 to-transparent"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -inset-x-2 -top-6 h-10 rotate-2 bg-white/20 blur-md"
+                    />
+                    <p className="relative text-[10px] font-semibold uppercase leading-normal tracking-widest text-paper sm:text-[11px]">
                       {slide.name}
                     </p>
-                    <span className="h-px w-6 bg-gold-bright/50" />
-                    <p className="text-base font-semibold text-gold-bright sm:text-xl">
+                    <span className="relative h-px w-6 bg-gold-bright/50" />
+                    <p className="relative text-base font-semibold text-gold-bright sm:text-xl">
                       {formatCentsBDT(slide.priceCents)}
                     </p>
                   </Link>

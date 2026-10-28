@@ -4,6 +4,7 @@ import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf
 // the Bengali Taka glyph (৳) that lib/money's formatCents produces — drawing
 // it would throw. formatCentsBDT spells out "BDT" instead.
 import { formatCentsBDT as formatCents } from "@/lib/money";
+import { STORE_CONTACT } from "@/lib/constants";
 
 export interface InvoiceOrder {
   orderNumber: string;
@@ -52,6 +53,23 @@ function safe(value: string): string {
       return code <= 0xff ? ch : "?";
     })
     .join("");
+}
+
+function wrapText(value: string, f: PDFFont, size: number, maxWidth: number): string[] {
+  const words = safe(value).split(" ");
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (current && f.widthOfTextAtSize(candidate, size) > maxWidth) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = candidate;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
 }
 
 export async function generateInvoicePdf(order: InvoiceOrder): Promise<Uint8Array> {
@@ -103,7 +121,19 @@ export async function generateInvoicePdf(order: InvoiceOrder): Promise<Uint8Arra
   });
   y -= 18;
   text("We Are The Ion To Fashion", MARGIN, { size: 9, color: DIM });
-  y -= 28;
+  y -= 14;
+
+  const sellerWidth = PAGE_WIDTH - MARGIN * 2;
+  for (const line of wrapText(STORE_CONTACT.address, font, 7.5, sellerWidth)) {
+    text(line, MARGIN, { size: 7.5, color: DIM });
+    y -= 10;
+  }
+  text(
+    `${STORE_CONTACT.phones.join(" · ")} · ${STORE_CONTACT.email}`,
+    MARGIN,
+    { size: 7.5, color: DIM }
+  );
+  y -= 20;
   hr(page, y);
   y -= 24;
 

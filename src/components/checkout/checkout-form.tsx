@@ -24,8 +24,8 @@ export function CheckoutForm({ codEnabled }: { codEnabled: boolean }) {
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
-          <Label htmlFor="customerPhone">Phone Number</Label>
-          <Input id="customerPhone" name="customerPhone" required autoComplete="tel" />
+          <Label htmlFor="customerPhone">WhatsApp Phone Number</Label>
+          <Input id="customerPhone" name="customerPhone" required autoComplete="tel" placeholder="01XXXXXXXXX" />
           <FieldError message={state.fieldErrors?.customerPhone} />
         </div>
         <div>
