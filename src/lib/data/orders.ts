@@ -8,6 +8,7 @@ export async function getAdminOrders(params: {
   query?: string;
   status?: OrderStatus;
 }) {
+  await connection();
   const page = Math.max(1, params.page ?? 1);
   const where: Prisma.OrderWhereInput = {};
 
@@ -35,6 +36,7 @@ export async function getAdminOrders(params: {
 }
 
 export async function getOrderById(id: string) {
+  await connection();
   return prisma.order.findUnique({
     where: { id },
     include: { items: { include: { product: { include: { images: { take: 1 } } } } } },
@@ -83,6 +85,7 @@ export async function getSalesOverview(days = 14) {
 const STATUS_ORDER: OrderStatus[] = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"];
 
 export async function getDashboardStats() {
+  await connection();
   const [totalOrders, pendingOrders, revenueResult, totalProducts, lowStockCount, recentOrders, statusGroups] =
     await Promise.all([
       prisma.order.count(),

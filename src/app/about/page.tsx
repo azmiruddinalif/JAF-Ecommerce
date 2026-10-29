@@ -1,32 +1,41 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { BrandStatement, BrandStatementSkeleton } from "@/components/home/brand-statement";
+import { getCustomPage } from "@/lib/data/pages";
+import { CustomPageRenderer } from "@/components/pages/custom-page-renderer";
 
-export const metadata: Metadata = {
-  title: "About JAF",
-  description: "The story behind JAF — premium football and sports fashion jerseys.",
-};
+export const instant = false;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getCustomPage("about");
+  return {
+    title: page.seoTitle,
+    description: page.seoDescription,
+    alternates: { canonical: "/about" },
+    openGraph: {
+      title: `${page.seoTitle} | JAF`,
+      description: page.seoDescription,
+      images: page.bannerImageUrl ? [{ url: page.bannerImageUrl, alt: page.title }] : undefined,
+    },
+  };
+}
+
+async function AboutContent() {
+  const page = await getCustomPage("about");
+
+  return (
+    <CustomPageRenderer
+      page={page}
+      maxWidthClass="max-w-4xl"
+      headingClass="mb-8 font-display text-4xl sm:text-5xl"
+      textClass="text-sm leading-relaxed text-paper/80 sm:text-base"
+    />
+  );
+}
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-gold">About JAF</p>
-      <h1 className="mb-8 font-display text-4xl sm:text-5xl">THE BRAND</h1>
-      <div className="space-y-5 text-sm leading-relaxed text-paper/80 sm:text-base">
-        <p>
-          JAF started with a simple frustration: most football jerseys sold as fashion feel like
-          an afterthought. We set out to build a brand that treats the jersey with the same
-          respect fashion houses give a tailored jacket — considered fit, honest materials, and
-          design that holds up on the street as well as it does on matchday.
-        </p>
-        <p>
-          Every collection we release moves between two worlds: the discipline of club football
-          and the self-expression of streetwear. That tension is the whole idea.
-        </p>
-      </div>
-      <Suspense fallback={<BrandStatementSkeleton />}>
-        <BrandStatement />
-      </Suspense>
-    </div>
+    <Suspense fallback={<div className="mx-auto h-96 max-w-4xl animate-pulse px-4 py-16" />}>
+      <AboutContent />
+    </Suspense>
   );
 }

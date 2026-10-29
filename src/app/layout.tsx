@@ -27,27 +27,40 @@ const inter = Inter({
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 const description =
-  "JAF is a premium football and sports fashion jersey brand. Authentic club, national team and retro jerseys.";
+  "Shop authentic football jerseys, club kits, national team shirts, and retro soccer apparel at JAF (Jerseys & Fashion). Premium matchday and streetwear football kits delivered nationwide with Cash on Delivery.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "JAF — We Are The Ion To Fashion",
-    template: "%s | JAF",
+    default: "JAF — Authentic Football Jerseys, Club Kits & Retro Soccer Apparel",
+    template: "%s | JAF — Jerseys & Fashion",
   },
   description,
+  keywords: [
+    "football jerseys",
+    "soccer jerseys",
+    "club football kits",
+    "national team jerseys",
+    "retro football shirts",
+    "home away third kits",
+    "premier league jerseys",
+    "la liga jerseys",
+    "football streetwear",
+    "buy football jersey online Bangladesh",
+    "JAF Jerseys and Fashion",
+  ],
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
   openGraph: {
-    siteName: "JAF",
+    siteName: "JAF — Jerseys & Fashion",
     type: "website",
-    title: "JAF — We Are The Ion To Fashion",
+    title: "JAF — Authentic Football Jerseys, Club Kits & Retro Soccer Apparel",
     description,
-    images: [{ url: "/logo.png" }],
+    images: [{ url: "/logo.png", alt: "JAF — Jerseys & Fashion" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "JAF — We Are The Ion To Fashion",
+    title: "JAF — Authentic Football Jerseys, Club Kits & Retro Soccer Apparel",
     description,
     images: ["/logo.png"],
   },
@@ -55,8 +68,9 @@ export const metadata: Metadata = {
 
 const organizationJsonLd = {
   "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "JAF",
+  "@type": "SportingGoodsStore",
+  name: "JAF — Jerseys & Fashion",
+  description,
   url: siteUrl,
   logo: `${siteUrl}/logo.png`,
 };
@@ -77,9 +91,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${anton.variable} ${playfair.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body suppressHydrationWarning className="flex min-h-full flex-col">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}

@@ -1,4 +1,5 @@
 import "server-only";
+import { connection } from "next/server";
 import { Prisma, JerseyType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
@@ -94,6 +95,7 @@ function buildOrderBy(sort: SortOption | undefined): Prisma.ProductOrderByWithRe
 }
 
 export async function getShopProducts(filters: ShopFilters) {
+  await connection();
   const page = Math.max(1, filters.page ?? 1);
   const where = buildWhere(filters);
   const orderBy = buildOrderBy(filters.sort);
@@ -119,6 +121,7 @@ export async function getShopProducts(filters: ShopFilters) {
 }
 
 export async function getFeaturedProducts(limit = 8) {
+  await connection();
   return prisma.product.findMany({
     where: { published: true, featured: true },
     orderBy: { createdAt: "desc" },
@@ -141,6 +144,7 @@ export async function getHeroShowcaseProducts(
   curatedIds: (string | null)[] = [],
   limit = 3
 ): Promise<(ProductListItem | null)[]> {
+  await connection();
   const slots = Array.from({ length: limit }, (_, i) => curatedIds[i] ?? null);
   const explicitIds = [...new Set(slots.filter((id): id is string => Boolean(id)))];
 
@@ -182,6 +186,7 @@ export async function getHeroShowcaseProducts(
 }
 
 export async function getPublishedProductOptions() {
+  await connection();
   return prisma.product.findMany({
     where: { published: true },
     select: { id: true, name: true, sku: true },
@@ -190,6 +195,7 @@ export async function getPublishedProductOptions() {
 }
 
 export async function getNewArrivals(limit = 8) {
+  await connection();
   return prisma.product.findMany({
     where: { published: true, newArrival: true },
     orderBy: { createdAt: "desc" },
@@ -209,6 +215,7 @@ export type ProductDetail = Prisma.ProductGetPayload<{
 }>;
 
 export async function getProductBySlug(slug: string): Promise<ProductDetail | null> {
+  await connection();
   return prisma.product.findFirst({
     where: { slug, published: true },
     include: productDetailInclude,
@@ -216,6 +223,7 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
 }
 
 export async function getProductBySlugForAdmin(slug: string) {
+  await connection();
   return prisma.product.findUnique({
     where: { slug },
     include: productDetailInclude,
@@ -223,6 +231,7 @@ export async function getProductBySlugForAdmin(slug: string) {
 }
 
 export async function getProductByIdForAdmin(id: string) {
+  await connection();
   return prisma.product.findUnique({
     where: { id },
     include: productDetailInclude,
@@ -230,6 +239,7 @@ export async function getProductByIdForAdmin(id: string) {
 }
 
 export async function getRelatedProducts(categoryId: string, excludeProductId: string, limit = 4) {
+  await connection();
   return prisma.product.findMany({
     where: {
       published: true,
@@ -243,6 +253,7 @@ export async function getRelatedProducts(categoryId: string, excludeProductId: s
 }
 
 export async function getAdminProducts(params: { page?: number; query?: string }) {
+  await connection();
   const page = Math.max(1, params.page ?? 1);
   const where: Prisma.ProductWhereInput = params.query
     ? {

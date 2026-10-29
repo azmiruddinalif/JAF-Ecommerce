@@ -35,6 +35,7 @@ export async function Hero() {
       subheadline={settings.heroSubheadline}
       fallbackImageUrl={settings.heroImageUrl}
       slides={slides}
+      heroConfig={settings.heroConfig}
     />
   );
 }

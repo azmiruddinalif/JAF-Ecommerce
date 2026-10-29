@@ -9,7 +9,10 @@ import { formatCents } from "@/lib/money";
 import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "Checkout",
+  title: "Checkout — Cash on Delivery Jersey Order",
+  description:
+    "Complete your JAF football jersey order with fast nationwide delivery across Bangladesh and convenient Cash on Delivery (COD) payment.",
+  robots: { index: false, follow: false },
 };
 
 async function CheckoutContent() {

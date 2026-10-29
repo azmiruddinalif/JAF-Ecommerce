@@ -31,10 +31,26 @@ export async function generateMetadata({
   const category = await getCategoryBySlug(slug);
   if (!category) return {};
 
+  const title = `${category.name} — Football Jerseys & Kits`;
+  const description =
+    category.description ??
+    `Shop authentic ${category.name} football jerseys at JAF. Browse Home, Away, Third, and Retro soccer kits in sizes S to XXL with fast nationwide Cash on Delivery.`;
+
   return {
-    title: category.name,
-    description: category.description ?? `Shop ${category.name} jerseys at JAF.`,
+    title,
+    description,
     alternates: { canonical: `/category/${category.slug}` },
+    openGraph: {
+      title: `${title} | JAF`,
+      description,
+      images: category.imageUrl ? [{ url: category.imageUrl, alt: category.name }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | JAF`,
+      description,
+      images: category.imageUrl ? [category.imageUrl] : undefined,
+    },
   };
 }
 

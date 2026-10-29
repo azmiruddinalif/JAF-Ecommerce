@@ -9,7 +9,10 @@ import { EmptyCart } from "@/components/cart/empty-cart";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Your Cart",
+  title: "Your Jersey Shopping Cart",
+  description:
+    "Review your selected football jerseys, club kits, and sizes in your JAF shopping cart before proceeding to Cash on Delivery checkout.",
+  robots: { index: false, follow: false },
 };
 
 async function CartContent() {

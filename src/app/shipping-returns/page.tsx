@@ -1,31 +1,33 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
+import { getCustomPage } from "@/lib/data/pages";
+import { CustomPageRenderer } from "@/components/pages/custom-page-renderer";
 
-export const metadata: Metadata = { title: "Shipping & Returns" };
+export const instant = false;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getCustomPage("shipping-returns");
+  return {
+    title: page.seoTitle,
+    description: page.seoDescription,
+    alternates: { canonical: "/shipping-returns" },
+    openGraph: {
+      title: `${page.seoTitle} | JAF`,
+      description: page.seoDescription,
+      images: page.bannerImageUrl ? [{ url: page.bannerImageUrl, alt: page.title }] : undefined,
+    },
+  };
+}
+
+async function ShippingReturnsContent() {
+  const page = await getCustomPage("shipping-returns");
+  return <CustomPageRenderer page={page} />;
+}
 
 export default function ShippingReturnsPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
-      <h1 className="mb-8 font-display text-4xl">SHIPPING &amp; RETURNS</h1>
-      <div className="space-y-6 text-sm leading-relaxed text-paper/80">
-        <section>
-          <h2 className="mb-2 font-semibold text-paper">Delivery</h2>
-          <p>
-            Orders are processed within 1–2 business days and delivered via our courier partners.
-            Delivery fees and free-delivery thresholds are shown at checkout.
-          </p>
-        </section>
-        <section>
-          <h2 className="mb-2 font-semibold text-paper">Exchanges</h2>
-          <p>
-            Wrong size? Contact us within 7 days of delivery with your order number for a free
-            size exchange, subject to stock availability.
-          </p>
-        </section>
-        <section>
-          <h2 className="mb-2 font-semibold text-paper">Cash on Delivery</h2>
-          <p>Pay in cash when your order arrives. No advance payment required.</p>
-        </section>
-      </div>
-    </div>
+    <Suspense fallback={<div className="mx-auto h-96 max-w-3xl animate-pulse px-4 py-16" />}>
+      <ShippingReturnsContent />
+    </Suspense>
   );
 }

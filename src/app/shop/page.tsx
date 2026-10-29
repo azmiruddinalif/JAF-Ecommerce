@@ -8,8 +8,15 @@ import { ProductGridSkeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/products/pagination";
 
 export const metadata: Metadata = {
-  title: "Shop All Jerseys",
-  description: "Browse the full JAF catalog of premium football and sports fashion jerseys.",
+  title: "Shop All Football Jerseys — Club, National Team & Retro Kits",
+  description:
+    "Browse the complete JAF collection of authentic football jerseys, including Home, Away, Third, and Retro soccer kits across Premier League, La Liga, and international teams.",
+  alternates: { canonical: "/shop" },
+  openGraph: {
+    title: "Shop All Football Jerseys — Club, National Team & Retro Kits | JAF",
+    description:
+      "Explore JAF's full catalog of club kits, national team shirts, and classic retro football jerseys in sizes S–XXL with Cash on Delivery.",
+  },
 };
 
 // Filterable by live search params, stock and pricing — always request-time.

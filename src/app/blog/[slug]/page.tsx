@@ -26,13 +26,20 @@ export async function generateMetadata({
   return {
     title,
     description,
+    keywords: post.tags.length > 0 ? post.tags : ["football culture", "football jerseys", "kit design", "JAF journal"],
     alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {
-      title,
+      title: `${title} | JAF`,
       description,
       type: "article",
       publishedTime: post.publishedAt?.toISOString(),
-      images: post.coverImageUrl ? [{ url: post.coverImageUrl }] : undefined,
+      images: post.coverImageUrl ? [{ url: post.coverImageUrl, alt: post.title }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | JAF`,
+      description,
+      images: post.coverImageUrl ? [post.coverImageUrl] : undefined,
     },
   };
 }

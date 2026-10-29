@@ -8,8 +8,10 @@ import { formatCents } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Order Confirmed",
-  robots: { index: false },
+  title: "Order Confirmed — Thank You for Shopping at JAF",
+  description:
+    "Your JAF football jersey order has been confirmed. View your order summary, delivery details, and downloadable invoice.",
+  robots: { index: false, follow: false },
 };
 
 // Every order id is unique and transactional — never static.

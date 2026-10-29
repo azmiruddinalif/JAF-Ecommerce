@@ -25,17 +25,34 @@ export async function generateMetadata({
   const product = await getProductBySlug(slug);
   if (!product) return {};
 
-  const description = product.description.slice(0, 160);
+  const typeLabel = JERSEY_TYPE_LABELS[product.type] ?? product.type;
+  const title = `${product.name} (${typeLabel} Kit)`;
+  const description =
+    product.description.slice(0, 155) ||
+    `Buy ${product.name} ${typeLabel} football jersey online at JAF. Premium breathable fabric, authentic fit in sizes S–XXL, with fast Cash on Delivery.`;
   const image = product.images[0]?.secureUrl;
 
   return {
-    title: product.name,
+    title,
     description,
+    keywords: [
+      product.name,
+      `${product.name} jersey`,
+      `${typeLabel} football kit`,
+      product.category.name,
+      ...product.tags,
+    ],
     alternates: { canonical: `/product/${product.slug}` },
     openGraph: {
-      title: product.name,
+      title: `${title} | JAF`,
       description,
-      images: image ? [{ url: image }] : undefined,
+      images: image ? [{ url: image, alt: product.name }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | JAF`,
+      description,
+      images: image ? [image] : undefined,
     },
   };
 }

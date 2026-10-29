@@ -8,10 +8,15 @@ import { getPublishedBlogPosts } from "@/lib/data/blog";
 export const instant = false;
 
 export const metadata: Metadata = {
-  title: "Blog",
+  title: "Football Culture, Kit History & Jersey Styling Journal",
   description:
-    "Stories on football culture, kit design and the streetwear edge of the game, from the JAF team.",
+    "Read the JAF Journal for stories on football culture, iconic retro kit history, jersey styling guides, and the intersection of matchday heritage and streetwear.",
   alternates: { canonical: "/blog" },
+  openGraph: {
+    title: "The JAF Journal — Football Culture, Kit Design & Streetwear",
+    description:
+      "Stories on football culture, classic kit design, and how to style football jerseys off the pitch, from the JAF team.",
+  },
 };
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric" });

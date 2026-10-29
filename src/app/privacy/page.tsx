@@ -1,23 +1,33 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
+import { getCustomPage } from "@/lib/data/pages";
+import { CustomPageRenderer } from "@/components/pages/custom-page-renderer";
 
-export const metadata: Metadata = { title: "Privacy Policy" };
+export const instant = false;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getCustomPage("privacy");
+  return {
+    title: page.seoTitle,
+    description: page.seoDescription,
+    alternates: { canonical: "/privacy" },
+    openGraph: {
+      title: `${page.seoTitle} | JAF`,
+      description: page.seoDescription,
+      images: page.bannerImageUrl ? [{ url: page.bannerImageUrl, alt: page.title }] : undefined,
+    },
+  };
+}
+
+async function PrivacyContent() {
+  const page = await getCustomPage("privacy");
+  return <CustomPageRenderer page={page} />;
+}
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
-      <h1 className="mb-8 font-display text-4xl">PRIVACY POLICY</h1>
-      <div className="space-y-5 text-sm leading-relaxed text-paper/80">
-        <p>
-          We collect only the information needed to process your order: name, phone number,
-          email (optional) and delivery address. This information is used solely to fulfill your
-          order and is never sold to third parties.
-        </p>
-        <p>
-          Payment is collected in cash on delivery, so no card details are ever transmitted to or
-          stored by JAF.
-        </p>
-        <p>We use cookies only to keep your shopping cart working across visits.</p>
-      </div>
-    </div>
+    <Suspense fallback={<div className="mx-auto h-96 max-w-3xl animate-pulse px-4 py-16" />}>
+      <PrivacyContent />
+    </Suspense>
   );
 }

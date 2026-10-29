@@ -13,11 +13,41 @@ function photo(id: string, w = 1600, h = 1200) {
 // "Home"/"Away"/"Third"/"Retro" is the per-product `type` field, not a
 // category, so it isn't seeded here.
 const categories = [
-  { name: "Club Jerseys", slug: "club-jerseys", description: "Official and inspired club kits.", displayOrder: 1 },
-  { name: "National Teams", slug: "national-teams", description: "Represent your country.", displayOrder: 2 },
-  { name: "Premier League", slug: "premier-league", description: "England's top flight.", displayOrder: 3 },
-  { name: "La Liga", slug: "la-liga", description: "Spanish football royalty.", displayOrder: 4 },
-  { name: "Training", slug: "training", description: "Performance training wear.", displayOrder: 5 },
+  {
+    name: "Club Jerseys",
+    slug: "club-jerseys",
+    description:
+      "Shop current-season and classic European and international club football jerseys — including Home, Away, and Third kits crafted with breathable performance fabrics.",
+    displayOrder: 1,
+  },
+  {
+    name: "National Teams",
+    slug: "national-teams",
+    description:
+      "Represent your nation on matchday with official-inspired international football jerseys from iconic World Cup, Copa América, and Euro contenders.",
+    displayOrder: 2,
+  },
+  {
+    name: "Premier League",
+    slug: "premier-league",
+    description:
+      "Explore English Premier League football jerseys featuring top-flight club kits, precision crest detailing, and athletic matchday fits.",
+    displayOrder: 3,
+  },
+  {
+    name: "La Liga",
+    slug: "la-liga",
+    description:
+      "Celebrate Spanish football heritage with La Liga club jerseys — from El Clásico icons to modern away and third kit releases.",
+    displayOrder: 4,
+  },
+  {
+    name: "Training",
+    slug: "training",
+    description:
+      "High-performance football training jerseys and pre-match tops engineered for moisture-wicking comfort on the pitch, in the gym, and on the street.",
+    displayOrder: 5,
+  },
 ];
 
 async function main() {
