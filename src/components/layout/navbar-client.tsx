@@ -3,10 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Menu, Search, ShoppingBag, X } from "lucide-react";
+import { ChevronDown, Menu, Search, ShoppingBag, X } from "lucide-react";
 import { Brand } from "./brand";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CLUB_TYPES, CLUB_TYPE_LABELS, isClubCategory } from "@/lib/constants";
 import type { CartView } from "@/lib/cart/read";
 
 export interface NavCategory {
@@ -32,12 +39,18 @@ export function NavbarClient({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const navLinks = [
-    { label: "Shop", href: "/shop" },
-    { label: "Clubs", href: "/category/club-jerseys" },
-    { label: "National Teams", href: "/category/national-teams" },
-    { label: "New Arrivals", href: "/shop?sort=newest" },
-    { label: "Sale", href: "/shop?sort=discount" },
+  const effectiveCategories: NavCategory[] =
+    categories.length > 0
+      ? categories
+      : [
+          { name: "National", slug: "national-teams" },
+          { name: "Club", slug: "club-jerseys" },
+          { name: "Retro", slug: "retro" },
+        ];
+
+  const tailLinks = [
+    { label: "New Arrivals", href: "/shop?sort=newest", highlight: false },
+    { label: "Sale", href: "/shop?sort=discount", highlight: true },
   ];
 
   function isActiveLink(href: string) {
@@ -78,15 +91,118 @@ export function NavbarClient({
             <Brand />
           </div>
 
-          <nav className="hidden items-center gap-9 lg:flex">
-            {navLinks.map((link) => {
+          <nav className="hidden items-center gap-8 lg:flex">
+            <Link
+              href="/shop"
+              aria-current={isActiveLink("/shop") ? "page" : undefined}
+              className={`group relative py-1 text-xs font-semibold uppercase tracking-widest transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright focus-visible:ring-offset-4 focus-visible:ring-offset-ink ${
+                isActiveLink("/shop") ? "text-gold-bright" : "text-paper hover:text-gold"
+              }`}
+            >
+              Shop
+              <span
+                className={`absolute -bottom-0.5 left-0 h-px bg-gold-bright transition-all duration-300 ${
+                  isActiveLink("/shop") ? "w-full" : "w-0 group-hover:w-full"
+                }`}
+              />
+            </Link>
+
+            {effectiveCategories.map((cat) => {
+              const href = `/category/${cat.slug}`;
+              const active = pathname === href;
+              if (isClubCategory(cat)) {
+                return (
+                  <DropdownMenu key={cat.slug}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className={`group relative flex items-center gap-1 py-1 text-xs font-semibold uppercase tracking-widest transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright focus-visible:ring-offset-4 focus-visible:ring-offset-ink ${
+                          active ? "text-gold-bright" : "text-paper hover:text-gold"
+                        }`}
+                      >
+                        {cat.name}
+                        <ChevronDown size={13} className="text-paper-dim group-hover:text-gold" />
+                        <span
+                          className={`absolute -bottom-0.5 left-0 h-px bg-gold-bright transition-all duration-300 ${
+                            active ? "w-full" : "w-0 group-hover:w-full"
+                          }`}
+                        />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem asChild>
+                        <Link href={href}>All {cat.name}</Link>
+                      </DropdownMenuItem>
+                      {CLUB_TYPES.map((type) => (
+                        <DropdownMenuItem key={type} asChild>
+                          <Link href={`${href}?type=${type}`}>{CLUB_TYPE_LABELS[type]}</Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              }
+
+              return (
+                <Link
+                  key={cat.slug}
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className={`group relative py-1 text-xs font-semibold uppercase tracking-widest transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright focus-visible:ring-offset-4 focus-visible:ring-offset-ink ${
+                    active ? "text-gold-bright" : "text-paper hover:text-gold"
+                  }`}
+                >
+                  {cat.name}
+                  <span
+                    className={`absolute -bottom-0.5 left-0 h-px bg-gold-bright transition-all duration-300 ${
+                      active ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
+                  />
+                </Link>
+              );
+            })}
+
+            {tailLinks.map((link) => {
               const active = isActiveLink(link.href);
+              if (link.highlight) {
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    aria-current={active ? "page" : undefined}
+                    className={`group relative inline-flex items-center gap-2 border px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright focus-visible:ring-offset-2 focus-visible:ring-offset-ink ${
+                      active
+                        ? "border-gold-bright bg-gold-bright text-ink shadow-[0_0_20px_-2px_var(--color-gold-bright)]"
+                        : "border-gold-bright/70 bg-gold-bright/15 text-gold-bright shadow-[0_0_16px_-4px_var(--color-gold-bright)] hover:-translate-y-0.5 hover:border-gold-bright hover:bg-gold-bright hover:text-ink hover:shadow-[0_0_22px_-2px_var(--color-gold-bright)] focus-visible:border-gold-bright focus-visible:bg-gold-bright focus-visible:text-ink"
+                    }`}
+                  >
+                    <span className="relative flex h-2 w-2">
+                      <span
+                        className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
+                          active
+                            ? "bg-ink"
+                            : "bg-gold-bright group-hover:bg-ink group-focus-visible:bg-ink"
+                        }`}
+                      />
+                      <span
+                        className={`relative inline-flex h-2 w-2 rounded-full ${
+                          active
+                            ? "bg-ink"
+                            : "bg-gold-bright group-hover:bg-ink group-focus-visible:bg-ink"
+                        }`}
+                      />
+                    </span>
+                    {link.label}
+                  </Link>
+                );
+              }
+
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  className={`group relative py-1 text-xs font-semibold uppercase tracking-widest transition-colors ${
+                  className={`group relative py-1 text-xs font-semibold uppercase tracking-widest transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright focus-visible:ring-offset-4 focus-visible:ring-offset-ink ${
                     active ? "text-gold-bright" : "text-paper hover:text-gold"
                   }`}
                 >
@@ -152,26 +268,91 @@ export function NavbarClient({
             </SheetTitle>
           </SheetHeader>
           <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-6 py-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="border-b border-ink-border py-4 text-sm font-semibold uppercase tracking-widest"
-              >
-                {link.label}
-              </Link>
+            <Link
+              href="/shop"
+              onClick={() => setMobileOpen(false)}
+              className="border-b border-ink-border py-4 text-sm font-semibold uppercase tracking-widest"
+            >
+              Shop
+            </Link>
+
+            {effectiveCategories.map((cat) => (
+              <div key={cat.slug} className="border-b border-ink-border">
+                <Link
+                  href={`/category/${cat.slug}`}
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-4 text-sm font-semibold uppercase tracking-widest"
+                >
+                  {cat.name}
+                </Link>
+                {isClubCategory(cat) && (
+                  <div className="mb-3 flex flex-wrap gap-2 pl-3">
+                    {CLUB_TYPES.map((type) => (
+                      <Link
+                        key={type}
+                        href={`/category/${cat.slug}?type=${type}`}
+                        onClick={() => setMobileOpen(false)}
+                        className="border border-ink-border px-2.5 py-1 text-xs uppercase tracking-wider text-paper-dim hover:border-gold hover:text-gold"
+                      >
+                        {CLUB_TYPE_LABELS[type]}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
-            {categories.map((cat) => (
-              <Link
-                key={cat.slug}
-                href={`/category/${cat.slug}`}
-                onClick={() => setMobileOpen(false)}
-                className="border-b border-ink-border py-4 text-sm uppercase tracking-wide text-paper-dim"
-              >
-                {cat.name}
-              </Link>
-            ))}
+
+            {tailLinks.map((link) => {
+              const active = isActiveLink(link.href);
+              if (link.highlight) {
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={`mt-3 flex items-center justify-between border px-4 py-3.5 text-sm font-bold uppercase tracking-widest transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright focus-visible:ring-offset-2 focus-visible:ring-offset-ink ${
+                      active
+                        ? "border-gold-bright bg-gold-bright text-ink shadow-[0_0_20px_-4px_var(--color-gold-bright)]"
+                        : "border-gold-bright/70 bg-gold-bright/15 text-gold-bright hover:border-gold-bright hover:bg-gold-bright hover:text-ink"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <span className="relative flex h-2 w-2">
+                        <span
+                          className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
+                            active ? "bg-ink" : "bg-gold-bright"
+                          }`}
+                        />
+                        <span
+                          className={`relative inline-flex h-2 w-2 rounded-full ${
+                            active ? "bg-ink" : "bg-gold-bright"
+                          }`}
+                        />
+                      </span>
+                      {link.label}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 text-[10px] font-bold tracking-wider ${
+                        active ? "bg-ink text-gold-bright" : "bg-gold-bright text-ink"
+                      }`}
+                    >
+                      HOT
+                    </span>
+                  </Link>
+                );
+              }
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="border-b border-ink-border py-4 text-sm font-semibold uppercase tracking-widest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright"
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
         </SheetContent>
       </Sheet>

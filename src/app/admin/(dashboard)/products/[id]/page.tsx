@@ -37,7 +37,7 @@ export default async function EditProductPage({
       <section>
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-paper-dim">Details</h2>
         <ProductForm
-          categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+          categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))}
           product={{
             id: product.id,
             name: product.name,

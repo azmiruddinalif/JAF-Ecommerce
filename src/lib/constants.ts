@@ -11,12 +11,40 @@ export const AVAILABLE_SIZES = ["S", "M", "L", "XL", "XXL"] as const;
 
 export const JERSEY_TYPES = ["HOME", "AWAY", "THIRD", "RETRO"] as const;
 
+export const CLUB_TYPES = ["HOME", "AWAY", "THIRD"] as const;
+
 export const JERSEY_TYPE_LABELS: Record<(typeof JERSEY_TYPES)[number], string> = {
   HOME: "Home",
   AWAY: "Away",
   THIRD: "Third",
   RETRO: "Retro",
 };
+
+export const CLUB_TYPE_LABELS: Record<(typeof CLUB_TYPES)[number], string> = {
+  HOME: "Home",
+  AWAY: "Away",
+  THIRD: "Third",
+};
+
+export function isClubCategory(category?: { name?: string | null; slug?: string | null } | null): boolean {
+  if (!category) return false;
+  const slug = (category.slug ?? "").toLowerCase();
+  const name = (category.name ?? "").toLowerCase();
+  return slug === "club-jerseys" || slug === "club" || name === "club" || name === "club jerseys";
+}
+
+export function getClubTypeLabel(type: string, tags?: string[] | null): string {
+  if (tags && tags.length > 0) {
+    const customTag = tags.find((t) => t.toLowerCase().startsWith("club-type:"));
+    if (customTag) {
+      const label = customTag.slice("club-type:".length).trim();
+      if (label) {
+        return label.charAt(0).toUpperCase() + label.slice(1);
+      }
+    }
+  }
+  return JERSEY_TYPE_LABELS[type as keyof typeof JERSEY_TYPE_LABELS] ?? type;
+}
 
 export const SORT_OPTIONS: { value: string; label: string }[] = [
   { value: "newest", label: "Newest" },

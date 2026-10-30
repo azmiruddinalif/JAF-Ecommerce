@@ -4,7 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { formatCents } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import type { ProductListItem } from "@/lib/data/products";
-import { AVAILABLE_SIZES, JERSEY_TYPE_LABELS } from "@/lib/constants";
+import { AVAILABLE_SIZES, getClubTypeLabel, isClubCategory } from "@/lib/constants";
 
 export function ProductCard({ product }: { product: ProductListItem }) {
   const primaryImage = product.images[0];
@@ -68,7 +68,9 @@ export function ProductCard({ product }: { product: ProductListItem }) {
 
       <div className="mt-3 flex flex-col gap-1.5">
         <span className="text-[11px] uppercase tracking-widest text-paper-dim">
-          {product.category.name} · {JERSEY_TYPE_LABELS[product.type] ?? product.type}
+          {isClubCategory(product.category)
+            ? `${product.category.name} · ${getClubTypeLabel(product.type, product.tags)}`
+            : product.category.name}
         </span>
         <h3 className="text-sm font-medium text-paper group-hover:text-gold">
           {product.name}

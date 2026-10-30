@@ -8,7 +8,7 @@ import { AddToCartForm } from "@/components/product/add-to-cart-form";
 import { ProductGrid } from "@/components/products/product-grid";
 import { ProductGridSkeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { JERSEY_TYPE_LABELS } from "@/lib/constants";
+import { getClubTypeLabel, isClubCategory, JERSEY_TYPE_LABELS } from "@/lib/constants";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -26,7 +26,9 @@ export async function generateMetadata({
   if (!product) return {};
 
   const typeLabel = JERSEY_TYPE_LABELS[product.type] ?? product.type;
-  const title = `${product.name} (${typeLabel} Kit)`;
+  const title = isClubCategory(product.category)
+    ? `${product.name} (${getClubTypeLabel(product.type, product.tags)} Kit)`
+    : product.name;
   const description =
     product.description.slice(0, 155) ||
     `Buy ${product.name} ${typeLabel} football jersey online at JAF. Premium breathable fabric, authentic fit in sizes S–XXL, with fast Cash on Delivery.`;
@@ -82,6 +84,8 @@ export default async function ProductPage({
   }
 
   const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
+  const isClub = isClubCategory(product.category);
+  const visibleTags = product.tags.filter((t) => !t.toLowerCase().startsWith("club-type:"));
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -125,7 +129,9 @@ export default async function ProductPage({
         <div>
           <div className="mb-3 flex items-center gap-2">
             <Badge variant="neutral">{product.category.name}</Badge>
-            <Badge variant="neutral">{JERSEY_TYPE_LABELS[product.type] ?? product.type}</Badge>
+            {isClub && (
+              <Badge variant="neutral">{getClubTypeLabel(product.type, product.tags)}</Badge>
+            )}
             {product.newArrival && <Badge variant="emerald">New Arrival</Badge>}
             {totalStock === 0 && <Badge variant="danger">Sold Out</Badge>}
           </div>
@@ -146,9 +152,9 @@ export default async function ProductPage({
             <p className="whitespace-pre-line text-sm leading-relaxed text-paper/80">{product.description}</p>
           </div>
 
-          {product.tags.length > 0 && (
+          {visibleTags.length > 0 && (
             <div className="mt-6 flex flex-wrap gap-2">
-              {product.tags.map((tag) => (
+              {visibleTags.map((tag) => (
                 <span key={tag} className="border border-ink-border px-2.5 py-1 text-[11px] uppercase text-paper-dim">
                   {tag}
                 </span>

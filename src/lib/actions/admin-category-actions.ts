@@ -7,11 +7,13 @@ import { requireAdminSession } from "@/lib/auth/session";
 import { categorySchema } from "@/lib/validation/schemas";
 import { imageStorage } from "@/lib/storage";
 import { validateImageFile } from "@/lib/storage/validate";
+import { slugify } from "@/lib/slug";
 
 export interface CategoryActionResult {
   success: boolean;
   message: string;
   fieldErrors?: Record<string, string>;
+  category?: { id: string; name: string; slug: string };
 }
 
 function parseCategoryForm(formData: FormData) {
@@ -215,4 +217,57 @@ export async function toggleCategoryEnabledAction(categoryId: string): Promise<C
   revalidatePath("/");
 
   return { success: true, message: "Updated." };
+}
+
+export async function createQuickCategoryAction(rawName: string): Promise<CategoryActionResult> {
+  try {
+    await requireAdminSession();
+  } catch {
+    return { success: false, message: "You must be signed in as an admin." };
+  }
+
+  const name = rawName.trim();
+  if (name.length < 2) {
+    return { success: false, message: "Option name must be at least 2 characters." };
+  }
+
+  const slug = slugify(name);
+  if (!slug) {
+    return { success: false, message: "Enter a valid option name." };
+  }
+
+  try {
+    const existing = await prisma.category.findUnique({ where: { slug } });
+    if (existing) {
+      return {
+        success: true,
+        message: "Option selected.",
+        category: { id: existing.id, name: existing.name, slug: existing.slug },
+      };
+    }
+
+    const count = await prisma.category.count();
+    const created = await prisma.category.create({
+      data: {
+        name,
+        slug,
+        displayOrder: count + 1,
+        enabled: true,
+      },
+    });
+
+    revalidatePath("/admin/categories");
+    revalidatePath("/admin/products");
+    revalidatePath("/admin/products/new");
+    revalidatePath("/shop");
+    revalidatePath("/");
+
+    return {
+      success: true,
+      message: `Added "${created.name}".`,
+      category: { id: created.id, name: created.name, slug: created.slug },
+    };
+  } catch {
+    return { success: false, message: "Could not create option." };
+  }
 }

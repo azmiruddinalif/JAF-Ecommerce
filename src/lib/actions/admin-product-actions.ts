@@ -30,6 +30,16 @@ function parseProductForm(formData: FormData) {
   // Price inputs hold Taka (the unit shown to the admin), not cents — convert before validation.
   const discountRaw = formData.get("discountPriceCents")?.toString();
   const basePriceUnits = Number(formData.get("basePriceCents")?.toString() ?? "0");
+  const customClubType = formData.get("customClubType")?.toString().trim() ?? "";
+
+  const parsedTags = tagsRaw
+    .split(",")
+    .map((tag) => tag.trim().toLowerCase())
+    .filter((tag) => Boolean(tag) && !tag.startsWith("club-type:"));
+
+  if (customClubType) {
+    parsedTags.push(`club-type:${customClubType}`);
+  }
 
   return productSchema.safeParse({
     name: formData.get("name")?.toString() ?? "",
@@ -41,10 +51,7 @@ function parseProductForm(formData: FormData) {
     discountPriceCents: discountRaw ? unitsToCents(Number(discountRaw)) : null,
     sku: formData.get("sku")?.toString() ?? "",
     brand: formData.get("brand")?.toString() ?? "",
-    tags: tagsRaw
-      .split(",")
-      .map((tag) => tag.trim().toLowerCase())
-      .filter(Boolean),
+    tags: parsedTags,
     featured: formData.get("featured") === "on",
     newArrival: formData.get("newArrival") === "on",
     published: formData.get("published") === "on",

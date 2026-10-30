@@ -12,7 +12,7 @@ export default async function NewProductPage() {
       <p className="mb-8 text-sm text-paper-dim">
         Create the product details first, then add images once it&apos;s saved.
       </p>
-      <ProductForm categories={categories.map((c) => ({ id: c.id, name: c.name }))} />
+      <ProductForm categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))} />
     </div>
   );
 }

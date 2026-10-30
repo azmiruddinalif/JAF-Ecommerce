@@ -83,7 +83,11 @@ async function CategoryResults({
 
   return (
     <>
-      <ShopFilters categories={categories.map((c) => ({ name: c.name, slug: c.slug }))} lockCategory />
+      <ShopFilters
+        categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
+        lockCategory
+        lockedCategorySlug={categorySlug}
+      />
       <p className="mb-6 text-xs uppercase tracking-wider text-paper-dim">
         {result.total} {result.total === 1 ? "product" : "products"}
       </p>
@@ -114,9 +118,11 @@ export default async function CategoryPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-gold">Category</p>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-gold">Jersey Type</p>
       <h1 className="mb-8 font-display text-4xl">{category.name.toUpperCase()}</h1>
-      {category.description && <p className="mb-8 max-w-2xl text-sm text-paper-dim">{category.description}</p>}
+      {category.description && (
+        <p className="mb-8 max-w-2xl text-sm text-paper-dim">{category.description}</p>
+      )}
       <Suspense fallback={<ProductGridSkeleton />}>
         <CategoryResults categorySlug={slug} searchParams={resolvedSearchParams} />
       </Suspense>

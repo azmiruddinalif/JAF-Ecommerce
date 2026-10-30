@@ -252,17 +252,30 @@ export async function getRelatedProducts(categoryId: string, excludeProductId: s
   });
 }
 
-export async function getAdminProducts(params: { page?: number; query?: string }) {
+export async function getAdminProducts(params: {
+  page?: number;
+  query?: string;
+  category?: string;
+  type?: string;
+}) {
   await connection();
   const page = Math.max(1, params.page ?? 1);
-  const where: Prisma.ProductWhereInput = params.query
-    ? {
-        OR: [
-          { name: { contains: params.query, mode: "insensitive" } },
-          { sku: { contains: params.query, mode: "insensitive" } },
-        ],
-      }
-    : {};
+  const where: Prisma.ProductWhereInput = {};
+
+  if (params.query) {
+    where.OR = [
+      { name: { contains: params.query, mode: "insensitive" } },
+      { sku: { contains: params.query, mode: "insensitive" } },
+    ];
+  }
+
+  if (params.category) {
+    where.category = { slug: params.category };
+  }
+
+  if (params.type && JERSEY_TYPE_VALUES.includes(params.type as JerseyType)) {
+    where.type = params.type as JerseyType;
+  }
 
   const [items, total] = await Promise.all([
     prisma.product.findMany({
@@ -272,7 +285,11 @@ export async function getAdminProducts(params: { page?: number; query?: string }
         images: { orderBy: { displayOrder: "asc" }, take: 1 },
         variants: { select: { stock: true } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [
+        { category: { displayOrder: "asc" } },
+        { type: "asc" },
+        { createdAt: "desc" },
+      ],
       skip: (page - 1) * 20,
       take: 20,
     }),

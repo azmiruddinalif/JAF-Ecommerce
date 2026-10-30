@@ -3,7 +3,13 @@
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
-import { AVAILABLE_SIZES, SORT_OPTIONS, JERSEY_TYPES, JERSEY_TYPE_LABELS } from "@/lib/constants";
+import {
+  AVAILABLE_SIZES,
+  SORT_OPTIONS,
+  CLUB_TYPES,
+  CLUB_TYPE_LABELS,
+  isClubCategory,
+} from "@/lib/constants";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ALL = "__all__";
@@ -16,27 +22,35 @@ interface CategoryOption {
 export function ShopFilters({
   categories,
   lockCategory = false,
+  lockedCategorySlug,
 }: {
   categories: CategoryOption[];
   lockCategory?: boolean;
+  lockedCategorySlug?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  function updateParam(key: string, value: string | null) {
+  function updateParams(updates: Record<string, string | null>) {
     const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
+    for (const [key, value] of Object.entries(updates)) {
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
     }
     params.delete("page");
     router.push(`${pathname}?${params.toString()}`);
   }
 
-  const activeCategory = searchParams.get("category") ?? "";
+  function updateParam(key: string, value: string | null) {
+    updateParams({ [key]: value });
+  }
+
+  const activeCategory = lockCategory ? (lockedCategorySlug ?? "") : (searchParams.get("category") ?? "");
   const activeType = searchParams.get("type") ?? "";
   const activeSize = searchParams.get("size") ?? "";
   const activeSort = searchParams.get("sort") ?? "newest";
@@ -44,8 +58,19 @@ export function ShopFilters({
   const activeMin = searchParams.get("minPrice") ?? "";
   const activeMax = searchParams.get("maxPrice") ?? "";
 
+  const currentCategoryObj = categories.find((c) => c.slug === activeCategory) ?? {
+    slug: activeCategory,
+    name: activeCategory,
+  };
+  const showClubTypeSelect = isClubCategory(currentCategoryObj);
+
   const hasActiveFilters = Boolean(
-    activeCategory || activeType || activeSize || activeAvailability || activeMin || activeMax
+    (!lockCategory && activeCategory) ||
+      activeType ||
+      activeSize ||
+      activeAvailability ||
+      activeMin ||
+      activeMax
   );
 
   const controls = (
@@ -53,13 +78,20 @@ export function ShopFilters({
       {!lockCategory && (
         <Select
           value={activeCategory || ALL}
-          onValueChange={(value) => updateParam("category", value === ALL ? null : value)}
+          onValueChange={(value) => {
+            const nextCat = value === ALL ? null : value;
+            const nextCatObj = categories.find((c) => c.slug === nextCat) ?? null;
+            updateParams({
+              category: nextCat,
+              ...(isClubCategory(nextCatObj) ? {} : { type: null }),
+            });
+          }}
         >
-          <SelectTrigger aria-label="Filter by category" className="sm:w-48">
-            <SelectValue />
+          <SelectTrigger aria-label="Filter by jersey type" className="sm:w-48">
+            <SelectValue placeholder="Jersey Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>All Categories</SelectItem>
+            <SelectItem value={ALL}>All Jersey Types</SelectItem>
             {categories.map((c) => (
               <SelectItem key={c.slug} value={c.slug}>
                 {c.name}
@@ -69,21 +101,29 @@ export function ShopFilters({
         </Select>
       )}
 
-      <Select value={activeType || ALL} onValueChange={(value) => updateParam("type", value === ALL ? null : value)}>
-        <SelectTrigger aria-label="Filter by type" className="sm:w-36">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={ALL}>All Types</SelectItem>
-          {JERSEY_TYPES.map((type) => (
-            <SelectItem key={type} value={type}>
-              {JERSEY_TYPE_LABELS[type]}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {showClubTypeSelect && (
+        <Select
+          value={activeType || ALL}
+          onValueChange={(value) => updateParam("type", value === ALL ? null : value)}
+        >
+          <SelectTrigger aria-label="Filter by club type" className="sm:w-44">
+            <SelectValue placeholder="Club Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>All Club Types</SelectItem>
+            {CLUB_TYPES.map((type) => (
+              <SelectItem key={type} value={type}>
+                {CLUB_TYPE_LABELS[type]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
-      <Select value={activeSize || ALL} onValueChange={(value) => updateParam("size", value === ALL ? null : value)}>
+      <Select
+        value={activeSize || ALL}
+        onValueChange={(value) => updateParam("size", value === ALL ? null : value)}
+      >
         <SelectTrigger aria-label="Filter by size" className="sm:w-32">
           <SelectValue />
         </SelectTrigger>
@@ -115,7 +155,9 @@ export function ShopFilters({
           type="number"
           placeholder="Min ৳"
           defaultValue={activeMin}
-          onBlur={(e) => updateParam("minPrice", e.target.value ? String(Number(e.target.value) * 100) : null)}
+          onBlur={(e) =>
+            updateParam("minPrice", e.target.value ? String(Number(e.target.value) * 100) : null)
+          }
           className="w-24 border border-ink-border bg-ink-raised px-3 py-2.5 text-sm placeholder:text-paper-dim focus:border-gold focus:outline-none"
           aria-label="Minimum price"
         />
@@ -124,7 +166,9 @@ export function ShopFilters({
           type="number"
           placeholder="Max ৳"
           defaultValue={activeMax}
-          onBlur={(e) => updateParam("maxPrice", e.target.value ? String(Number(e.target.value) * 100) : null)}
+          onBlur={(e) =>
+            updateParam("maxPrice", e.target.value ? String(Number(e.target.value) * 100) : null)
+          }
           className="w-24 border border-ink-border bg-ink-raised px-3 py-2.5 text-sm placeholder:text-paper-dim focus:border-gold focus:outline-none"
           aria-label="Maximum price"
         />

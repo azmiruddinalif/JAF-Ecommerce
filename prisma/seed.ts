@@ -8,45 +8,28 @@ function photo(id: string, w = 1600, h = 1200) {
   return `https://images.unsplash.com/photo-${id}?w=${w}&h=${h}&fit=crop&q=80&auto=format`;
 }
 
-// Starting taxonomy only — no demo products or stock photography. Real
-// products (with real photography) are created from `/admin/products`;
-// "Home"/"Away"/"Third"/"Retro" is the per-product `type` field, not a
-// category, so it isn't seeded here.
+// Starting taxonomy: National, Club, Retro (Club kits are further classified by Home, Away, Third).
 const categories = [
   {
-    name: "Club Jerseys",
-    slug: "club-jerseys",
-    description:
-      "Shop current-season and classic European and international club football jerseys — including Home, Away, and Third kits crafted with breathable performance fabrics.",
-    displayOrder: 1,
-  },
-  {
-    name: "National Teams",
+    name: "National",
     slug: "national-teams",
     description:
       "Represent your nation on matchday with official-inspired international football jerseys from iconic World Cup, Copa América, and Euro contenders.",
+    displayOrder: 1,
+  },
+  {
+    name: "Club",
+    slug: "club-jerseys",
+    description:
+      "Shop current-season and classic European and international club football jerseys — including Home, Away, and Third kits crafted with breathable performance fabrics.",
     displayOrder: 2,
   },
   {
-    name: "Premier League",
-    slug: "premier-league",
+    name: "Retro",
+    slug: "retro",
     description:
-      "Explore English Premier League football jerseys featuring top-flight club kits, precision crest detailing, and athletic matchday fits.",
+      "Iconic classic and throwback Retro football jerseys celebrating timeless club and international football heritage.",
     displayOrder: 3,
-  },
-  {
-    name: "La Liga",
-    slug: "la-liga",
-    description:
-      "Celebrate Spanish football heritage with La Liga club jerseys — from El Clásico icons to modern away and third kit releases.",
-    displayOrder: 4,
-  },
-  {
-    name: "Training",
-    slug: "training",
-    description:
-      "High-performance football training jerseys and pre-match tops engineered for moisture-wicking comfort on the pitch, in the gym, and on the street.",
-    displayOrder: 5,
   },
 ];
 
