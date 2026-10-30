@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowUp, ExternalLink, Plus, Trash2 } from "lucide-react";
 import { Input, Textarea, Select, Label } from "@/components/ui/input";
@@ -59,7 +59,9 @@ function SectionCard({
 
 function SinglePageEditor({ page: initialPage }: { page: CustomPageContent }) {
   const boundAction = updateCustomPageAction.bind(null, initialPage.key);
-  const [state, formAction, isPending] = useActionState(boundAction, initialState);
+  const [state, formAction, isActionPending] = useActionState(boundAction, initialState);
+  const [isSubmitTransition, startSubmitTransition] = useTransition();
+  const isPending = isActionPending || isSubmitTransition;
 
   const activePage = state.updatedPage ?? initialPage;
 
@@ -143,7 +145,16 @@ function SinglePageEditor({ page: initialPage }: { page: CustomPageContent }) {
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        startSubmitTransition(() => {
+          formAction(formData);
+        });
+      }}
+      className="flex flex-col gap-6"
+    >
       <input type="hidden" name="slidesJson" value={JSON.stringify(slides)} />
       <input type="hidden" name="sectionsJson" value={JSON.stringify(sections)} />
 

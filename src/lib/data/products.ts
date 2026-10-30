@@ -2,6 +2,7 @@ import "server-only";
 import { connection } from "next/server";
 import { Prisma, JerseyType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { isNoSizeVariant } from "@/lib/constants";
 
 const PAGE_SIZE = 12;
 const JERSEY_TYPE_VALUES = Object.values(JerseyType);
@@ -285,11 +286,7 @@ export async function getAdminProducts(params: {
         images: { orderBy: { displayOrder: "asc" }, take: 1 },
         variants: { select: { stock: true } },
       },
-      orderBy: [
-        { category: { displayOrder: "asc" } },
-        { type: "asc" },
-        { createdAt: "desc" },
-      ],
+      orderBy: [{ createdAt: "desc" }],
       skip: (page - 1) * 20,
       take: 20,
     }),
@@ -300,6 +297,7 @@ export async function getAdminProducts(params: {
 }
 
 export async function getLowStockProducts(threshold = 5) {
+  await connection();
   return prisma.product.findMany({
     where: {
       published: true,
@@ -310,4 +308,96 @@ export async function getLowStockProducts(threshold = 5) {
     },
     take: 10,
   });
+}
+
+export async function getProductStockOverview() {
+  await connection();
+  const [categories, products] = await Promise.all([
+    prisma.category.findMany({
+      orderBy: { displayOrder: "asc" },
+    }),
+    prisma.product.findMany({
+      include: {
+        category: true,
+        images: { orderBy: { displayOrder: "asc" }, take: 1 },
+        variants: {
+          select: { id: true, size: true, sku: true, stock: true, priceCents: true },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+      orderBy: [{ category: { displayOrder: "asc" } }, { createdAt: "desc" }],
+    }),
+  ]);
+
+  const productRows = products.map((p) => {
+    const sizeStocks: Record<string, number> = {};
+    let totalStock = 0;
+    for (const v of p.variants) {
+      sizeStocks[v.size] = (sizeStocks[v.size] ?? 0) + v.stock;
+      totalStock += v.stock;
+    }
+
+    const hasSizes =
+      p.variants.length > 0 &&
+      !(p.variants.length === 1 && isNoSizeVariant(p.variants[0]?.size));
+
+    return {
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      sku: p.sku,
+      published: p.published,
+      categoryId: p.categoryId,
+      categoryName: p.category.name,
+      categorySlug: p.category.slug,
+      type: p.type,
+      tags: p.tags,
+      basePriceCents: p.basePriceCents,
+      discountPriceCents: p.discountPriceCents,
+      imageUrl: p.images[0]?.secureUrl ?? null,
+      totalStock,
+      hasSizes,
+      sizeStocks,
+      variants: p.variants,
+    };
+  });
+
+  const categorySummaries = categories.map((cat) => {
+    const catProducts = productRows.filter((p) => p.categoryId === cat.id);
+    const totalStock = catProducts.reduce((sum, p) => sum + p.totalStock, 0);
+    const inStockCount = catProducts.filter((p) => p.totalStock > 0).length;
+    const lowStockCount = catProducts.filter((p) => p.totalStock > 0 && p.totalStock <= 5).length;
+    const outOfStockCount = catProducts.filter((p) => p.totalStock === 0).length;
+
+    return {
+      id: cat.id,
+      name: cat.name,
+      slug: cat.slug,
+      enabled: cat.enabled,
+      productCount: catProducts.length,
+      totalStock,
+      inStockCount,
+      lowStockCount,
+      outOfStockCount,
+    };
+  });
+
+  const totalUnitsInStock = productRows.reduce((sum, p) => sum + p.totalStock, 0);
+  const inStockProductsCount = productRows.filter((p) => p.totalStock > 0).length;
+  const lowStockProductsCount = productRows.filter(
+    (p) => p.totalStock > 0 && p.totalStock <= 5
+  ).length;
+  const outOfStockProductsCount = productRows.filter((p) => p.totalStock === 0).length;
+
+  return {
+    products: productRows,
+    categories: categorySummaries,
+    totals: {
+      totalProducts: productRows.length,
+      totalUnitsInStock,
+      inStockProductsCount,
+      lowStockProductsCount,
+      outOfStockProductsCount,
+    },
+  };
 }

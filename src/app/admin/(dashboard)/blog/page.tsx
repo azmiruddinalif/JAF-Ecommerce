@@ -2,6 +2,7 @@ import { getAllBlogPosts } from "@/lib/data/blog";
 import { BlogManager } from "@/components/admin/blog-manager";
 
 export const metadata = { title: "Blog", robots: { index: false } };
+export const instant = false;
 
 export default async function AdminBlogPage() {
   const posts = await getAllBlogPosts();

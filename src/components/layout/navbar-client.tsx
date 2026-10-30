@@ -13,7 +13,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CLUB_TYPES, CLUB_TYPE_LABELS, isClubCategory } from "@/lib/constants";
+import {
+  CLUB_TYPES,
+  CLUB_TYPE_LABELS,
+  isClubCategory,
+  isJerseySubCategory,
+} from "@/lib/constants";
 import type { CartView } from "@/lib/cart/read";
 
 export interface NavCategory {
@@ -47,6 +52,13 @@ export function NavbarClient({
           { name: "Club", slug: "club-jerseys" },
           { name: "Retro", slug: "retro" },
         ];
+
+  const jerseyNavCategories = effectiveCategories.filter((c) => isJerseySubCategory(c));
+  const otherNavCategories = effectiveCategories.filter((c) => !isJerseySubCategory(c));
+  const topLevelCategories =
+    jerseyNavCategories.length > 0 ? jerseyNavCategories : effectiveCategories.slice(0, 3);
+  const dropdownOtherCategories =
+    jerseyNavCategories.length > 0 ? otherNavCategories : effectiveCategories.slice(3);
 
   const tailLinks = [
     { label: "New Arrivals", href: "/shop?sort=newest", highlight: false },
@@ -107,7 +119,7 @@ export function NavbarClient({
               />
             </Link>
 
-            {effectiveCategories.map((cat) => {
+            {topLevelCategories.map((cat) => {
               const href = `/category/${cat.slug}`;
               const active = pathname === href;
               if (isClubCategory(cat)) {
@@ -161,6 +173,31 @@ export function NavbarClient({
                 </Link>
               );
             })}
+
+            {dropdownOtherCategories.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className={`group relative flex items-center gap-1 py-1 text-xs font-semibold uppercase tracking-widest transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright focus-visible:ring-offset-4 focus-visible:ring-offset-ink ${
+                      dropdownOtherCategories.some((c) => pathname === `/category/${c.slug}`)
+                        ? "text-gold-bright"
+                        : "text-paper hover:text-gold"
+                    }`}
+                  >
+                    Categories
+                    <ChevronDown size={13} className="text-paper-dim group-hover:text-gold" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  {dropdownOtherCategories.map((cat) => (
+                    <DropdownMenuItem key={cat.slug} asChild>
+                      <Link href={`/category/${cat.slug}`}>{cat.name}</Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
 
             {tailLinks.map((link) => {
               const active = isActiveLink(link.href);

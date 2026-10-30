@@ -87,11 +87,11 @@ export function ShopFilters({
             });
           }}
         >
-          <SelectTrigger aria-label="Filter by jersey type" className="sm:w-48">
-            <SelectValue placeholder="Jersey Type" />
+          <SelectTrigger aria-label="Filter by category" className="sm:w-52">
+            <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>All Jersey Types</SelectItem>
+            <SelectItem value={ALL}>All Categories</SelectItem>
             {categories.map((c) => (
               <SelectItem key={c.slug} value={c.slug}>
                 {c.name}

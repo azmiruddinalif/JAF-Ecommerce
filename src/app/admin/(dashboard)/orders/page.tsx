@@ -7,6 +7,7 @@ import { Pagination } from "@/components/products/pagination";
 import { Select } from "@/components/ui/input";
 
 export const metadata = { title: "Orders", robots: { index: false } };
+export const instant = false;
 
 const STATUS_OPTIONS: OrderStatus[] = [
   "PENDING",

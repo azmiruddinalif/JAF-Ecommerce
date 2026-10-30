@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/products/pagination";
 
 export const metadata = { title: "Products", robots: { index: false } };
+export const instant = false;
 
 export default async function AdminProductsPage({
   searchParams,

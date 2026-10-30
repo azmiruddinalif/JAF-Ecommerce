@@ -4,7 +4,9 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { formatCents } from "@/lib/money";
+import { isNoSizeVariant } from "@/lib/constants";
 import { addToCartAction } from "@/lib/actions/cart-actions";
 import { WishlistButton } from "./wishlist-button";
 
@@ -62,6 +64,9 @@ export function AddToCartForm({
     });
   }
 
+  const isNoSizeProduct =
+    sizes.length === 1 && isNoSizeVariant(sizes[0]?.size);
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -77,36 +82,49 @@ export function AddToCartForm({
         </div>
       </div>
 
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-paper-dim">
-            Size
-          </span>
-          <span className="text-xs text-paper-dim">
-            Size guide: S · M · L · XL · XXL
-          </span>
+      {isNoSizeProduct ? (
+        <div className="flex items-center gap-3">
+          <Badge variant={inStock ? "emerald" : "danger"}>
+            {inStock ? "In Stock" : "Out of Stock"}
+          </Badge>
+          {inStock && (
+            <span className="text-xs text-paper-dim">
+              {selectedVariant?.stock ?? 0} available
+            </span>
+          )}
         </div>
-        <div className="flex flex-wrap gap-2">
-          {sizes.map((variant) => (
-            <button
-              key={variant.size}
-              type="button"
-              disabled={variant.stock === 0}
-              onClick={() => setSelectedSize(variant.size)}
-              className={`h-11 min-w-11 border px-3 text-sm font-medium transition-colors ${
-                selectedSize === variant.size
-                  ? "border-gold bg-gold-bright text-ink"
-                  : "border-ink-border text-paper hover:border-gold"
-              } ${variant.stock === 0 ? "cursor-not-allowed opacity-30 line-through" : ""}`}
-            >
-              {variant.size}
-            </button>
-          ))}
+      ) : (
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-paper-dim">
+              Size
+            </span>
+            <span className="text-xs text-paper-dim">
+              Size guide: S · M · L · XL · XXL · 3XL · 4XL · 5XL
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {sizes.map((variant) => (
+              <button
+                key={variant.size}
+                type="button"
+                disabled={variant.stock === 0}
+                onClick={() => setSelectedSize(variant.size)}
+                className={`h-11 min-w-11 border px-3 text-sm font-medium transition-colors ${
+                  selectedSize === variant.size
+                    ? "border-gold bg-gold-bright text-ink"
+                    : "border-ink-border text-paper hover:border-gold"
+                } ${variant.stock === 0 ? "cursor-not-allowed opacity-30 line-through" : ""}`}
+              >
+                {variant.size}
+              </button>
+            ))}
+          </div>
+          {!inStock && selectedSize && (
+            <p className="mt-2 text-xs text-danger">This size is out of stock.</p>
+          )}
         </div>
-        {!inStock && selectedSize && (
-          <p className="mt-2 text-xs text-danger">This size is out of stock.</p>
-        )}
-      </div>
+      )}
 
       <div className="flex items-center gap-4">
         <span className="text-xs font-semibold uppercase tracking-wider text-paper-dim">

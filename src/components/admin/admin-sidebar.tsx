@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, FolderTree, ShoppingCart, Newspaper, FileText, Settings, LogOut, Menu } from "lucide-react";
+import { LayoutDashboard, Package, Boxes, FolderTree, ShoppingCart, Newspaper, FileText, Settings, LogOut, Menu } from "lucide-react";
 import { SignOutButton } from "@clerk/nextjs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/cn";
@@ -11,6 +11,7 @@ import { cn } from "@/lib/cn";
 const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/stocks", label: "Product Stocks", icon: Boxes },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/blog", label: "Blog", icon: Newspaper },

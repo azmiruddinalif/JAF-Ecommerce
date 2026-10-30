@@ -6,6 +6,7 @@ import { OrderStatusControl } from "@/components/admin/order-status-control";
 import { InvoicePanel } from "@/components/admin/invoice-panel";
 
 export const metadata = { title: "Order Details", robots: { index: false } };
+export const instant = false;
 
 export default async function AdminOrderDetailPage({
   params,

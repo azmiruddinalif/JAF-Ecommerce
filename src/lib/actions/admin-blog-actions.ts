@@ -59,7 +59,9 @@ async function uploadCoverImageIfPresent(formData: FormData, postId: string) {
 
 function revalidateBlogPaths(slug?: string, previousSlug?: string) {
   revalidatePath("/admin/blog");
+  revalidatePath("/admin", "layout");
   revalidatePath("/blog");
+  revalidatePath("/", "layout");
   if (slug) revalidatePath(`/blog/${slug}`);
   if (previousSlug && previousSlug !== slug) revalidatePath(`/blog/${previousSlug}`);
 }

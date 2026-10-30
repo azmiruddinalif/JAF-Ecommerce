@@ -1,12 +1,21 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { checkoutSchema } from "@/lib/validation/schemas";
 import { CART_COOKIE_NAME } from "@/lib/cart/constants";
+import { isNoSizeVariant } from "@/lib/constants";
 import { getStoreSettings } from "@/lib/data/settings";
 import { generateAndDeliverInvoice } from "@/lib/invoice/deliver";
+
+class InsufficientStockError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InsufficientStockError";
+  }
+}
 
 export interface CheckoutActionResult {
   success: boolean;
@@ -67,9 +76,10 @@ export async function placeOrderAction(
 
   for (const item of cart.items) {
     if (item.quantity > item.variant.stock) {
+      const sizeSuffix = isNoSizeVariant(item.variant.size) ? "" : ` (${item.variant.size})`;
       return {
         success: false,
-        message: `"${item.product.name}" (${item.variant.size}) only has ${item.variant.stock} left in stock. Please update your cart.`,
+        message: `"${item.product.name}"${sizeSuffix} only has ${item.variant.stock} left in stock. Please update your cart.`,
       };
     }
   }
@@ -85,54 +95,89 @@ export async function placeOrderAction(
   const discountCents = 0;
   const totalCents = subtotalCents + deliveryFeeCents - discountCents;
 
-  const order = await prisma.$transaction(async (tx) => {
-    const created = await tx.order.create({
-      data: {
-        orderNumber: generateOrderNumber(),
-        customerName: parsed.data.customerName,
-        customerPhone: parsed.data.customerPhone,
-        customerEmail: parsed.data.customerEmail || null,
-        address: parsed.data.address,
-        city: parsed.data.city,
-        area: parsed.data.area,
-        deliveryInstructions: parsed.data.deliveryInstructions || null,
-        subtotalCents,
-        deliveryFeeCents,
-        discountCents,
-        totalCents,
-        paymentMethod: "COD",
-        items: {
-          create: cart.items.map((item) => {
-            const unitPrice =
-              item.variant.priceCents ?? item.product.discountPriceCents ?? item.product.basePriceCents;
-            return {
-              productId: item.productId,
-              variantId: item.variantId,
-              productName: item.product.name,
-              size: item.variant.size,
-              sku: item.variant.sku,
-              unitPriceCents: unitPrice,
-              quantity: item.quantity,
-              subtotalCents: unitPrice * item.quantity,
-            };
-          }),
+  let order: { id: string };
+  try {
+    order = await prisma.$transaction(async (tx) => {
+      // Atomically validate and deduct stock first so concurrent orders can never oversell or make stock negative
+      for (const item of cart.items) {
+        const deducted = await tx.productVariant.updateMany({
+          where: {
+            id: item.variantId,
+            stock: { gte: item.quantity },
+          },
+          data: {
+            stock: { decrement: item.quantity },
+          },
+        });
+
+        if (deducted.count === 0) {
+          const latest = await tx.productVariant.findUnique({
+            where: { id: item.variantId },
+            select: { stock: true, size: true },
+          });
+          const sizeSuffix = isNoSizeVariant(item.variant.size) ? "" : ` (${item.variant.size})`;
+          throw new InsufficientStockError(
+            `"${item.product.name}"${sizeSuffix} only has ${latest?.stock ?? 0} left in stock. Please update your cart.`
+          );
+        }
+      }
+
+      const created = await tx.order.create({
+        data: {
+          orderNumber: generateOrderNumber(),
+          customerName: parsed.data.customerName,
+          customerPhone: parsed.data.customerPhone,
+          customerEmail: parsed.data.customerEmail || null,
+          address: parsed.data.address,
+          city: parsed.data.city,
+          area: parsed.data.area,
+          deliveryInstructions: parsed.data.deliveryInstructions || null,
+          subtotalCents,
+          deliveryFeeCents,
+          discountCents,
+          totalCents,
+          paymentMethod: "COD",
+          items: {
+            create: cart.items.map((item) => {
+              const unitPrice =
+                item.variant.priceCents ?? item.product.discountPriceCents ?? item.product.basePriceCents;
+              return {
+                productId: item.productId,
+                variantId: item.variantId,
+                productName: item.product.name,
+                size: item.variant.size,
+                sku: item.variant.sku,
+                unitPriceCents: unitPrice,
+                quantity: item.quantity,
+                subtotalCents: unitPrice * item.quantity,
+              };
+            }),
+          },
         },
-      },
-    });
-
-    for (const item of cart.items) {
-      await tx.productVariant.update({
-        where: { id: item.variantId },
-        data: { stock: { decrement: item.quantity } },
       });
+
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+      return created;
+    });
+  } catch (error) {
+    if (error instanceof InsufficientStockError) {
+      return { success: false, message: error.message };
     }
-
-    await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
-
-    return created;
-  });
+    return {
+      success: false,
+      message: "Could not complete your order due to a stock update. Please try again.",
+    };
+  }
 
   cookieStore.delete(CART_COOKIE_NAME);
+
+  revalidatePath("/admin/stocks");
+  revalidatePath("/admin/products");
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin", "layout");
+  revalidatePath("/shop");
+  revalidatePath("/", "layout");
 
   // Best-effort — a slow or failing invoice/email provider must never block
   // an otherwise-successful order. Failures are recorded on the order for

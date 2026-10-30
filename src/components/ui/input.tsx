@@ -66,56 +66,63 @@ function extractOptions(children: React.ReactNode): ParsedOption[] {
   return out;
 }
 
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
-  ({ className, children, value, defaultValue, onChange, name, id, disabled, required }, _ref) => {
-    const options = extractOptions(children);
-    const isControlled = value !== undefined;
-    const initialVal =
-      defaultValue !== undefined ? String(defaultValue) : (options[0]?.value ?? "");
-    const [internalValue, setInternalValue] = useState<string>(initialVal);
+export function Select({
+  className,
+  children,
+  value,
+  defaultValue,
+  onChange,
+  name,
+  id,
+  disabled,
+  required,
+}: SelectHTMLAttributes<HTMLSelectElement>) {
+  const options = extractOptions(children);
+  const isControlled = value !== undefined;
+  const initialVal =
+    defaultValue !== undefined ? String(defaultValue) : (options[0]?.value ?? "");
+  const [internalValue, setInternalValue] = useState<string>(initialVal);
 
-    const currentRealValue = isControlled ? String(value) : internalValue;
-    const radixValue = currentRealValue === "" ? EMPTY_SENTINEL : currentRealValue;
+  const currentRealValue = isControlled ? String(value) : internalValue;
+  const radixValue = currentRealValue === "" ? EMPTY_SENTINEL : currentRealValue;
 
-    return (
-      <div className={cn("w-full", className)}>
-        {name && <input type="hidden" name={name} value={currentRealValue} required={required} />}
-        <ShadcnSelect
-          value={radixValue}
-          disabled={disabled}
-          onValueChange={(nextRadixVal) => {
-            const realVal = nextRadixVal === EMPTY_SENTINEL ? "" : nextRadixVal;
-            if (!isControlled) {
-              setInternalValue(realVal);
-            }
-            if (onChange) {
-              const syntheticEvent = {
-                target: { value: realVal, name: name ?? "" },
-                currentTarget: { value: realVal, name: name ?? "" },
-              } as unknown as React.ChangeEvent<HTMLSelectElement>;
-              onChange(syntheticEvent);
-            }
-          }}
-        >
-          <SelectTrigger id={id} className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((opt, idx) => {
-              const itemValue = opt.value === "" ? EMPTY_SENTINEL : opt.value;
-              return (
-                <SelectItem key={`${itemValue}-${idx}`} value={itemValue} disabled={opt.disabled}>
-                  {opt.label}
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </ShadcnSelect>
-      </div>
-    );
-  }
-);
-Select.displayName = "Select";
+  return (
+    <div className={cn("w-full", className)}>
+      {name && <input type="hidden" name={name} value={currentRealValue} required={required} />}
+      <ShadcnSelect
+        value={radixValue}
+        disabled={disabled}
+        onValueChange={(nextRadixVal) => {
+          const realVal = nextRadixVal === EMPTY_SENTINEL ? "" : nextRadixVal;
+          if (!isControlled) {
+            setInternalValue(realVal);
+          }
+          if (onChange) {
+            const syntheticEvent = {
+              target: { value: realVal, name: name ?? "" },
+              currentTarget: { value: realVal, name: name ?? "" },
+            } as unknown as React.ChangeEvent<HTMLSelectElement>;
+            onChange(syntheticEvent);
+          }
+        }}
+      >
+        <SelectTrigger id={id} className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((opt, idx) => {
+            const itemValue = opt.value === "" ? EMPTY_SENTINEL : opt.value;
+            return (
+              <SelectItem key={`${itemValue}-${idx}`} value={itemValue} disabled={opt.disabled}>
+                {opt.label}
+              </SelectItem>
+            );
+          })}
+        </SelectContent>
+      </ShadcnSelect>
+    </div>
+  );
+}
 
 export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
   return (

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCategoryBySlug, getActiveCategories } from "@/lib/data/categories";
 import { getShopProducts, type SortOption } from "@/lib/data/products";
+import { isJerseySubCategory } from "@/lib/constants";
 import { ShopFilters } from "@/components/products/shop-filters";
 import { ProductGrid } from "@/components/products/product-grid";
 import { ProductGridSkeleton } from "@/components/ui/skeleton";
@@ -118,7 +119,9 @@ export default async function CategoryPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-gold">Jersey Type</p>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-gold">
+        {isJerseySubCategory(category) ? "Jersey Type" : "Category Collection"}
+      </p>
       <h1 className="mb-8 font-display text-4xl">{category.name.toUpperCase()}</h1>
       {category.description && (
         <p className="mb-8 max-w-2xl text-sm text-paper-dim">{category.description}</p>

@@ -1,10 +1,13 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { getAllCategories } from "@/lib/data/categories";
 import { getProductByIdForAdmin } from "@/lib/data/products";
 import { ProductForm } from "@/components/admin/product-form";
 import { ImageUploader } from "@/components/admin/image-uploader";
 
 export const metadata = { title: "Edit Product", robots: { index: false } };
+export const instant = false;
 
 export default async function EditProductPage({
   params,
@@ -18,6 +21,23 @@ export default async function EditProductPage({
 
   return (
     <div className="max-w-4xl">
+      <div className="mb-4 flex items-center justify-between">
+        <Link
+          href="/admin/products"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-paper-dim hover:text-gold"
+        >
+          <ArrowLeft size={14} /> Back to Products
+        </Link>
+        {product.published && (
+          <Link
+            href={`/product/${product.slug}`}
+            target="_blank"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold hover:underline"
+          >
+            View Live Product <ExternalLink size={13} />
+          </Link>
+        )}
+      </div>
       <h1 className="mb-8 font-display text-3xl">EDIT PRODUCT</h1>
 
       <section className="mb-10">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useTransition } from "react";
 import { Input, Textarea, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { placeOrderAction, type CheckoutActionResult } from "@/lib/actions/checkout-actions";
@@ -8,10 +8,21 @@ import { placeOrderAction, type CheckoutActionResult } from "@/lib/actions/check
 const initialState: CheckoutActionResult = { success: false, message: "" };
 
 export function CheckoutForm({ codEnabled }: { codEnabled: boolean }) {
-  const [state, formAction, isPending] = useActionState(placeOrderAction, initialState);
+  const [state, formAction, isActionPending] = useActionState(placeOrderAction, initialState);
+  const [isSubmitTransition, startSubmitTransition] = useTransition();
+  const isPending = isActionPending || isSubmitTransition;
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        startSubmitTransition(() => {
+          formAction(formData);
+        });
+      }}
+      className="flex flex-col gap-5"
+    >
       {state.message && !state.success && (
         <p className="border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">{state.message}</p>
       )}

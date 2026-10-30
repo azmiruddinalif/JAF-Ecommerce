@@ -58,15 +58,61 @@ export async function uploadProductImageAction(
     });
 
     revalidatePath(`/admin/products/${productId}`);
+    revalidatePath("/admin/products");
     revalidatePath(`/product/${product.slug}`);
+    revalidatePath("/shop");
+    revalidatePath("/");
 
     return { success: true, message: "Image uploaded." };
-  } catch {
+  } catch (err) {
     return {
       success: false,
-      message: "Upload failed. Check your Cloudinary configuration and try again.",
+      message: err instanceof Error ? err.message : "Upload failed. Please try again.",
     };
   }
+}
+
+export async function addProductImageUrlAction(
+  productId: string,
+  rawUrl: string
+): Promise<ImageActionResult> {
+  try {
+    await requireAdminSession();
+  } catch {
+    return { success: false, message: "You must be signed in as an admin." };
+  }
+
+  const url = rawUrl.trim();
+  if (!url || (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("/"))) {
+    return { success: false, message: "Enter a valid image URL (https://... or /...)." };
+  }
+
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: { images: true },
+  });
+  if (!product) {
+    return { success: false, message: "Product not found." };
+  }
+
+  await prisma.productImage.create({
+    data: {
+      productId,
+      publicId: `url:${Date.now()}`,
+      secureUrl: url,
+      altText: product.name,
+      displayOrder: product.images.length,
+      isPrimary: product.images.length === 0,
+    },
+  });
+
+  revalidatePath(`/admin/products/${productId}`);
+  revalidatePath("/admin/products");
+  revalidatePath(`/product/${product.slug}`);
+  revalidatePath("/shop");
+  revalidatePath("/");
+
+  return { success: true, message: "Image added." };
 }
 
 export async function deleteProductImageAction(imageId: string): Promise<ImageActionResult> {

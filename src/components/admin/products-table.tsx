@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Copy, Trash2, X } from "lucide-react";
+import { Copy, Pencil, Trash2, X } from "lucide-react";
 import { formatCents } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,7 +18,9 @@ import {
   CLUB_TYPES,
   CLUB_TYPE_LABELS,
   getClubTypeLabel,
+  getSubTypeFromTags,
   isClubCategory,
+  isJerseySubCategory,
 } from "@/lib/constants";
 import {
   deleteProductAction,
@@ -85,13 +87,18 @@ export function ProductsTable({
     setError(null);
     startTransition(async () => {
       const result = await deleteProductAction(id);
-      if (!result.success) setError(result.message);
+      if (!result.success) {
+        setError(result.message);
+      } else {
+        router.refresh();
+      }
     });
   }
 
   function duplicate(id: string) {
     startTransition(async () => {
       await duplicateProductAction(id);
+      router.refresh();
     });
   }
 
@@ -101,6 +108,7 @@ export function ProductsTable({
   ) {
     startTransition(async () => {
       await toggleProductFlagAction(id, flag);
+      router.refresh();
     });
   }
 
@@ -137,14 +145,14 @@ export function ProductsTable({
               });
             }}
           >
-            <SelectTrigger aria-label="Filter by Jersey Type" className="w-48">
-              <SelectValue placeholder="Jersey Type" />
+            <SelectTrigger aria-label="Filter by Category" className="w-52">
+              <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>All Jersey Types</SelectItem>
+              <SelectItem value={ALL}>All Categories</SelectItem>
               {categories.map((cat) => (
                 <SelectItem key={cat.slug} value={cat.slug}>
-                  {cat.name}
+                  {isJerseySubCategory(cat) ? `Jersey · ${cat.name}` : cat.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -194,8 +202,8 @@ export function ProductsTable({
           <thead className="border-b border-ink-border bg-ink-raised text-left text-xs uppercase tracking-wider text-paper-dim">
             <tr>
               <th className="px-4 py-3">Product</th>
-              <th className="px-4 py-3">Jersey Type</th>
-              <th className="px-4 py-3">Club Type</th>
+              <th className="px-4 py-3">Category</th>
+              <th className="px-4 py-3">Type / Sub-Type</th>
               <th className="px-4 py-3">Price</th>
               <th className="px-4 py-3">Stock</th>
               <th className="px-4 py-3">Flags</th>
@@ -214,10 +222,17 @@ export function ProductsTable({
               </tr>
             )}
             {products.map((product) => {
-              const isClub = isClubCategory({
+              const catInfo = {
                 name: product.categoryName,
                 slug: product.categorySlug,
-              });
+              };
+              const isClub = isClubCategory(catInfo);
+              const isJersey = isJerseySubCategory(catInfo);
+              const subTypeLabel = isClub
+                ? getClubTypeLabel(product.type, product.tags)
+                : isJersey
+                  ? product.categoryName
+                  : (getSubTypeFromTags(product.tags) ?? "Standard");
               return (
                 <tr
                   key={product.id}
@@ -248,10 +263,10 @@ export function ProductsTable({
                     </div>
                   </td>
                   <td className="px-4 py-3 text-paper-dim">
-                    {product.categoryName}
+                    {isJersey ? `Jersey · ${product.categoryName}` : product.categoryName}
                   </td>
                   <td className="px-4 py-3 text-paper-dim">
-                    {isClub ? getClubTypeLabel(product.type, product.tags) : "—"}
+                    {subTypeLabel}
                   </td>
                   <td className="px-4 py-3">
                     {product.discountPriceCents !== null ? (
@@ -312,6 +327,13 @@ export function ProductsTable({
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-3">
+                      <Link
+                        href={`/admin/products/${product.id}`}
+                        aria-label="Edit product"
+                        className="text-paper-dim hover:text-gold"
+                      >
+                        <Pencil size={16} />
+                      </Link>
                       <button
                         type="button"
                         onClick={() => duplicate(product.id)}
