@@ -373,6 +373,8 @@ export async function updateStoreSettingsAction(
         email: (formData.get("footerShopEmail")?.toString() ?? previousFooterConfig.shopInfo.email).trim(),
         hours: (formData.get("footerShopHours")?.toString() ?? previousFooterConfig.shopInfo.hours).trim(),
         aboutText: (formData.get("footerAboutText")?.toString() ?? previousFooterConfig.shopInfo.aboutText).trim(),
+        locationBadges: previousFooterConfig.shopInfo.locationBadges,
+        schedule: previousFooterConfig.shopInfo.schedule,
       },
     };
   }

@@ -14,14 +14,31 @@ import {
 } from "@/lib/actions/admin-settings-actions";
 import {
   DEFAULT_FOOTER_CONFIG,
+  DEFAULT_LOCATION_BADGES,
+  DEFAULT_SHOWROOM_SCHEDULE,
+  formatTime12Hour,
+  getStoreStatus,
   type FooterSocialsConfig,
   type FooterSocialItem,
   type HeroBannerMode,
   type HeroButtonConfig,
   type HeroButtonIcon,
   type HeroPromoSlide,
+  type LocationBadgeItem,
+  type ShowroomScheduleConfig,
+  type ShowroomStatusMode,
   type StoreSettingsView,
 } from "@/lib/data/settings-shared";
+
+const DAYS_OF_WEEK = [
+  { value: 0, label: "Sunday" },
+  { value: 1, label: "Monday" },
+  { value: 2, label: "Tuesday" },
+  { value: 3, label: "Wednesday" },
+  { value: 4, label: "Thursday" },
+  { value: 5, label: "Friday" },
+  { value: 6, label: "Saturday" },
+];
 
 const initialState: SettingsActionResult = { success: false, message: "" };
 
@@ -197,6 +214,47 @@ export function SettingsForm({
   const [shopEmail, setShopEmail] = useState<string>(fc.shopInfo.email);
   const [shopHours, setShopHours] = useState<string>(fc.shopInfo.hours);
   const [footerAboutText, setFooterAboutText] = useState<string>(fc.shopInfo.aboutText);
+  const [locationBadges, setLocationBadges] = useState<LocationBadgeItem[]>(
+    fc.shopInfo.locationBadges && fc.shopInfo.locationBadges.length > 0
+      ? fc.shopInfo.locationBadges
+      : DEFAULT_LOCATION_BADGES
+  );
+  const [showroomSchedule, setShowroomSchedule] = useState<ShowroomScheduleConfig>(
+    fc.shopInfo.schedule ?? DEFAULT_SHOWROOM_SCHEDULE
+  );
+
+  function addLocationBadge() {
+    setLocationBadges((prev) => [
+      ...prev,
+      {
+        id: makeId("loc-badge"),
+        label: "",
+        highlight: false,
+      },
+    ]);
+  }
+
+  function updateLocationBadge(index: number, patch: Partial<LocationBadgeItem>) {
+    setLocationBadges((prev) =>
+      prev.map((b, i) => (i === index ? { ...b, ...patch } : b))
+    );
+  }
+
+  function removeLocationBadge(index: number) {
+    setLocationBadges((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function updateSchedule(patch: Partial<ShowroomScheduleConfig>) {
+    setShowroomSchedule((prev) => {
+      const next = { ...prev, ...patch };
+      if (patch.openTime || patch.closeTime || patch.daysNotice) {
+        const oF = formatTime12Hour(next.openTime);
+        const cF = formatTime12Hour(next.closeTime);
+        setShopHours(`${next.daysNotice || "Open 7 Days"} · ${oF} – ${cF}`);
+      }
+      return next;
+    });
+  }
 
 
   function resetColors() {
@@ -1057,6 +1115,8 @@ export function SettingsForm({
               email: shopEmail,
               hours: shopHours,
               aboutText: footerAboutText,
+              locationBadges,
+              schedule: showroomSchedule,
             },
           })}
         />
@@ -1181,6 +1241,326 @@ export function SettingsForm({
               <p className="mt-1 text-[11px] text-paper-dim">
                 Displayed in the prominent showroom location card with interactive focus states.
               </p>
+            </div>
+
+            {/* 3. Showroom Highlights & Location Badges */}
+            <div className="border border-ink-border bg-ink-raised/50 p-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-paper">
+                    Showroom Badges &amp; Location Highlights
+                  </h4>
+                  <p className="text-[11px] text-paper-dim">
+                    Tags rendered directly below the physical address (e.g. Floor info, area landmark, trial service).
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addLocationBadge}
+                  className="h-8 shrink-0 text-xs"
+                >
+                  <Plus size={13} className="mr-1" /> Add Badge
+                </Button>
+              </div>
+
+              {/* Badges List */}
+              <div className="mt-3 space-y-2.5">
+                {locationBadges.map((badge, idx) => (
+                  <div
+                    key={badge.id || idx}
+                    className="flex flex-col gap-2 rounded border border-ink-border bg-ink p-2.5 sm:flex-row sm:items-center"
+                  >
+                    <div className="flex-1">
+                      <Input
+                        type="text"
+                        value={badge.label}
+                        onChange={(e) =>
+                          updateLocationBadge(idx, { label: e.target.value })
+                        }
+                        placeholder="e.g. Floor 1 · Shahabuddin Plaza"
+                        className="h-8 bg-ink-raised text-xs"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-3 sm:justify-start">
+                      <label className="flex cursor-pointer items-center gap-1.5 text-xs text-paper-dim select-none">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(badge.highlight)}
+                          onChange={(e) =>
+                            updateLocationBadge(idx, { highlight: e.target.checked })
+                          }
+                          className="h-3.5 w-3.5 rounded border border-ink-border accent-emerald-500"
+                        />
+                        <span className={badge.highlight ? "font-semibold text-emerald-400" : ""}>
+                          Emerald Highlight
+                        </span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => removeLocationBadge(idx)}
+                        className="rounded p-1 text-paper-dim transition-colors hover:bg-rose-500/10 hover:text-rose-400"
+                        title="Delete badge"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {locationBadges.length === 0 && (
+                  <p className="py-2 text-center text-xs italic text-paper-dim">
+                    No badges configured. Click &quot;Add Badge&quot; to create one.
+                  </p>
+                )}
+              </div>
+
+              {/* Live Preview Strip */}
+              {locationBadges.length > 0 && (
+                <div className="mt-3 rounded border border-ink-border/60 bg-ink/70 p-3">
+                  <span className="mb-1.5 block font-mono text-[10px] uppercase tracking-wider text-paper-dim">
+                    Live Footer Preview:
+                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {locationBadges.map((badge) => (
+                      <span
+                        key={badge.id}
+                        className={
+                          badge.highlight
+                            ? "inline-flex items-center gap-1.5 rounded-sm border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-1 font-mono text-[10px] uppercase text-emerald-400"
+                            : "inline-flex items-center gap-1.5 rounded-sm border border-ink-border bg-ink px-2.5 py-1 font-mono text-[10px] uppercase text-paper-dim"
+                        }
+                      >
+                        {badge.label || "(Empty)"}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 4. Showroom Schedule & Live Status Badge */}
+            <div className="border border-ink-border bg-ink-raised/50 p-4">
+              <div className="flex flex-col gap-2 border-b border-ink-border pb-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-paper">
+                    Showroom Operational Schedule &amp; Dynamic Status
+                  </h4>
+                  <p className="text-[11px] text-paper-dim">
+                    Controls whether the showroom displays as Active/Open (with pulsing green light) or Inactive/Closed based on time or admin mode.
+                  </p>
+                </div>
+
+                {/* Live Preview of the Status Badge */}
+                <div className="flex items-center gap-2 pt-1 sm:pt-0">
+                  <span className="font-mono text-[10px] text-paper-dim">Storefront Preview:</span>
+                  {(() => {
+                    const status = getStoreStatus(showroomSchedule);
+                    if (status.badgeVariant === "open") {
+                      return (
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-400 shadow-[0_0_10px_rgba(74,222,128,0.2)]">
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                          {status.statusText}
+                        </span>
+                      );
+                    }
+                    if (status.badgeVariant === "maintenance") {
+                      return (
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-rose-300">
+                          <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+                          {status.statusText}
+                        </span>
+                      );
+                    }
+                    return (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-ink-border bg-ink px-2.5 py-0.5 font-mono text-[10px] font-medium text-paper-dim">
+                        <span className="h-1.5 w-1.5 rounded-full bg-paper-dim/60" />
+                        {status.statusText}
+                      </span>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Status Mode Radio Buttons */}
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <button
+                  type="button"
+                  onClick={() => updateSchedule({ mode: "auto" })}
+                  className={`flex flex-col gap-1 rounded border p-3 text-left transition-all ${
+                    showroomSchedule.mode === "auto"
+                      ? "border-emerald-500/60 bg-emerald-500/10 text-paper shadow-[0_0_15px_-3px_rgba(74,222,128,0.2)]"
+                      : "border-ink-border bg-ink text-paper-dim hover:border-paper-dim/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                      🔄 Auto (Real-Time)
+                    </span>
+                    {showroomSchedule.mode === "auto" && (
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
+                    )}
+                  </div>
+                  <span className="text-[11px] text-paper-dim">
+                    Dynamically active/inactive based on current Dhaka clock (UTC+6) &amp; opening hours.
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => updateSchedule({ mode: "force_open" })}
+                  className={`flex flex-col gap-1 rounded border p-3 text-left transition-all ${
+                    showroomSchedule.mode === "force_open"
+                      ? "border-emerald-500/60 bg-emerald-500/10 text-paper shadow-[0_0_15px_-3px_rgba(74,222,128,0.2)]"
+                      : "border-ink-border bg-ink text-paper-dim hover:border-paper-dim/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                      🟢 Always Open
+                    </span>
+                    {showroomSchedule.mode === "force_open" && (
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
+                    )}
+                  </div>
+                  <span className="text-[11px] text-paper-dim">
+                    Manual override: always displays glowing green Open badge regardless of hour.
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => updateSchedule({ mode: "force_closed" })}
+                  className={`flex flex-col gap-1 rounded border p-3 text-left transition-all ${
+                    showroomSchedule.mode === "force_closed"
+                      ? "border-rose-500/60 bg-rose-500/10 text-paper shadow-[0_0_15px_-3px_rgba(244,63,94,0.2)]"
+                      : "border-ink-border bg-ink text-paper-dim hover:border-paper-dim/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-rose-400">
+                      🔴 Force Closed
+                    </span>
+                    {showroomSchedule.mode === "force_closed" && (
+                      <span className="h-2 w-2 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
+                    )}
+                  </div>
+                  <span className="text-[11px] text-paper-dim">
+                    Manual override: mark as closed for holidays, Eid, renovation or emergency maintenance.
+                  </span>
+                </button>
+              </div>
+
+              {/* Time Configuration Grid */}
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="showroomOpenTime" className="text-xs">
+                    Opening Time (24h format HH:mm)
+                  </Label>
+                  <Input
+                    id="showroomOpenTime"
+                    type="time"
+                    value={showroomSchedule.openTime}
+                    onChange={(e) => updateSchedule({ openTime: e.target.value })}
+                    className="mt-1 h-9 bg-ink font-mono text-xs"
+                  />
+                  <p className="mt-1 text-[10px] text-paper-dim">
+                    Displays as: <span className="font-mono text-gold-bright">{formatTime12Hour(showroomSchedule.openTime)}</span>
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="showroomCloseTime" className="text-xs">
+                    Closing Time (24h format HH:mm)
+                  </Label>
+                  <Input
+                    id="showroomCloseTime"
+                    type="time"
+                    value={showroomSchedule.closeTime}
+                    onChange={(e) => updateSchedule({ closeTime: e.target.value })}
+                    className="mt-1 h-9 bg-ink font-mono text-xs"
+                  />
+                  <p className="mt-1 text-[10px] text-paper-dim">
+                    Displays as: <span className="font-mono text-gold-bright">{formatTime12Hour(showroomSchedule.closeTime)}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Days Notice & Closed Notice */}
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="showroomDaysNotice" className="text-xs">
+                    Days / Schedule Label
+                  </Label>
+                  <Input
+                    id="showroomDaysNotice"
+                    type="text"
+                    value={showroomSchedule.daysNotice}
+                    onChange={(e) => updateSchedule({ daysNotice: e.target.value })}
+                    placeholder="e.g. Open 7 Days or Open Today"
+                    className="mt-1 h-9 bg-ink text-xs"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="showroomClosedNotice" className="text-xs">
+                    Closed Notice Override
+                  </Label>
+                  <Input
+                    id="showroomClosedNotice"
+                    type="text"
+                    value={showroomSchedule.closedNotice || ""}
+                    onChange={(e) => updateSchedule({ closedNotice: e.target.value })}
+                    placeholder="e.g. Closed Now · Opens at 10:00 AM"
+                    className="mt-1 h-9 bg-ink text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Days of Week Selection */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-paper">
+                    Operational Days of Week:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const all = [0, 1, 2, 3, 4, 5, 6];
+                      const isAll = showroomSchedule.openDays.length === 7;
+                      updateSchedule({ openDays: isAll ? [] : all });
+                    }}
+                    className="text-[10px] font-mono text-gold-bright hover:underline"
+                  >
+                    {showroomSchedule.openDays.length === 7 ? "Deselect All" : "Select All 7 Days"}
+                  </button>
+                </div>
+
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {DAYS_OF_WEEK.map((day) => {
+                    const isChecked = showroomSchedule.openDays.includes(day.value);
+                    return (
+                      <button
+                        key={day.value}
+                        type="button"
+                        onClick={() => {
+                          const nextDays = isChecked
+                            ? showroomSchedule.openDays.filter((d) => d !== day.value)
+                            : [...showroomSchedule.openDays, day.value];
+                          updateSchedule({ openDays: nextDays });
+                        }}
+                        className={`rounded border px-3 py-1 font-mono text-xs transition-colors ${
+                          isChecked
+                            ? "border-emerald-500/40 bg-emerald-500/10 font-bold text-emerald-400"
+                            : "border-ink-border bg-ink text-paper-dim hover:text-paper"
+                        }`}
+                      >
+                        {day.label.slice(0, 3)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

@@ -10,6 +10,7 @@ import {
   Truck,
 } from "lucide-react";
 import { Brand, BrandSlogan } from "./brand";
+import { ShowroomStatusBadge } from "./showroom-status-badge";
 import { getStoreSettings, DEFAULT_FOOTER_CONFIG } from "@/lib/data/settings";
 
 const currentYear = new Date().getFullYear();
@@ -153,10 +154,10 @@ export async function Footer() {
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-emerald-400">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-                  Open Today · 10:00 AM – 10:00 PM
-                </span>
+                <ShowroomStatusBadge
+                  schedule={shopInfo.schedule}
+                  fallbackHours={shopInfo.hours}
+                />
               </div>
             </div>
 
@@ -168,21 +169,26 @@ export async function Footer() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-paper-dim">
                     Store Location &amp; Visit Address:
                   </span>
-                  <p className="mt-1.5 text-sm font-normal leading-relaxed text-paper">
+                  <p className="mt-1.5 text-[15px] font-normal leading-relaxed text-paper">
                     {shopInfo.address}
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-paper-dim">
-                  <span className="inline-flex items-center gap-1.5 rounded-sm border border-ink-border bg-ink px-2.5 py-1 font-mono text-[10px] uppercase text-paper-dim">
-                    Floor 1 · Shahabuddin Plaza
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-sm border border-ink-border bg-ink px-2.5 py-1 font-mono text-[10px] uppercase text-paper-dim">
-                    Ring Road, Mohammadpur
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-sm border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-1 font-mono text-[10px] uppercase text-emerald-400">
-                    Live Fit Trial &amp; COD Pickup
-                  </span>
-                </div>
+                {shopInfo.locationBadges && shopInfo.locationBadges.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-paper-dim">
+                    {shopInfo.locationBadges.map((badge) => (
+                      <span
+                        key={badge.id || badge.label}
+                        className={
+                          badge.highlight
+                            ? "inline-flex items-center gap-1.5 rounded-sm border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-1 font-mono text-[10px] uppercase text-emerald-400"
+                            : "inline-flex items-center gap-1.5 rounded-sm border border-ink-border bg-ink px-2.5 py-1 font-mono text-[10px] uppercase text-paper-dim"
+                        }
+                      >
+                        {badge.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Right Column: Direct Hotline Buttons & Concierge */}

@@ -68,6 +68,40 @@ export interface FooterSocialsConfig {
   telegram: FooterSocialItem;
 }
 
+export interface LocationBadgeItem {
+  id: string;
+  label: string;
+  highlight?: boolean;
+}
+
+export type ShowroomStatusMode = "auto" | "force_open" | "force_closed";
+
+export interface ShowroomScheduleConfig {
+  mode: ShowroomStatusMode;
+  openTime: string; // "10:00"
+  closeTime: string; // "22:00"
+  daysNotice: string; // "Open 7 Days"
+  closedNotice?: string; // "Closed Now · Opens at 10:00 AM"
+  openDays: number[]; // [0, 1, 2, 3, 4, 5, 6] (0 = Sunday)
+  timezone?: string; // "Asia/Dhaka"
+}
+
+export const DEFAULT_LOCATION_BADGES: LocationBadgeItem[] = [
+  { id: "loc-badge-1", label: "Floor 1 · Shahabuddin Plaza", highlight: false },
+  { id: "loc-badge-2", label: "Ring Road, Mohammadpur", highlight: false },
+  { id: "loc-badge-3", label: "Live Fit Trial & COD Pickup", highlight: true },
+];
+
+export const DEFAULT_SHOWROOM_SCHEDULE: ShowroomScheduleConfig = {
+  mode: "auto",
+  openTime: "10:00",
+  closeTime: "22:00",
+  daysNotice: "Open 7 Days",
+  closedNotice: "Closed Now · Opens at 10:00 AM",
+  openDays: [0, 1, 2, 3, 4, 5, 6],
+  timezone: "Asia/Dhaka",
+};
+
 export interface FooterShopInfoConfig {
   address: string;
   phone: string;
@@ -75,6 +109,8 @@ export interface FooterShopInfoConfig {
   email: string;
   hours: string;
   aboutText: string;
+  locationBadges: LocationBadgeItem[];
+  schedule: ShowroomScheduleConfig;
 }
 
 export interface FooterCustomConfig {
@@ -134,6 +170,8 @@ export const DEFAULT_FOOTER_CONFIG: FooterCustomConfig = {
     hours: "Open 7 Days · 10:00 AM – 10:00 PM",
     aboutText:
       "Premium football jerseys for those who live the game. Authentic club kits, retro classics, and streetwear-inspired fits crafted with performance fabrics.",
+    locationBadges: DEFAULT_LOCATION_BADGES,
+    schedule: DEFAULT_SHOWROOM_SCHEDULE,
   },
 };
 
@@ -375,7 +413,209 @@ export function normalizeFooterConfig(rawSocialLinks: unknown): FooterCustomConf
         typeof rawShopInfo.aboutText === "string" && rawShopInfo.aboutText.trim()
           ? rawShopInfo.aboutText.trim()
           : DEFAULT_FOOTER_CONFIG.shopInfo.aboutText,
+      locationBadges: parseLocationBadges(rawShopInfo.locationBadges),
+      schedule: parseShowroomSchedule(rawShopInfo.schedule),
     },
+  };
+}
+
+export function formatTime12Hour(time24: string): string {
+  if (!time24) return "";
+  const parts = time24.split(":");
+  let hours = parseInt(parts[0], 10);
+  const minutes = parts[1] || "00";
+  if (isNaN(hours)) return time24;
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  return `${hours}:${minutes} ${ampm}`;
+}
+
+export function parseLocationBadges(raw: unknown): LocationBadgeItem[] {
+  if (!Array.isArray(raw)) {
+    return DEFAULT_LOCATION_BADGES;
+  }
+  const result: LocationBadgeItem[] = [];
+  for (let i = 0; i < raw.length; i++) {
+    const item = raw[i];
+    if (item && typeof item === "object") {
+      const label =
+        typeof (item as Record<string, unknown>).label === "string"
+          ? ((item as Record<string, unknown>).label as string).trim()
+          : "";
+      if (label) {
+        result.push({
+          id:
+            typeof (item as Record<string, unknown>).id === "string"
+              ? ((item as Record<string, unknown>).id as string).trim()
+              : `loc-badge-${i + 1}`,
+          label,
+          highlight: Boolean((item as Record<string, unknown>).highlight),
+        });
+      }
+    } else if (typeof item === "string" && item.trim()) {
+      result.push({
+        id: `loc-badge-${i + 1}`,
+        label: item.trim(),
+        highlight: false,
+      });
+    }
+  }
+  return result;
+}
+
+export function parseShowroomSchedule(raw: unknown): ShowroomScheduleConfig {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return DEFAULT_SHOWROOM_SCHEDULE;
+  }
+  const obj = raw as Record<string, unknown>;
+  const mode =
+    obj.mode === "force_open" || obj.mode === "force_closed" || obj.mode === "auto"
+      ? (obj.mode as ShowroomStatusMode)
+      : DEFAULT_SHOWROOM_SCHEDULE.mode;
+
+  const openTime =
+    typeof obj.openTime === "string" && /^\d{1,2}:\d{2}$/.test(obj.openTime.trim())
+      ? obj.openTime.trim()
+      : DEFAULT_SHOWROOM_SCHEDULE.openTime;
+
+  const closeTime =
+    typeof obj.closeTime === "string" && /^\d{1,2}:\d{2}$/.test(obj.closeTime.trim())
+      ? obj.closeTime.trim()
+      : DEFAULT_SHOWROOM_SCHEDULE.closeTime;
+
+  const daysNotice =
+    typeof obj.daysNotice === "string" && obj.daysNotice.trim()
+      ? obj.daysNotice.trim()
+      : DEFAULT_SHOWROOM_SCHEDULE.daysNotice;
+
+  const closedNotice =
+    typeof obj.closedNotice === "string" && obj.closedNotice.trim()
+      ? obj.closedNotice.trim()
+      : DEFAULT_SHOWROOM_SCHEDULE.closedNotice;
+
+  const openDays =
+    Array.isArray(obj.openDays) && obj.openDays.every((d) => typeof d === "number")
+      ? (obj.openDays as number[])
+      : DEFAULT_SHOWROOM_SCHEDULE.openDays;
+
+  const timezone =
+    typeof obj.timezone === "string" && obj.timezone.trim()
+      ? obj.timezone.trim()
+      : DEFAULT_SHOWROOM_SCHEDULE.timezone;
+
+  return {
+    mode,
+    openTime,
+    closeTime,
+    daysNotice,
+    closedNotice,
+    openDays,
+    timezone,
+  };
+}
+
+export interface StoreStatusResult {
+  isOpen: boolean;
+  statusText: string;
+  badgeVariant: "open" | "closed" | "maintenance";
+}
+
+export function getStoreStatus(
+  schedule: ShowroomScheduleConfig = DEFAULT_SHOWROOM_SCHEDULE,
+  referenceDate: Date = new Date()
+): StoreStatusResult {
+  const { mode, openTime, closeTime, openDays, closedNotice } = schedule;
+
+  const openFormatted = formatTime12Hour(openTime);
+  const closeFormatted = formatTime12Hour(closeTime);
+
+  if (mode === "force_open") {
+    return {
+      isOpen: true,
+      statusText: `Open Today · ${openFormatted} – ${closeFormatted}`,
+      badgeVariant: "open",
+    };
+  }
+
+  if (mode === "force_closed") {
+    return {
+      isOpen: false,
+      statusText: closedNotice || "Temporarily Closed",
+      badgeVariant: "maintenance",
+    };
+  }
+
+  // Automatic calculation based on Asia/Dhaka time
+  let dayOfWeek = referenceDate.getDay();
+  let currentHour = referenceDate.getHours();
+  let currentMinute = referenceDate.getMinutes();
+
+  try {
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: schedule.timezone || "Asia/Dhaka",
+      hour12: false,
+      weekday: "short",
+      hour: "numeric",
+      minute: "numeric",
+    });
+    const parts = formatter.formatToParts(referenceDate);
+    const dayMap: Record<string, number> = {
+      Sun: 0,
+      Mon: 1,
+      Tue: 2,
+      Wed: 3,
+      Thu: 4,
+      Fri: 5,
+      Sat: 6,
+    };
+    for (const part of parts) {
+      if (part.type === "hour") currentHour = parseInt(part.value, 10);
+      if (part.type === "minute") currentMinute = parseInt(part.value, 10);
+      if (part.type === "weekday") {
+        const d = dayMap[part.value];
+        if (typeof d === "number") dayOfWeek = d;
+      }
+    }
+  } catch {
+    // fallback to local if Intl timezone fails
+  }
+
+  if (!openDays.includes(dayOfWeek)) {
+    return {
+      isOpen: false,
+      statusText: "Closed Today",
+      badgeVariant: "closed",
+    };
+  }
+
+  const [openH, openM] = openTime.split(":").map((v) => parseInt(v, 10) || 0);
+  const [closeH, closeM] = closeTime.split(":").map((v) => parseInt(v, 10) || 0);
+
+  const openMinutes = openH * 60 + openM;
+  const closeMinutes = closeH * 60 + closeM;
+  const currentMinutes = currentHour * 60 + currentMinute;
+
+  if (currentMinutes >= openMinutes && currentMinutes < closeMinutes) {
+    return {
+      isOpen: true,
+      statusText: `Open Today · ${openFormatted} – ${closeFormatted}`,
+      badgeVariant: "open",
+    };
+  }
+
+  if (currentMinutes < openMinutes) {
+    return {
+      isOpen: false,
+      statusText: `Closed Now · Opens at ${openFormatted}`,
+      badgeVariant: "closed",
+    };
+  }
+
+  return {
+    isOpen: false,
+    statusText: `Closed Now · Opens Tomorrow at ${openFormatted}`,
+    badgeVariant: "closed",
   };
 }
 
