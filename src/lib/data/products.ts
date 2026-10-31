@@ -327,18 +327,26 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
 
 export async function getProductBySlugForAdmin(slug: string) {
   await connection();
-  return prisma.product.findUnique({
-    where: { slug },
-    include: productDetailInclude,
-  });
+  try {
+    return await prisma.product.findUnique({
+      where: { slug },
+      include: productDetailInclude,
+    });
+  } catch {
+    return null;
+  }
 }
 
 export async function getProductByIdForAdmin(id: string) {
   await connection();
-  return prisma.product.findUnique({
-    where: { id },
-    include: productDetailInclude,
-  });
+  try {
+    return await prisma.product.findUnique({
+      where: { id },
+      include: productDetailInclude,
+    });
+  } catch {
+    return null;
+  }
 }
 
 export async function getRelatedProducts(categoryId: string, excludeProductId: string, limit = 4) {
@@ -363,6 +371,7 @@ export async function getAdminProducts(params: {
 }) {
   await connection();
   const page = Math.max(1, params.page ?? 1);
+  const pageSize = 10;
   const where: Prisma.ProductWhereInput = {};
 
   if (params.query) {
@@ -380,29 +389,38 @@ export async function getAdminProducts(params: {
     where.type = params.type as JerseyType;
   }
 
-  const pageSize = 10;
-  const [items, total] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      include: {
-        category: true,
-        images: { orderBy: { displayOrder: "asc" }, take: 1 },
-        variants: { select: { stock: true } },
-      },
-      orderBy: [{ createdAt: "desc" }],
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.product.count({ where }),
-  ]);
+  try {
+    const [items, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: {
+          category: true,
+          images: { orderBy: { displayOrder: "asc" }, take: 1 },
+          variants: { select: { stock: true } },
+        },
+        orderBy: [{ createdAt: "desc" }],
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.product.count({ where }),
+    ]);
 
-  return {
-    items,
-    total,
-    page,
-    pageSize,
-    totalPages: Math.max(1, Math.ceil(total / pageSize)),
-  };
+    return {
+      items,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    };
+  } catch {
+    return {
+      items: [],
+      total: 0,
+      page,
+      pageSize,
+      totalPages: 1,
+    };
+  }
 }
 
 export async function getLowStockProducts(threshold = 5) {
