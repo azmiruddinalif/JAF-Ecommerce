@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ interface BlogPostRow extends BlogPostFormValues {
 const dateFormatter = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric" });
 
 export function BlogManager({ posts }: { posts: BlogPostRow[] }) {
+  const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -26,13 +28,18 @@ export function BlogManager({ posts }: { posts: BlogPostRow[] }) {
     setError(null);
     startTransition(async () => {
       const result = await deleteBlogPostAction(id);
-      if (!result.success) setError(result.message);
+      if (!result.success) {
+        setError(result.message);
+      } else {
+        router.refresh();
+      }
     });
   }
 
   function togglePublished(id: string) {
     startTransition(async () => {
       await toggleBlogPostPublishedAction(id);
+      router.refresh();
     });
   }
 

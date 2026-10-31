@@ -8,7 +8,12 @@ import { AddToCartForm } from "@/components/product/add-to-cart-form";
 import { ProductGrid } from "@/components/products/product-grid";
 import { ProductGridSkeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { getClubTypeLabel, isClubCategory, JERSEY_TYPE_LABELS } from "@/lib/constants";
+import {
+  getClubTypeLabel,
+  getSubTypeFromTags,
+  isClubCategory,
+  JERSEY_TYPE_LABELS,
+} from "@/lib/constants";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -85,7 +90,10 @@ export default async function ProductPage({
 
   const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
   const isClub = isClubCategory(product.category);
-  const visibleTags = product.tags.filter((t) => !t.toLowerCase().startsWith("club-type:"));
+  const subTypeLabel = getSubTypeFromTags(product.tags);
+  const visibleTags = product.tags.filter(
+    (t) => !t.toLowerCase().startsWith("club-type:") && !t.toLowerCase().startsWith("sub-type:")
+  );
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -127,10 +135,12 @@ export default async function ProductPage({
         />
 
         <div>
-          <div className="mb-3 flex items-center gap-2">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
             <Badge variant="neutral">{product.category.name}</Badge>
-            {isClub && (
+            {isClub ? (
               <Badge variant="neutral">{getClubTypeLabel(product.type, product.tags)}</Badge>
+            ) : (
+              subTypeLabel && <Badge variant="neutral">{subTypeLabel}</Badge>
             )}
             {product.newArrival && <Badge variant="emerald">New Arrival</Badge>}
             {totalStock === 0 && <Badge variant="danger">Sold Out</Badge>}

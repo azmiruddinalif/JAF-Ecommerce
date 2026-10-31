@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import { ArrowDown, ArrowUp, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { Input, Textarea, Select, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -124,7 +124,9 @@ export function SettingsForm({
   settings: StoreSettingsView;
   products: { id: string; name: string; sku: string }[];
 }) {
-  const [state, formAction, isPending] = useActionState(updateStoreSettingsAction, initialState);
+  const [state, formAction, isActionPending] = useActionState(updateStoreSettingsAction, initialState);
+  const [isSubmitTransition, startSubmitTransition] = useTransition();
+  const isPending = isActionPending || isSubmitTransition;
   const [slot1, slot2, slot3] = settings.heroShowcaseProductIds;
 
   const hc = settings.heroConfig;
@@ -274,7 +276,16 @@ export function SettingsForm({
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        startSubmitTransition(() => {
+          formAction(formData);
+        });
+      }}
+      className="flex flex-col gap-6"
+    >
       <input type="hidden" name="heroButtonsJson" value={JSON.stringify(heroButtons)} />
       <input type="hidden" name="heroPromoSlidesJson" value={JSON.stringify(promoSlides)} />
 

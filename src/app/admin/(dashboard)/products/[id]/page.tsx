@@ -1,5 +1,7 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { getAllCategories } from "@/lib/data/categories";
 import { getProductByIdForAdmin } from "@/lib/data/products";
 import { ProductForm } from "@/components/admin/product-form";
@@ -22,7 +24,26 @@ async function EditProductContent({
   if (!product) notFound();
 
   return (
-    <>
+    <div className="max-w-4xl">
+      <div className="mb-4 flex items-center justify-between">
+        <Link
+          href="/admin/products"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-paper-dim hover:text-gold"
+        >
+          <ArrowLeft size={14} /> Back to Products
+        </Link>
+        {product.published && (
+          <Link
+            href={`/product/${product.slug}`}
+            target="_blank"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold hover:underline"
+          >
+            View Live Product <ExternalLink size={13} />
+          </Link>
+        )}
+      </div>
+      <h1 className="mb-8 font-display text-3xl">EDIT PRODUCT</h1>
+
       <section className="mb-10">
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-paper-dim">
           Images
@@ -71,7 +92,7 @@ async function EditProductContent({
           }}
         />
       </section>
-    </>
+    </div>
   );
 }
 
@@ -81,11 +102,8 @@ export default function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <div className="max-w-4xl">
-      <h1 className="mb-8 font-display text-3xl">EDIT PRODUCT</h1>
-      <Suspense fallback={<div className="h-96 animate-pulse bg-ink-raised" />}>
-        <EditProductContent params={params} />
-      </Suspense>
-    </div>
+    <Suspense fallback={<div className="h-96 max-w-4xl animate-pulse bg-ink-raised" />}>
+      <EditProductContent params={params} />
+    </Suspense>
   );
 }

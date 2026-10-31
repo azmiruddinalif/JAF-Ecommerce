@@ -4,7 +4,13 @@ import { ArrowUpRight } from "lucide-react";
 import { formatCents } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import type { ProductListItem } from "@/lib/data/products";
-import { AVAILABLE_SIZES, getClubTypeLabel, isClubCategory } from "@/lib/constants";
+import {
+  AVAILABLE_SIZES,
+  getClubTypeLabel,
+  getSubTypeFromTags,
+  isClubCategory,
+  isNoSizeVariant,
+} from "@/lib/constants";
 
 export function ProductCard({ product }: { product: ProductListItem }) {
   const primaryImage = product.images[0];
@@ -21,8 +27,16 @@ export function ProductCard({ product }: { product: ProductListItem }) {
       )
     : 0;
 
-  const stockBySize = new Map(product.variants.map((v) => [v.size, v.stock]));
-  const sizes = AVAILABLE_SIZES.filter((size) => stockBySize.has(size));
+  const stockBySize = new Map(
+    product.variants
+      .filter((v) => !isNoSizeVariant(v.size))
+      .map((v) => [v.size, v.stock])
+  );
+  const orderedSizes = AVAILABLE_SIZES.filter((size) => stockBySize.has(size));
+  const extraSizes = [...stockBySize.keys()].filter(
+    (s) => !(AVAILABLE_SIZES as readonly string[]).includes(s)
+  );
+  const sizes = [...orderedSizes, ...extraSizes];
 
   return (
     <Link href={`/product/${product.slug}`} className="group flex flex-col">
@@ -70,7 +84,9 @@ export function ProductCard({ product }: { product: ProductListItem }) {
         <span className="text-[11px] uppercase tracking-widest text-paper-dim">
           {isClubCategory(product.category)
             ? `${product.category.name} · ${getClubTypeLabel(product.type, product.tags)}`
-            : product.category.name}
+            : getSubTypeFromTags(product.tags)
+              ? `${product.category.name} · ${getSubTypeFromTags(product.tags)}`
+              : product.category.name}
         </span>
         <h3 className="text-sm font-medium text-paper group-hover:text-gold">
           {product.name}

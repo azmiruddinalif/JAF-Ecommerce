@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Input, Textarea, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,14 +30,32 @@ export interface BlogPostFormValues {
 }
 
 export function BlogPostForm({ post, onDone }: { post?: BlogPostFormValues; onDone?: () => void }) {
+  const router = useRouter();
   const action = post ? updateBlogPostAction.bind(null, post.id) : createBlogPostAction;
-  const [state, formAction, isPending] = useActionState(action, initialState);
+  const [state, formAction, isActionPending] = useActionState(action, initialState);
+  const [isSubmitTransition, startSubmitTransition] = useTransition();
+  const isPending = isActionPending || isSubmitTransition;
+
+  const onDoneRef = useRef(onDone);
+  useEffect(() => {
+    onDoneRef.current = onDone;
+  }, [onDone]);
+
+  useEffect(() => {
+    if (state.success) {
+      router.refresh();
+      onDoneRef.current?.();
+    }
+  }, [state.success, router]);
 
   return (
     <form
-      action={async (formData) => {
-        await formAction(formData);
-        onDone?.();
+      onSubmit={(e) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        startSubmitTransition(() => {
+          formAction(formData);
+        });
       }}
       className="flex flex-col gap-4"
     >

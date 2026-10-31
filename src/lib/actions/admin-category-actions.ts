@@ -17,11 +17,15 @@ export interface CategoryActionResult {
 }
 
 function parseCategoryForm(formData: FormData) {
+  const nameRaw = formData.get("name")?.toString().trim() ?? "";
+  const slugRaw = formData.get("slug")?.toString().trim() ?? "";
+  const normalizedSlug = slugify(slugRaw || nameRaw);
+
   return categorySchema.safeParse({
-    name: formData.get("name")?.toString() ?? "",
-    slug: formData.get("slug")?.toString() ?? "",
+    name: nameRaw,
+    slug: normalizedSlug,
     description: formData.get("description")?.toString() ?? "",
-    displayOrder: formData.get("displayOrder")?.toString() ?? "0",
+    displayOrder: formData.get("displayOrder")?.toString() || "0",
     enabled: formData.get("enabled") === "on",
   });
 }
@@ -90,8 +94,11 @@ export async function createCategoryAction(
     }
 
     revalidatePath("/admin/categories");
-    revalidatePath("/");
+    revalidatePath("/admin/products");
+    revalidatePath("/admin/products/new");
+    revalidatePath("/admin", "layout");
     revalidatePath("/shop");
+    revalidatePath("/", "layout");
 
     return { success: true, message: "Category created." };
   } catch (error) {
@@ -164,8 +171,11 @@ export async function updateCategoryAction(
     }
 
     revalidatePath("/admin/categories");
-    revalidatePath("/");
+    revalidatePath("/admin/products");
+    revalidatePath("/admin/products/new");
+    revalidatePath("/admin", "layout");
     revalidatePath("/shop");
+    revalidatePath("/", "layout");
 
     return { success: true, message: "Category updated." };
   } catch (error) {
@@ -189,7 +199,8 @@ export async function deleteCategoryAction(categoryId: string): Promise<Category
       await imageStorage.remove(category.imagePublicId).catch(() => {});
     }
     revalidatePath("/admin/categories");
-    revalidatePath("/");
+    revalidatePath("/admin", "layout");
+    revalidatePath("/", "layout");
     return { success: true, message: "Category deleted." };
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
@@ -214,7 +225,8 @@ export async function toggleCategoryEnabledAction(categoryId: string): Promise<C
 
   await prisma.category.update({ where: { id: categoryId }, data: { enabled: !category.enabled } });
   revalidatePath("/admin/categories");
-  revalidatePath("/");
+  revalidatePath("/admin", "layout");
+  revalidatePath("/", "layout");
 
   return { success: true, message: "Updated." };
 }
@@ -269,5 +281,41 @@ export async function createQuickCategoryAction(rawName: string): Promise<Catego
     };
   } catch {
     return { success: false, message: "Could not create option." };
+  }
+}
+
+export async function ensurePresetCategoriesAction(
+  presets: { name: string; slug: string; description: string; displayOrder: number }[]
+): Promise<CategoryActionResult> {
+  try {
+    await requireAdminSession();
+  } catch {
+    return { success: false, message: "You must be signed in as an admin." };
+  }
+
+  try {
+    for (const preset of presets) {
+      await prisma.category.upsert({
+        where: { slug: preset.slug },
+        update: {},
+        create: {
+          name: preset.name,
+          slug: preset.slug,
+          description: preset.description,
+          displayOrder: preset.displayOrder,
+          enabled: true,
+        },
+      });
+    }
+
+    revalidatePath("/admin/categories");
+    revalidatePath("/admin/products");
+    revalidatePath("/admin/products/new");
+    revalidatePath("/shop");
+    revalidatePath("/");
+
+    return { success: true, message: "Preset product categories added." };
+  } catch {
+    return { success: false, message: "Could not add preset categories." };
   }
 }

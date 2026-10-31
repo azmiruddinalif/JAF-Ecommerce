@@ -2,8 +2,11 @@
 
 import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
-import { ArrowDown, ArrowUp, Star, Trash2, UploadCloud } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Star, Trash2, UploadCloud } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
+  addProductImageUrlAction,
   deleteProductImageAction,
   reorderProductImagesAction,
   setPrimaryProductImageAction,
@@ -22,6 +25,7 @@ export function ImageUploader({ productId, images }: { productId: string; images
   const [isPending, startTransition] = useTransition();
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageUrlInput, setImageUrlInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   function uploadFiles(files: FileList | File[]) {
@@ -38,6 +42,20 @@ export function ImageUploader({ productId, images }: { productId: string; images
           setError(result.message);
           break;
         }
+      }
+    });
+  }
+
+  function handleAddUrl() {
+    const trimmed = imageUrlInput.trim();
+    if (!trimmed) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await addProductImageUrlAction(productId, trimmed);
+      if (!result.success) {
+        setError(result.message);
+      } else {
+        setImageUrlInput("");
       }
     });
   }
@@ -93,6 +111,29 @@ export function ImageUploader({ productId, images }: { productId: string; images
           className="hidden"
           onChange={(e) => e.target.files && uploadFiles(e.target.files)}
         />
+      </div>
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <Input
+          value={imageUrlInput}
+          onChange={(e) => setImageUrlInput(e.target.value)}
+          placeholder="Or paste direct image URL (https://...)"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleAddUrl();
+            }
+          }}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isPending}
+          onClick={handleAddUrl}
+          className="shrink-0"
+        >
+          <Plus size={14} /> ADD IMAGE URL
+        </Button>
       </div>
 
       {error && <p className="border border-danger/40 bg-danger/10 px-4 py-2 text-sm text-danger">{error}</p>}
