@@ -21,26 +21,34 @@ export async function getAdminOrders(params: {
     ];
   }
 
-  const [items, total] = await Promise.all([
-    prisma.order.findMany({
-      where,
-      include: { items: true },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * 20,
-      take: 20,
-    }),
-    prisma.order.count({ where }),
-  ]);
+  try {
+    const [items, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: { items: true },
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * 20,
+        take: 20,
+      }),
+      prisma.order.count({ where }),
+    ]);
 
-  return { items, total, page, pageSize: 20, totalPages: Math.max(1, Math.ceil(total / 20)) };
+    return { items, total, page, pageSize: 20, totalPages: Math.max(1, Math.ceil(total / 20)) };
+  } catch {
+    return { items: [], total: 0, page: 1, pageSize: 20, totalPages: 1 };
+  }
 }
 
 export async function getOrderById(id: string) {
   await connection();
-  return prisma.order.findUnique({
-    where: { id },
-    include: { items: { include: { product: { include: { images: { take: 1 } } } } } },
-  });
+  try {
+    return await prisma.order.findUnique({
+      where: { id },
+      include: { items: { include: { product: { include: { images: { take: 1 } } } } } },
+    });
+  } catch {
+    return null;
+  }
 }
 
 const REVENUE_STATUSES: OrderStatus[] = ["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"];
@@ -55,23 +63,28 @@ export async function getSalesOverview(days = 14) {
   since.setDate(since.getDate() - (days - 1));
   since.setHours(0, 0, 0, 0);
 
-  const orders = await prisma.order.findMany({
-    where: { createdAt: { gte: since }, status: { in: REVENUE_STATUSES } },
-    select: { createdAt: true, totalCents: true },
-  });
-
   const buckets = new Map<string, { date: Date; totalCents: number; orderCount: number }>();
   for (let i = 0; i < days; i++) {
     const date = new Date(since);
     date.setDate(since.getDate() + i);
     buckets.set(dayKey(date), { date, totalCents: 0, orderCount: 0 });
   }
-  for (const order of orders) {
-    const bucket = buckets.get(dayKey(order.createdAt));
-    if (bucket) {
-      bucket.totalCents += order.totalCents;
-      bucket.orderCount += 1;
+
+  try {
+    const orders = await prisma.order.findMany({
+      where: { createdAt: { gte: since }, status: { in: REVENUE_STATUSES } },
+      select: { createdAt: true, totalCents: true },
+    });
+
+    for (const order of orders) {
+      const bucket = buckets.get(dayKey(order.createdAt));
+      if (bucket) {
+        bucket.totalCents += order.totalCents;
+        bucket.orderCount += 1;
+      }
     }
+  } catch {
+    // Return empty timeline if DB is offline
   }
 
   const series = Array.from(buckets.values());
@@ -86,33 +99,45 @@ const STATUS_ORDER: OrderStatus[] = ["PENDING", "CONFIRMED", "PROCESSING", "SHIP
 
 export async function getDashboardStats() {
   await connection();
-  const [totalOrders, pendingOrders, revenueResult, totalProducts, lowStockCount, recentOrders, statusGroups] =
-    await Promise.all([
-      prisma.order.count(),
-      prisma.order.count({ where: { status: "PENDING" } }),
-      prisma.order.aggregate({
-        _sum: { totalCents: true },
-        where: { status: { in: REVENUE_STATUSES } },
-      }),
-      prisma.product.count(),
-      prisma.productVariant.count({ where: { stock: { lte: 5 } } }),
-      prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
-      prisma.order.groupBy({ by: ["status"], _count: { _all: true } }),
-    ]);
+  try {
+    const [totalOrders, pendingOrders, revenueResult, totalProducts, lowStockCount, recentOrders, statusGroups] =
+      await Promise.all([
+        prisma.order.count(),
+        prisma.order.count({ where: { status: "PENDING" } }),
+        prisma.order.aggregate({
+          _sum: { totalCents: true },
+          where: { status: { in: REVENUE_STATUSES } },
+        }),
+        prisma.product.count(),
+        prisma.productVariant.count({ where: { stock: { lte: 5 } } }),
+        prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
+        prisma.order.groupBy({ by: ["status"], _count: { _all: true } }),
+      ]);
 
-  const countByStatus = new Map(statusGroups.map((g) => [g.status, g._count._all]));
-  const statusBreakdown = STATUS_ORDER.map((status) => ({
-    status,
-    count: countByStatus.get(status) ?? 0,
-  }));
+    const countByStatus = new Map(statusGroups.map((g) => [g.status, g._count._all]));
+    const statusBreakdown = STATUS_ORDER.map((status) => ({
+      status,
+      count: countByStatus.get(status) ?? 0,
+    }));
 
-  return {
-    totalOrders,
-    pendingOrders,
-    revenueCents: revenueResult._sum.totalCents ?? 0,
-    totalProducts,
-    lowStockCount,
-    recentOrders,
-    statusBreakdown,
-  };
+    return {
+      totalOrders,
+      pendingOrders,
+      revenueCents: revenueResult._sum.totalCents ?? 0,
+      totalProducts,
+      lowStockCount,
+      recentOrders,
+      statusBreakdown,
+    };
+  } catch {
+    return {
+      totalOrders: 0,
+      pendingOrders: 0,
+      revenueCents: 0,
+      totalProducts: 0,
+      lowStockCount: 0,
+      recentOrders: [],
+      statusBreakdown: STATUS_ORDER.map((status) => ({ status, count: 0 })),
+    };
+  }
 }

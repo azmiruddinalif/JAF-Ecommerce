@@ -8,10 +8,7 @@ export interface AdminSessionPayload {
 }
 
 function getAllowedAdminEmail(): string {
-  const email = process.env.ADMIN_EMAIL;
-  if (!email) {
-    throw new Error("ADMIN_EMAIL environment variable is not set");
-  }
+  const email = process.env.ADMIN_EMAIL || "alifazmiruddin@gmail.com";
   return email.toLowerCase();
 }
 

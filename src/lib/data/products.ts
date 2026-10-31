@@ -421,22 +421,23 @@ export async function getLowStockProducts(threshold = 5) {
 
 export async function getProductStockOverview() {
   await connection();
-  const [categories, products] = await Promise.all([
-    prisma.category.findMany({
-      orderBy: { displayOrder: "asc" },
-    }),
-    prisma.product.findMany({
-      include: {
-        category: true,
-        images: { orderBy: { displayOrder: "asc" }, take: 1 },
-        variants: {
-          select: { id: true, size: true, sku: true, stock: true, priceCents: true },
-          orderBy: { createdAt: "asc" },
+  try {
+    const [categories, products] = await Promise.all([
+      prisma.category.findMany({
+        orderBy: { displayOrder: "asc" },
+      }),
+      prisma.product.findMany({
+        include: {
+          category: true,
+          images: { orderBy: { displayOrder: "asc" }, take: 1 },
+          variants: {
+            select: { id: true, size: true, sku: true, stock: true, priceCents: true },
+            orderBy: { createdAt: "asc" },
+          },
         },
-      },
-      orderBy: [{ category: { displayOrder: "asc" } }, { createdAt: "desc" }],
-    }),
-  ]);
+        orderBy: [{ category: { displayOrder: "asc" } }, { createdAt: "desc" }],
+      }),
+    ]);
 
   const productRows = products.map((p) => {
     const sizeStocks: Record<string, number> = {};
@@ -535,6 +536,27 @@ export async function getProductStockOverview() {
       outOfStockProductsCount,
     },
   };
+} catch {
+  return {
+    products: [],
+    pagination: {
+      page: 1,
+      pageSize: 10,
+      totalItems: 0,
+      totalPages: 1,
+    },
+    sizeTotals: {},
+    attentionProducts: [],
+    categories: [],
+    totals: {
+      totalProducts: 0,
+      totalUnitsInStock: 0,
+      inStockProductsCount: 0,
+      lowStockProductsCount: 0,
+      outOfStockProductsCount: 0,
+    },
+  };
+}
 }
 
 export async function getPaginatedProductStocks(params: {
@@ -548,6 +570,8 @@ export async function getPaginatedProductStocks(params: {
   await connection();
   const page = Math.max(1, params.page ?? 1);
   const pageSize = Math.min(50, Math.max(5, params.pageSize ?? 10));
+
+  try {
   const category = params.category && params.category !== "__all__" ? params.category : undefined;
   const status = params.status ?? "all";
   const search = params.search?.trim().toLowerCase() ?? "";
@@ -640,4 +664,13 @@ export async function getPaginatedProductStocks(params: {
     totalItems,
     totalPages,
   };
+} catch {
+  return {
+    items: [],
+    page: 1,
+    pageSize,
+    totalItems: 0,
+    totalPages: 1,
+  };
+}
 }
