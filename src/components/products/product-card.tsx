@@ -27,16 +27,26 @@ export function ProductCard({ product }: { product: ProductListItem }) {
       )
     : 0;
 
-  const stockBySize = new Map(
-    product.variants
-      .filter((v) => !isNoSizeVariant(v.size))
-      .map((v) => [v.size, v.stock])
-  );
-  const orderedSizes = AVAILABLE_SIZES.filter((size) => stockBySize.has(size));
-  const extraSizes = [...stockBySize.keys()].filter(
-    (s) => !(AVAILABLE_SIZES as readonly string[]).includes(s)
-  );
-  const sizes = [...orderedSizes, ...extraSizes];
+  // Check if product has sized variants (not 'ONE SIZE' / 'NO SIZE')
+  const hasSizedVariants = product.variants.some((v) => !isNoSizeVariant(v.size));
+
+  const stockByUpperSize = new Map<string, number>();
+  for (const v of product.variants) {
+    if (!isNoSizeVariant(v.size)) {
+      const key = v.size.trim().toUpperCase();
+      stockByUpperSize.set(key, (stockByUpperSize.get(key) ?? 0) + v.stock);
+    }
+  }
+
+  // Display all standard sizes (S, M, L, XL, XXL, 3XL, 4XL, 5XL) plus extra custom sizes as per PDP
+  const sizes = hasSizedVariants
+    ? [
+        ...AVAILABLE_SIZES,
+        ...[...stockByUpperSize.keys()].filter(
+          (k) => !(AVAILABLE_SIZES as readonly string[]).map((s) => s.toUpperCase()).includes(k),
+        ),
+      ]
+    : [];
 
   return (
     <Link href={`/product/${product.slug}`} className="group flex flex-col">
@@ -95,14 +105,20 @@ export function ProductCard({ product }: { product: ProductListItem }) {
         {sizes.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {sizes.map((size) => {
-              const outOfStock = stockBySize.get(size) === 0;
+              const stock = stockByUpperSize.get(size.toUpperCase()) ?? 0;
+              const isAvailable = stock > 0;
               return (
                 <span
                   key={size}
-                  className={`flex h-5 min-w-5 items-center justify-center border px-1 text-[10px] font-medium ${
-                    outOfStock
-                      ? "border-ink-border text-paper-dim/40 line-through"
-                      : "border-ink-border text-paper-dim"
+                  title={
+                    isAvailable
+                      ? `Size ${size} (${stock} in stock)`
+                      : `Size ${size} — Unavailable`
+                  }
+                  className={`flex h-5 min-w-5 items-center justify-center border px-1 text-[10px] font-medium transition-colors ${
+                    isAvailable
+                      ? "border-ink-border bg-ink-raised/60 text-paper-dim"
+                      : "border-ink-border/30 bg-ink/30 text-paper-dim/35 line-through opacity-45 cursor-not-allowed"
                   }`}
                 >
                   {size}
