@@ -138,29 +138,52 @@ export async function getShopProducts(filters: ShopFilters) {
   const where = buildWhere(filters);
   const sort = filters.sort ?? "newest";
 
-  // For effective-price and biggest-discount sorting, sort across matching products accurately
-  if (sort === "price-asc" || sort === "price-desc" || sort === "discount") {
-    const allItems = await prisma.product.findMany({
-      where,
-      orderBy: [{ createdAt: "desc" }],
-      include: productListInclude,
-    });
+  try {
+    // For effective-price and biggest-discount sorting, sort across matching products accurately
+    if (sort === "price-asc" || sort === "price-desc" || sort === "discount") {
+      const allItems = await prisma.product.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }],
+        include: productListInclude,
+      });
 
-    allItems.sort((a, b) => {
-      if (sort === "price-asc") {
+      allItems.sort((a, b) => {
+        if (sort === "price-asc") {
+          return getEffectivePriceCents(a) - getEffectivePriceCents(b);
+        }
+        if (sort === "price-desc") {
+          return getEffectivePriceCents(b) - getEffectivePriceCents(a);
+        }
+        // discount
+        const diff = getDiscountRatio(b) - getDiscountRatio(a);
+        if (diff !== 0) return diff;
         return getEffectivePriceCents(a) - getEffectivePriceCents(b);
-      }
-      if (sort === "price-desc") {
-        return getEffectivePriceCents(b) - getEffectivePriceCents(a);
-      }
-      // discount
-      const diff = getDiscountRatio(b) - getDiscountRatio(a);
-      if (diff !== 0) return diff;
-      return getEffectivePriceCents(a) - getEffectivePriceCents(b);
-    });
+      });
 
-    const total = allItems.length;
-    const items = allItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+      const total = allItems.length;
+      const items = allItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+      return {
+        items,
+        total,
+        page,
+        pageSize: PAGE_SIZE,
+        totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+      };
+    }
+
+    const orderBy = buildOrderBy(sort);
+
+    const [items, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy,
+        include: productListInclude,
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+      }),
+      prisma.product.count({ where }),
+    ]);
 
     return {
       items,
@@ -169,38 +192,29 @@ export async function getShopProducts(filters: ShopFilters) {
       pageSize: PAGE_SIZE,
       totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
     };
+  } catch {
+    return {
+      items: [],
+      total: 0,
+      page,
+      pageSize: PAGE_SIZE,
+      totalPages: 1,
+    };
   }
-
-  const orderBy = buildOrderBy(sort);
-
-  const [items, total] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      orderBy,
-      include: productListInclude,
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-    }),
-    prisma.product.count({ where }),
-  ]);
-
-  return {
-    items,
-    total,
-    page,
-    pageSize: PAGE_SIZE,
-    totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
-  };
 }
 
 export async function getFeaturedProducts(limit = 8) {
   await connection();
-  return prisma.product.findMany({
-    where: { published: true, featured: true },
-    orderBy: { createdAt: "desc" },
-    include: productListInclude,
-    take: limit,
-  });
+  try {
+    return await prisma.product.findMany({
+      where: { published: true, featured: true },
+      orderBy: { createdAt: "desc" },
+      include: productListInclude,
+      take: limit,
+    });
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -219,62 +233,74 @@ export async function getHeroShowcaseProducts(
 ): Promise<(ProductListItem | null)[]> {
   await connection();
   const slots = Array.from({ length: limit }, (_, i) => curatedIds[i] ?? null);
-  const explicitIds = [...new Set(slots.filter((id): id is string => Boolean(id)))];
+  try {
+    const explicitIds = [...new Set(slots.filter((id): id is string => Boolean(id)))];
 
-  const explicitProducts = explicitIds.length
-    ? await prisma.product.findMany({
-        where: { id: { in: explicitIds }, published: true },
-        include: productListInclude,
-      })
-    : [];
-  const byId = new Map(explicitProducts.map((p) => [p.id, p]));
+    const explicitProducts = explicitIds.length
+      ? await prisma.product.findMany({
+          where: { id: { in: explicitIds }, published: true },
+          include: productListInclude,
+        })
+      : [];
+    const byId = new Map(explicitProducts.map((p) => [p.id, p]));
 
-  const autoNeeded = slots.filter((id) => !id || !byId.has(id)).length;
-  let autoPool: ProductListItem[] = [];
-  if (autoNeeded > 0) {
-    const tiers: Prisma.ProductWhereInput[] = [
-      { showInHeroBanner: true },
-      { featured: true },
-      {},
-    ];
-    for (const tierWhere of tiers) {
-      if (autoPool.length >= autoNeeded) break;
-      const excludeIds = [...explicitIds, ...autoPool.map((p) => p.id)];
-      const more = await prisma.product.findMany({
-        where: { published: true, id: { notIn: excludeIds }, ...tierWhere },
-        orderBy: { createdAt: "desc" },
-        include: productListInclude,
-        take: autoNeeded - autoPool.length,
-      });
-      autoPool = [...autoPool, ...more];
+    const autoNeeded = slots.filter((id) => !id || !byId.has(id)).length;
+    let autoPool: ProductListItem[] = [];
+    if (autoNeeded > 0) {
+      const tiers: Prisma.ProductWhereInput[] = [
+        { showInHeroBanner: true },
+        { featured: true },
+        {},
+      ];
+      for (const tierWhere of tiers) {
+        if (autoPool.length >= autoNeeded) break;
+        const excludeIds = [...explicitIds, ...autoPool.map((p) => p.id)];
+        const more = await prisma.product.findMany({
+          where: { published: true, id: { notIn: excludeIds }, ...tierWhere },
+          orderBy: { createdAt: "desc" },
+          include: productListInclude,
+          take: autoNeeded - autoPool.length,
+        });
+        autoPool = [...autoPool, ...more];
+      }
     }
-  }
 
-  let autoIndex = 0;
-  return slots.map((id) => {
-    const explicit = id ? byId.get(id) : undefined;
-    if (explicit) return explicit;
-    return autoPool[autoIndex++] ?? null;
-  });
+    let autoIndex = 0;
+    return slots.map((id) => {
+      const explicit = id ? byId.get(id) : undefined;
+      if (explicit) return explicit;
+      return autoPool[autoIndex++] ?? null;
+    });
+  } catch {
+    return slots.map(() => null);
+  }
 }
 
 export async function getPublishedProductOptions() {
   await connection();
-  return prisma.product.findMany({
-    where: { published: true },
-    select: { id: true, name: true, sku: true },
-    orderBy: { name: "asc" },
-  });
+  try {
+    return await prisma.product.findMany({
+      where: { published: true },
+      select: { id: true, name: true, sku: true },
+      orderBy: { name: "asc" },
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getNewArrivals(limit = 8) {
   await connection();
-  return prisma.product.findMany({
-    where: { published: true, newArrival: true },
-    orderBy: { createdAt: "desc" },
-    include: productListInclude,
-    take: limit,
-  });
+  try {
+    return await prisma.product.findMany({
+      where: { published: true, newArrival: true },
+      orderBy: { createdAt: "desc" },
+      include: productListInclude,
+      take: limit,
+    });
+  } catch {
+    return [];
+  }
 }
 
 const productDetailInclude = {
@@ -289,10 +315,14 @@ export type ProductDetail = Prisma.ProductGetPayload<{
 
 export async function getProductBySlug(slug: string): Promise<ProductDetail | null> {
   await connection();
-  return prisma.product.findFirst({
-    where: { slug, published: true },
-    include: productDetailInclude,
-  });
+  try {
+    return await prisma.product.findFirst({
+      where: { slug, published: true },
+      include: productDetailInclude,
+    });
+  } catch {
+    return null;
+  }
 }
 
 export async function getProductBySlugForAdmin(slug: string) {

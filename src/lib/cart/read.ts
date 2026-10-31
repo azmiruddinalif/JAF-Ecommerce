@@ -36,44 +36,48 @@ export async function getCartView(): Promise<CartView> {
   const token = await getCartToken();
   if (!token) return EMPTY_CART;
 
-  const cart = await prisma.cart.findUnique({
-    where: { sessionToken: token },
-    include: {
-      items: {
-        include: {
-          product: { include: { images: { orderBy: { displayOrder: "asc" }, take: 1 } } },
-          variant: true,
+  try {
+    const cart = await prisma.cart.findUnique({
+      where: { sessionToken: token },
+      include: {
+        items: {
+          include: {
+            product: { include: { images: { orderBy: { displayOrder: "asc" }, take: 1 } } },
+            variant: true,
+          },
+          orderBy: { createdAt: "asc" },
         },
-        orderBy: { createdAt: "asc" },
       },
-    },
-  });
+    });
 
-  if (!cart) return EMPTY_CART;
+    if (!cart) return EMPTY_CART;
 
-  const lines: CartLineView[] = cart.items.map((item) => {
-    const unitPriceCents =
-      item.variant.priceCents ?? item.product.discountPriceCents ?? item.product.basePriceCents;
+    const lines: CartLineView[] = cart.items.map((item) => {
+      const unitPriceCents =
+        item.variant.priceCents ?? item.product.discountPriceCents ?? item.product.basePriceCents;
+      return {
+        id: item.id,
+        productId: item.productId,
+        productSlug: item.product.slug,
+        productName: item.product.name,
+        variantId: item.variantId,
+        size: item.variant.size,
+        color: item.variant.color,
+        imageUrl: item.product.images[0]?.secureUrl ?? null,
+        unitPriceCents,
+        quantity: item.quantity,
+        lineTotalCents: unitPriceCents * item.quantity,
+        availableStock: item.variant.stock,
+        exceedsStock: item.quantity > item.variant.stock,
+      };
+    });
+
     return {
-      id: item.id,
-      productId: item.productId,
-      productSlug: item.product.slug,
-      productName: item.product.name,
-      variantId: item.variantId,
-      size: item.variant.size,
-      color: item.variant.color,
-      imageUrl: item.product.images[0]?.secureUrl ?? null,
-      unitPriceCents,
-      quantity: item.quantity,
-      lineTotalCents: unitPriceCents * item.quantity,
-      availableStock: item.variant.stock,
-      exceedsStock: item.quantity > item.variant.stock,
+      lines,
+      itemCount: lines.reduce((sum, line) => sum + line.quantity, 0),
+      subtotalCents: lines.reduce((sum, line) => sum + line.lineTotalCents, 0),
     };
-  });
-
-  return {
-    lines,
-    itemCount: lines.reduce((sum, line) => sum + line.quantity, 0),
-    subtotalCents: lines.reduce((sum, line) => sum + line.lineTotalCents, 0),
-  };
+  } catch {
+    return EMPTY_CART;
+  }
 }
