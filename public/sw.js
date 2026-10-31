@@ -1,4 +1,4 @@
-const CACHE_NAME = "jaf-admin-pwa-v2";
+const CACHE_NAME = "jaf-pwa-v3";
 
 self.addEventListener("install", () => {
   self.skipWaiting();

@@ -106,12 +106,15 @@ export function PwaInstallGuideModal({
       <div className="w-full max-w-md border border-ink-border bg-ink-raised p-5 shadow-2xl">
         <div className="mb-3 flex items-center justify-between border-b border-ink-border pb-3">
           <div className="flex items-center gap-2.5">
-            <span className="flex size-8 items-center justify-center border border-gold-bright/50 bg-gold-bright/15 text-gold-bright">
-              <Download size={16} />
-            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/icon-192.png"
+              alt="JAF App Logo"
+              className="size-9 rounded-sm border border-gold-bright/40 bg-ink object-cover shadow-[0_0_12px_rgba(74,222,128,0.2)]"
+            />
             <div>
               <h3 className="font-display text-lg leading-none text-paper">
-                DOWNLOAD JAF ADMIN APP
+                DOWNLOAD JAF APP
               </h3>
               <p className="mt-0.5 text-[11px] text-paper-dim">
                 Install as a standalone app on Phone or Desktop
@@ -142,7 +145,7 @@ export function PwaInstallGuideModal({
                 browser menu).
               </li>
               <li>
-                2. Select <strong className="text-paper">&ldquo;Install JAF Admin&rdquo;</strong> or{" "}
+                2. Select <strong className="text-paper">&ldquo;Install JAF&rdquo;</strong> or{" "}
                 <strong className="text-paper">&ldquo;Install App&rdquo;</strong>.
               </li>
             </ol>
