@@ -89,7 +89,7 @@ async function main() {
       customizable: true,
       showInHeroBanner: true,
       heroBannerLabel: "Arsenal Away 24/25",
-      image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1200&h=1400&fit=crop&q=80&auto=format",
+      image: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=1200&h=1400&fit=crop&q=80&auto=format",
     },
   ];
 

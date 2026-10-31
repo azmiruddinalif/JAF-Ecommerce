@@ -156,7 +156,7 @@ export async function Footer() {
 
         {/* Main Grid: 12-Column Editorial Hierarchy */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-14">
-          {/* Left Column: Brand & Luxury Showroom Experience (5 cols on lg) */}
+          {/* Left Column: Brand & Luxury Story (5 cols on lg) */}
           <div className="flex flex-col gap-5 lg:col-span-5">
             <div className="flex items-center gap-3">
               <div className="relative w-fit">
@@ -202,87 +202,6 @@ export async function Footer() {
                 ))}
               </div>
             )}
-
-            {/* Architectural Flagship Showroom Card */}
-            {shopInfo.address && (
-              <div
-                tabIndex={0}
-                role="region"
-                aria-label="Flagship Showroom & Outlet Location"
-                className="group relative mt-2 flex flex-col gap-3 border border-ink-border bg-ink-raised/80 p-5 backdrop-blur-md transition-all duration-200 hover:border-gold-bright/50 hover:shadow-[0_0_28px_-6px_rgba(74,222,128,0.2)] focus:border-gold-bright focus:outline-none focus:ring-1 focus:ring-gold-bright select-text cursor-text"
-              >
-                <div className="flex items-center justify-between gap-2 border-b border-ink-border pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gold/15 text-gold-bright">
-                      <MapPin size={12} />
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-gold-bright">
-                      Flagship Showroom &amp; Outlet
-                    </span>
-                  </div>
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-paper-dim">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                    Open Today
-                  </span>
-                </div>
-
-                <p className="text-xs leading-relaxed text-paper font-normal">
-                  {shopInfo.address}
-                </p>
-
-                {/* Direct Hotlines Separated */}
-                <div className="flex flex-col gap-1.5 border-t border-ink-border pt-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-paper-dim">
-                    Direct Contact &amp; Order Hotline:
-                  </span>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {shopInfo.phone && (
-                      <a
-                        href={`tel:${shopInfo.phone.replace(/[^0-9+]/g, "")}`}
-                        className="group inline-flex items-center gap-1.5 border border-gold/40 bg-gold/10 px-3 py-1 font-mono text-xs font-bold text-gold-bright transition-colors hover:border-gold-bright hover:bg-gold hover:text-ink"
-                      >
-                        <Phone
-                          size={12}
-                          className="text-gold-bright group-hover:text-ink"
-                        />
-                        <span>{shopInfo.phone}</span>
-                      </a>
-                    )}
-                    {shopInfo.secondaryPhone && (
-                      <a
-                        href={`tel:${shopInfo.secondaryPhone.replace(/[^0-9+]/g, "")}`}
-                        className="group inline-flex items-center gap-1.5 border border-ink-border bg-ink px-3 py-1 font-mono text-xs text-paper-dim transition-colors hover:border-gold hover:text-gold-bright"
-                      >
-                        <Phone
-                          size={12}
-                          className="text-paper-dim group-hover:text-gold-bright"
-                        />
-                        <span>{shopInfo.secondaryPhone}</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-
-                {/* Support Email & Business Hours */}
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ink-border/50 pt-2.5 text-[11px] text-paper-dim">
-                  {shopInfo.email && (
-                    <a
-                      href={`mailto:${shopInfo.email}`}
-                      className="inline-flex items-center gap-1.5 transition-colors hover:text-gold-bright"
-                    >
-                      <Mail size={12} className="text-gold-bright/80" />
-                      <span>{shopInfo.email}</span>
-                    </a>
-                  )}
-                  {shopInfo.hours && (
-                    <span className="inline-flex items-center gap-1.5 text-paper-dim">
-                      <Clock size={12} className="text-gold-bright/80" />
-                      <span>{shopInfo.hours}</span>
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Right Section: Balanced 3-Column Navigation Grid (7 cols on lg) */}
@@ -315,6 +234,119 @@ export async function Footer() {
             ))}
           </div>
         </div>
+
+        {/* FULL WIDTH Architectural Flagship Showroom & Atelier Card */}
+        {shopInfo.address && (
+          <div
+            tabIndex={0}
+            role="region"
+            aria-label="Flagship Showroom & Outlet Location"
+            className="group relative mt-12 w-full border border-ink-border bg-ink-raised/80 p-6 backdrop-blur-md transition-all duration-300 hover:border-gold-bright/40 hover:shadow-[0_0_36px_-8px_rgba(74,222,128,0.18)] focus:border-gold-bright focus:outline-none focus:ring-1 focus:ring-gold-bright select-text cursor-text sm:p-8"
+          >
+            {/* Header Strip with Glowing Badge */}
+            <div className="flex flex-col gap-3 border-b border-ink-border pb-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-7 w-7 items-center justify-center rounded-md border border-gold-bright/30 bg-gold-bright/10 text-gold-bright shadow-[0_0_12px_rgba(74,222,128,0.2)]">
+                  <MapPin size={14} />
+                </span>
+                <div>
+                  <h3 className="font-display text-xs uppercase tracking-wider text-paper sm:text-sm">
+                    Flagship Showroom &amp; Retail Outlet
+                  </h3>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-gold-bright">
+                    Official Physical Store · Dhaka, Bangladesh
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-emerald-400">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                  Open Today · 10:00 AM – 10:00 PM
+                </span>
+              </div>
+            </div>
+
+            {/* 2-Column Spacious Grid: Location & Hotlines */}
+            <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-12 md:gap-8">
+              {/* Left Column: Full Address Description */}
+              <div className="flex flex-col justify-between gap-3 md:col-span-7">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-paper-dim">
+                    Store Location &amp; Visit Address:
+                  </span>
+                  <p className="mt-1 text-sm font-medium leading-relaxed text-paper sm:text-base">
+                    {shopInfo.address}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-paper-dim">
+                  <span className="inline-flex items-center gap-1.5 rounded-sm border border-ink-border bg-ink px-2.5 py-1 font-mono text-[10px] uppercase text-paper-dim">
+                    Floor 1 · Shahabuddin Plaza
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-sm border border-ink-border bg-ink px-2.5 py-1 font-mono text-[10px] uppercase text-paper-dim">
+                    Ring Road, Mohammadpur
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-sm border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-1 font-mono text-[10px] uppercase text-emerald-400">
+                    Live Fit Trial &amp; COD Pickup
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Column: Direct Hotline Buttons & Concierge */}
+              <div className="flex flex-col justify-between gap-4 border-t border-ink-border pt-4 md:col-span-5 md:border-t-0 md:border-l md:border-ink-border md:pl-8 md:pt-0">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gold-bright">
+                    Direct Contact &amp; Order Hotline:
+                  </span>
+                  <div className="mt-2 flex flex-wrap items-center gap-2.5">
+                    {shopInfo.phone && (
+                      <a
+                        href={`tel:${shopInfo.phone.replace(/[^0-9+]/g, "")}`}
+                        className="group inline-flex items-center gap-2 border border-gold-bright/40 bg-gold-bright/10 px-3.5 py-1.5 font-mono text-xs font-bold text-gold-bright transition-all duration-200 hover:border-gold-bright hover:bg-gold-bright/20 hover:text-white hover:shadow-[0_0_16px_rgba(74,222,128,0.25)]"
+                      >
+                        <Phone
+                          size={13}
+                          className="text-gold-bright transition-transform duration-200 group-hover:scale-110"
+                        />
+                        <span>{shopInfo.phone}</span>
+                      </a>
+                    )}
+                    {shopInfo.secondaryPhone && (
+                      <a
+                        href={`tel:${shopInfo.secondaryPhone.replace(/[^0-9+]/g, "")}`}
+                        className="group inline-flex items-center gap-2 border border-gold-bright/40 bg-gold-bright/10 px-3.5 py-1.5 font-mono text-xs font-bold text-gold-bright transition-all duration-200 hover:border-gold-bright hover:bg-gold-bright/20 hover:text-white hover:shadow-[0_0_16px_rgba(74,222,128,0.25)]"
+                      >
+                        <Phone
+                          size={13}
+                          className="text-gold-bright transition-transform duration-200 group-hover:scale-110"
+                        />
+                        <span>{shopInfo.secondaryPhone}</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Email & Hours */}
+                <div className="flex flex-wrap items-center gap-4 text-xs text-paper-dim">
+                  {shopInfo.email && (
+                    <a
+                      href={`mailto:${shopInfo.email}`}
+                      className="group inline-flex items-center gap-2 transition-colors hover:text-gold-bright"
+                    >
+                      <Mail size={13} className="text-gold-bright transition-transform duration-200 group-hover:scale-110" />
+                      <span className="font-mono text-paper-dim group-hover:text-gold-bright">{shopInfo.email}</span>
+                    </a>
+                  )}
+                  {shopInfo.hours && (
+                    <span className="inline-flex items-center gap-2 text-paper-dim">
+                      <Clock size={13} className="text-gold-bright" />
+                      <span className="font-mono">{shopInfo.hours}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 3 Luxury Trust Pillars */}
         <div className="mt-16 grid grid-cols-1 gap-4 border-t border-ink-border pt-10 sm:grid-cols-3 sm:gap-6">
