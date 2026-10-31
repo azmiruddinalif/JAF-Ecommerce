@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ShoppingCart, Clock, Package, AlertTriangle } from "lucide-react";
 import { getDashboardStats, getSalesOverview } from "@/lib/data/orders";
@@ -27,7 +28,7 @@ function TakaIcon({ size = 15 }: { size?: number }) {
   );
 }
 
-export default async function AdminDashboardPage() {
+async function DashboardContent() {
   const [stats, sales] = await Promise.all([getDashboardStats(), getSalesOverview(14)]);
 
   return (
@@ -88,5 +89,13 @@ export default async function AdminDashboardPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AdminDashboardPage() {
+  return (
+    <Suspense fallback={<div className="h-96 animate-pulse bg-ink-raised" />}>
+      <DashboardContent />
+    </Suspense>
   );
 }

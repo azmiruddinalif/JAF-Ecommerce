@@ -170,29 +170,18 @@ export function NavbarClient({
                     key={link.href}
                     href={link.href}
                     aria-current={active ? "page" : undefined}
-                    className={`group relative inline-flex items-center gap-2 border px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright focus-visible:ring-offset-2 focus-visible:ring-offset-ink ${
-                      active
-                        ? "border-gold-bright bg-gold-bright text-ink shadow-[0_0_20px_-2px_var(--color-gold-bright)]"
-                        : "border-gold-bright/70 bg-gold-bright/15 text-gold-bright shadow-[0_0_16px_-4px_var(--color-gold-bright)] hover:-translate-y-0.5 hover:border-gold-bright hover:bg-gold-bright hover:text-ink hover:shadow-[0_0_22px_-2px_var(--color-gold-bright)] focus-visible:border-gold-bright focus-visible:bg-gold-bright focus-visible:text-ink"
-                    }`}
+                    className="group relative inline-flex items-center gap-2 py-1 text-xs font-bold uppercase tracking-widest text-gold-bright transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright focus-visible:ring-offset-4 focus-visible:ring-offset-ink"
                   >
                     <span className="relative flex h-2 w-2">
-                      <span
-                        className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
-                          active
-                            ? "bg-ink"
-                            : "bg-gold-bright group-hover:bg-ink group-focus-visible:bg-ink"
-                        }`}
-                      />
-                      <span
-                        className={`relative inline-flex h-2 w-2 rounded-full ${
-                          active
-                            ? "bg-ink"
-                            : "bg-gold-bright group-hover:bg-ink group-focus-visible:bg-ink"
-                        }`}
-                      />
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold-bright opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-gold-bright" />
                     </span>
                     {link.label}
+                    <span
+                      className={`absolute -bottom-0.5 left-0 h-px bg-gold-bright transition-all duration-300 ${
+                        active ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
                   </Link>
                 );
               }
@@ -303,41 +292,19 @@ export function NavbarClient({
             ))}
 
             {tailLinks.map((link) => {
-              const active = isActiveLink(link.href);
               if (link.highlight) {
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`mt-3 flex items-center justify-between border px-4 py-3.5 text-sm font-bold uppercase tracking-widest transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright focus-visible:ring-offset-2 focus-visible:ring-offset-ink ${
-                      active
-                        ? "border-gold-bright bg-gold-bright text-ink shadow-[0_0_20px_-4px_var(--color-gold-bright)]"
-                        : "border-gold-bright/70 bg-gold-bright/15 text-gold-bright hover:border-gold-bright hover:bg-gold-bright hover:text-ink"
-                    }`}
+                    className="flex items-center gap-2.5 border-b border-ink-border py-4 text-sm font-bold uppercase tracking-widest text-gold-bright transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright"
                   >
-                    <span className="flex items-center gap-2.5">
-                      <span className="relative flex h-2 w-2">
-                        <span
-                          className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
-                            active ? "bg-ink" : "bg-gold-bright"
-                          }`}
-                        />
-                        <span
-                          className={`relative inline-flex h-2 w-2 rounded-full ${
-                            active ? "bg-ink" : "bg-gold-bright"
-                          }`}
-                        />
-                      </span>
-                      {link.label}
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold-bright opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-gold-bright" />
                     </span>
-                    <span
-                      className={`px-2 py-0.5 text-[10px] font-bold tracking-wider ${
-                        active ? "bg-ink text-gold-bright" : "bg-gold-bright text-ink"
-                      }`}
-                    >
-                      HOT
-                    </span>
+                    {link.label}
                   </Link>
                 );
               }

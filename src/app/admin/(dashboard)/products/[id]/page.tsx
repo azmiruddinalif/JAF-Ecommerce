@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getAllCategories } from "@/lib/data/categories";
 import { getProductByIdForAdmin } from "@/lib/data/products";
@@ -5,23 +6,27 @@ import { ProductForm } from "@/components/admin/product-form";
 import { ImageUploader } from "@/components/admin/image-uploader";
 
 export const metadata = { title: "Edit Product", robots: { index: false } };
+export const instant = false;
 
-export default async function EditProductPage({
+async function EditProductContent({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [product, categories] = await Promise.all([getProductByIdForAdmin(id), getAllCategories()]);
+  const [product, categories] = await Promise.all([
+    getProductByIdForAdmin(id),
+    getAllCategories(),
+  ]);
 
   if (!product) notFound();
 
   return (
-    <div className="max-w-4xl">
-      <h1 className="mb-8 font-display text-3xl">EDIT PRODUCT</h1>
-
+    <>
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-paper-dim">Images</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-paper-dim">
+          Images
+        </h2>
         <ImageUploader
           productId={product.id}
           images={product.images.map((img) => ({
@@ -35,9 +40,15 @@ export default async function EditProductPage({
       </section>
 
       <section>
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-paper-dim">Details</h2>
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-paper-dim">
+          Details
+        </h2>
         <ProductForm
-          categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))}
+          categories={categories.map((c) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+          }))}
           product={{
             id: product.id,
             name: product.name,
@@ -60,6 +71,21 @@ export default async function EditProductPage({
           }}
         />
       </section>
+    </>
+  );
+}
+
+export default function EditProductPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <div className="max-w-4xl">
+      <h1 className="mb-8 font-display text-3xl">EDIT PRODUCT</h1>
+      <Suspense fallback={<div className="h-96 animate-pulse bg-ink-raised" />}>
+        <EditProductContent params={params} />
+      </Suspense>
     </div>
   );
 }

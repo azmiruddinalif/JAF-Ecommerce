@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getAdminProducts } from "@/lib/data/products";
@@ -7,11 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/products/pagination";
 
 export const metadata = { title: "Products", robots: { index: false } };
+export const instant = false;
 
-export default async function AdminProductsPage({
+type ProductsSearchParams = {
+  query?: string;
+  category?: string;
+  type?: string;
+  page?: string;
+};
+
+async function ProductsContent({
   searchParams,
 }: {
-  searchParams: Promise<{ query?: string; category?: string; type?: string; page?: string }>;
+  searchParams: Promise<ProductsSearchParams>;
 }) {
   const params = await searchParams;
   const [result, categories] = await Promise.all([
@@ -34,16 +43,7 @@ export default async function AdminProductsPage({
   }
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-display text-3xl">PRODUCTS</h1>
-        <Link href="/admin/products/new">
-          <Button variant="primary">
-            <Plus size={16} /> ADD PRODUCT
-          </Button>
-        </Link>
-      </div>
-
+    <>
       <ProductsTable
         categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
         products={result.items.map((p) => ({
@@ -67,6 +67,29 @@ export default async function AdminProductsPage({
       />
 
       <Pagination page={result.page} totalPages={result.totalPages} buildHref={buildHref} />
+    </>
+  );
+}
+
+export default function AdminProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<ProductsSearchParams>;
+}) {
+  return (
+    <div>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="font-display text-3xl">PRODUCTS</h1>
+        <Link href="/admin/products/new">
+          <Button variant="primary">
+            <Plus size={16} /> ADD PRODUCT
+          </Button>
+        </Link>
+      </div>
+
+      <Suspense fallback={<div className="h-96 animate-pulse bg-ink-raised" />}>
+        <ProductsContent searchParams={searchParams} />
+      </Suspense>
     </div>
   );
 }

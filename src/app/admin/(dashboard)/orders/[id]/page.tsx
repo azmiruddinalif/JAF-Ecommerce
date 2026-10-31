@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getOrderById } from "@/lib/data/orders";
 import { formatCents } from "@/lib/money";
@@ -6,8 +7,9 @@ import { OrderStatusControl } from "@/components/admin/order-status-control";
 import { InvoicePanel } from "@/components/admin/invoice-panel";
 
 export const metadata = { title: "Order Details", robots: { index: false } };
+export const instant = false;
 
-export default async function AdminOrderDetailPage({
+async function OrderDetailContent({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -95,5 +97,17 @@ export default async function AdminOrderDetailPage({
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminOrderDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense fallback={<div className="h-96 max-w-4xl animate-pulse bg-ink-raised" />}>
+      <OrderDetailContent params={params} />
+    </Suspense>
   );
 }

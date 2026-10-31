@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import type { OrderStatus } from "@prisma/client";
 import { getAdminOrders } from "@/lib/data/orders";
@@ -7,6 +8,7 @@ import { Pagination } from "@/components/products/pagination";
 import { Select } from "@/components/ui/input";
 
 export const metadata = { title: "Orders", robots: { index: false } };
+export const instant = false;
 
 const STATUS_OPTIONS: OrderStatus[] = [
   "PENDING",
@@ -17,10 +19,12 @@ const STATUS_OPTIONS: OrderStatus[] = [
   "CANCELLED",
 ];
 
-export default async function AdminOrdersPage({
+type OrdersSearchParams = { query?: string; status?: string; page?: string };
+
+async function OrdersContent({
   searchParams,
 }: {
-  searchParams: Promise<{ query?: string; status?: string; page?: string }>;
+  searchParams: Promise<OrdersSearchParams>;
 }) {
   const params = await searchParams;
   const status = STATUS_OPTIONS.includes(params.status as OrderStatus)
@@ -34,9 +38,7 @@ export default async function AdminOrdersPage({
   });
 
   return (
-    <div>
-      <h1 className="mb-6 font-display text-3xl">ORDERS</h1>
-
+    <>
       <form method="GET" className="mb-6 flex flex-wrap gap-3">
         <input
           type="search"
@@ -133,6 +135,21 @@ export default async function AdminOrdersPage({
           }page=${page}`
         }
       />
+    </>
+  );
+}
+
+export default function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<OrdersSearchParams>;
+}) {
+  return (
+    <div>
+      <h1 className="mb-6 font-display text-3xl">ORDERS</h1>
+      <Suspense fallback={<div className="h-96 animate-pulse bg-ink-raised" />}>
+        <OrdersContent searchParams={searchParams} />
+      </Suspense>
     </div>
   );
 }

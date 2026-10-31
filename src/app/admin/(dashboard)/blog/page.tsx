@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import { getAllBlogPosts } from "@/lib/data/blog";
 import { BlogManager } from "@/components/admin/blog-manager";
 
 export const metadata = { title: "Blog", robots: { index: false } };
+export const instant = false;
 
-export default async function AdminBlogPage() {
+async function BlogContent() {
   const posts = await getAllBlogPosts();
 
   return (
@@ -24,5 +26,13 @@ export default async function AdminBlogPage() {
         coverImageUrl: p.coverImageUrl,
       }))}
     />
+  );
+}
+
+export default function AdminBlogPage() {
+  return (
+    <Suspense fallback={<div className="h-96 animate-pulse bg-ink-raised" />}>
+      <BlogContent />
+    </Suspense>
   );
 }
