@@ -140,13 +140,13 @@ export function AddToCartForm({
                   aria-live="polite"
                   className={
                     !inStock
-                      ? "text-danger"
+                      ? "font-mono font-bold text-danger"
                       : isLowStock
-                        ? "text-yellow-400"
-                        : "text-gold-bright"
+                        ? "font-mono font-bold text-yellow-400"
+                        : "font-mono font-bold text-gold-bright"
                   }
                 >
-                  ({inStock ? `${selectedStock} in stock` : "Out of stock"})
+                  : {inStock ? `${selectedStock} in stock` : "Out of stock"}
                 </span>
               )}
             </div>

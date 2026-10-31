@@ -5,19 +5,23 @@ import { ArrowDown, ArrowUp, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { Input, Textarea, Select, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { ImageInputWithPreview } from "@/components/admin/image-input-preview";
 import { centsToUnits } from "@/lib/money";
 import {
   updateStoreSettingsAction,
   type SettingsActionResult,
 } from "@/lib/actions/admin-settings-actions";
-import type {
-  HeroBannerMode,
-  HeroButtonConfig,
-  HeroButtonIcon,
-  HeroPromoSlide,
-  StoreSettingsView,
-} from "@/lib/data/settings";
+import {
+  DEFAULT_FOOTER_CONFIG,
+  type FooterSocialsConfig,
+  type FooterSocialItem,
+  type HeroBannerMode,
+  type HeroButtonConfig,
+  type HeroButtonIcon,
+  type HeroPromoSlide,
+  type StoreSettingsView,
+} from "@/lib/data/settings-shared";
 
 const initialState: SettingsActionResult = { success: false, message: "" };
 
@@ -117,6 +121,52 @@ function ColorPickerField({
   );
 }
 
+type SocialPlatformKey = "instagram" | "facebook" | "twitter" | "whatsapp" | "tiktok" | "telegram";
+
+const SOCIAL_PLATFORMS: {
+  key: SocialPlatformKey;
+  name: string;
+  placeholder: string;
+  example: string;
+}[] = [
+  {
+    key: "instagram",
+    name: "Instagram",
+    placeholder: "https://instagram.com/yourhandle",
+    example: "https://instagram.com/jafjersey",
+  },
+  {
+    key: "facebook",
+    name: "Facebook",
+    placeholder: "https://facebook.com/yourpage",
+    example: "https://facebook.com/jafjersey",
+  },
+  {
+    key: "twitter",
+    name: "Twitter / X",
+    placeholder: "https://x.com/yourhandle",
+    example: "https://x.com/jafjersey",
+  },
+  {
+    key: "whatsapp",
+    name: "WhatsApp",
+    placeholder: "https://wa.me/8801XXXXXXXXX",
+    example: "https://wa.me/8801328366311",
+  },
+  {
+    key: "tiktok",
+    name: "TikTok",
+    placeholder: "https://tiktok.com/@yourhandle",
+    example: "https://tiktok.com/@jafjersey",
+  },
+  {
+    key: "telegram",
+    name: "Telegram",
+    placeholder: "https://t.me/yourchannel",
+    example: "https://t.me/jafjersey",
+  },
+];
+
 export function SettingsForm({
   settings,
   products,
@@ -139,6 +189,15 @@ export function SettingsForm({
   const [imageGlowColor, setImageGlowColor] = useState(hc.imageGlowColor);
   const [heroButtons, setHeroButtons] = useState<HeroButtonConfig[]>(hc.buttons);
   const [promoSlides, setPromoSlides] = useState<HeroPromoSlide[]>(hc.promoSlides);
+  const fc = settings.footerConfig ?? DEFAULT_FOOTER_CONFIG;
+  const [footerSocials, setFooterSocials] = useState<FooterSocialsConfig>(fc.socials);
+  const [shopAddress, setShopAddress] = useState<string>(fc.shopInfo.address);
+  const [shopPhone, setShopPhone] = useState<string>(fc.shopInfo.phone);
+  const [shopSecondaryPhone, setShopSecondaryPhone] = useState<string>(fc.shopInfo.secondaryPhone ?? "");
+  const [shopEmail, setShopEmail] = useState<string>(fc.shopInfo.email);
+  const [shopHours, setShopHours] = useState<string>(fc.shopInfo.hours);
+  const [footerAboutText, setFooterAboutText] = useState<string>(fc.shopInfo.aboutText);
+
 
   function resetColors() {
     setBgColor("");
@@ -979,6 +1038,229 @@ export function SettingsForm({
           <Checkbox name="codEnabled" defaultChecked={settings.codEnabled} />
           Enable Cash on Delivery
         </label>
+      </SectionCard>
+
+      <SectionCard
+        title="Footer & Store Information"
+        description="Configure social media links (with toggle checkboxes) and edit the physical outlet address & contact numbers displayed in the premium storefront footer."
+      >
+        {/* Hidden JSON input for comprehensive backend sync */}
+        <input
+          type="hidden"
+          name="footerConfigJson"
+          value={JSON.stringify({
+            socials: footerSocials,
+            shopInfo: {
+              address: shopAddress,
+              phone: shopPhone,
+              secondaryPhone: shopSecondaryPhone,
+              email: shopEmail,
+              hours: shopHours,
+              aboutText: footerAboutText,
+            },
+          })}
+        />
+
+        {/* 1. Social Media Links */}
+        <div>
+          <div className="flex items-center justify-between border-b border-ink-border pb-2">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-paper">
+                Social Media Links
+              </h3>
+              <p className="text-[11px] text-paper-dim">
+                Tick mark (check) each platform you want to display on the storefront footer, then paste the URL.
+              </p>
+            </div>
+            <span className="text-[11px] font-mono text-gold">
+              {Object.values(footerSocials).filter((s: FooterSocialItem) => s.enabled).length} Active
+            </span>
+          </div>
+
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {SOCIAL_PLATFORMS.map((platform) => {
+              const item = footerSocials[platform.key] ?? { enabled: false, url: "" };
+              return (
+                <div
+                  key={platform.key}
+                  className={`border p-4 transition-all ${
+                    item.enabled
+                      ? "border-gold/60 bg-ink-raised shadow-xs"
+                      : "border-ink-border bg-ink/40 opacity-75"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <label className="flex cursor-pointer items-center gap-2.5">
+                      <input
+                        type="checkbox"
+                        checked={item.enabled}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setFooterSocials((prev: FooterSocialsConfig) => ({
+                            ...prev,
+                            [platform.key]: {
+                              ...prev[platform.key],
+                              enabled: checked,
+                            },
+                          }));
+                        }}
+                        className="h-4 w-4 rounded-none border border-ink-border accent-gold focus:ring-1 focus:ring-gold"
+                      />
+                      <span className="text-sm font-semibold text-paper">
+                        {platform.name}
+                      </span>
+                    </label>
+
+                    <Badge
+                      variant={item.enabled ? "gold" : "neutral"}
+                      className="text-[10px]"
+                    >
+                      {item.enabled ? "Enabled on site" : "Hidden"}
+                    </Badge>
+                  </div>
+
+                  {item.enabled ? (
+                    <div className="mt-3 space-y-1">
+                      <Label htmlFor={`social_${platform.key}_url`} className="text-xs">
+                        {platform.name} URL / Link
+                      </Label>
+                      <Input
+                        id={`social_${platform.key}_url`}
+                        type="url"
+                        value={item.url}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFooterSocials((prev: FooterSocialsConfig) => ({
+                            ...prev,
+                            [platform.key]: {
+                              ...prev[platform.key],
+                              url: val,
+                            },
+                          }));
+                        }}
+                        placeholder={platform.placeholder}
+                        className="h-9 bg-ink text-xs"
+                      />
+                      <p className="text-[10px] text-paper-dim">
+                        Example: <span className="font-mono text-gold/80">{platform.example}</span>
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-[11px] italic text-paper-dim">
+                      Check the box above to enable {platform.name} and paste your link.
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 2. Shop & Outlet Contact Info */}
+        <div className="mt-4 border-t border-ink-border pt-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-paper">
+            Shop Outlet &amp; Contact Details
+          </h3>
+          <p className="mt-0.5 text-[11px] text-paper-dim">
+            The physical showroom address is rendered as focusable standout text in the footer, with contact numbers separated into distinct direct calling badges.
+          </p>
+
+          <div className="mt-3 flex flex-col gap-4">
+            <div>
+              <Label htmlFor="footerShopAddress">
+                Shop / Outlet Address (Focusable Text on Footer)
+              </Label>
+              <Textarea
+                id="footerShopAddress"
+                rows={3}
+                value={shopAddress}
+                onChange={(e) => setShopAddress(e.target.value)}
+                placeholder="Shop No, Plaza, Road, Area, City..."
+                className="mt-1 bg-ink text-xs leading-relaxed"
+              />
+              <p className="mt-1 text-[11px] text-paper-dim">
+                Displayed in the prominent showroom location card with interactive focus states.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="footerShopPhone">
+                  Primary Phone Number (Separated Contact)
+                </Label>
+                <Input
+                  id="footerShopPhone"
+                  type="text"
+                  value={shopPhone}
+                  onChange={(e) => setShopPhone(e.target.value)}
+                  placeholder="+880 1XXXXXXXXX"
+                  className="mt-1 bg-ink text-xs"
+                />
+                <p className="mt-1 text-[11px] text-paper-dim">
+                  Separated from the address into a clickable direct call badge.
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="footerShopSecondaryPhone">
+                  Secondary Phone Number (Optional)
+                </Label>
+                <Input
+                  id="footerShopSecondaryPhone"
+                  type="text"
+                  value={shopSecondaryPhone}
+                  onChange={(e) => setShopSecondaryPhone(e.target.value)}
+                  placeholder="+880 1XXXXXXXXX"
+                  className="mt-1 bg-ink text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="footerShopEmail">
+                  Customer Support Email
+                </Label>
+                <Input
+                  id="footerShopEmail"
+                  type="email"
+                  value={shopEmail}
+                  onChange={(e) => setShopEmail(e.target.value)}
+                  placeholder="support@jafjersey.com"
+                  className="mt-1 bg-ink text-xs"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="footerShopHours">
+                  Opening / Support Hours
+                </Label>
+                <Input
+                  id="footerShopHours"
+                  type="text"
+                  value={shopHours}
+                  onChange={(e) => setShopHours(e.target.value)}
+                  placeholder="Open 7 Days · 10:00 AM – 10:00 PM"
+                  className="mt-1 bg-ink text-xs"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="footerAboutText">
+                Footer Brand Statement / About Intro
+              </Label>
+              <Textarea
+                id="footerAboutText"
+                rows={2}
+                value={footerAboutText}
+                onChange={(e) => setFooterAboutText(e.target.value)}
+                placeholder="Short editorial summary of JAF culture and kits..."
+                className="mt-1 bg-ink text-xs"
+              />
+            </div>
+          </div>
+        </div>
       </SectionCard>
 
       <Button type="submit" variant="primary" size="lg" disabled={isPending} className="self-start">

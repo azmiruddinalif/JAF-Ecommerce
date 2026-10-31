@@ -17,6 +17,7 @@ import { StatusBreakdown } from "@/components/admin/status-breakdown";
 import { formatCents } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { PwaInstallButton } from "@/components/admin/pwa-install-button";
+import { DashboardStockTable } from "@/components/admin/dashboard-stock-table";
 
 export const metadata = { title: "Admin Dashboard", robots: { index: false } };
 
@@ -155,151 +156,10 @@ async function DashboardContent() {
           </div>
         )}
 
-        {/* Mobile Stock Cards */}
-        {stockOverview.products.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-paper-dim">
-            No products in inventory yet.
-          </p>
-        ) : (
-          <>
-            <div className="divide-y divide-ink-border min-[1200px]:hidden">
-              {stockOverview.products.slice(0, 8).map((product) => (
-                <div key={product.id} className="p-3.5">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <Link
-                        href={`/admin/products/${product.id}`}
-                        className="line-clamp-1 text-xs font-semibold text-paper hover:text-gold"
-                      >
-                        {product.name}
-                      </Link>
-                      <p className="mt-0.5 font-mono text-[10px] text-paper-dim">
-                        {product.sku} · {product.categoryName}
-                      </p>
-                    </div>
-                    <Badge variant={product.totalStock > 0 ? "emerald" : "danger"}>
-                      {product.totalStock} units
-                    </Badge>
-                  </div>
-
-                  {product.hasSizes && (
-                    <div className="mt-2.5 flex flex-wrap gap-1.5">
-                      {AVAILABLE_SIZES.map((size) => {
-                        const qty = product.sizeStocks[size] ?? 0;
-                        return (
-                          <span
-                            key={size}
-                            className={`inline-flex items-center gap-1 border px-1.5 py-0.5 font-mono text-[10px] ${
-                              qty === 0
-                                ? "border-ink-border text-paper-dim/40"
-                                : "border-gold/30 bg-ink-raised text-paper"
-                            }`}
-                          >
-                            <span className="text-paper-dim">{size}:</span>
-                            <strong className={qty > 0 ? "text-gold-bright" : ""}>
-                              {qty}
-                            </strong>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Desktop Product Size Stock Matrix */}
-            <div className="hidden overflow-x-auto min-[1200px]:block">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-ink-border bg-ink-raised text-[11px] uppercase tracking-wider text-paper-dim">
-                    <th className="px-4 py-3">Product</th>
-                    <th className="px-3 py-3">Category</th>
-                    <th className="px-3 py-3 text-center">Total Stock</th>
-                    <th className="px-3 py-3 text-center">Status</th>
-                    {AVAILABLE_SIZES.map((size) => (
-                      <th key={size} className="px-2.5 py-3 text-center">
-                        {size}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {stockOverview.products.slice(0, 12).map((product) => (
-                    <tr
-                      key={product.id}
-                      className="border-b border-ink-border last:border-0 hover:bg-ink-raised"
-                    >
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/admin/products/${product.id}`}
-                          className="font-medium text-paper hover:text-gold"
-                        >
-                          {product.name}
-                        </Link>
-                        <p className="font-mono text-[10px] text-paper-dim">
-                          {product.sku}
-                        </p>
-                      </td>
-                      <td className="px-3 py-3 text-paper-dim">
-                        {product.categoryName}
-                      </td>
-                      <td className="px-3 py-3 text-center">
-                        <span
-                          className={
-                            product.totalStock === 0
-                              ? "font-bold text-danger"
-                              : "font-bold text-gold"
-                          }
-                        >
-                          {product.totalStock}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3 text-center">
-                        <Badge
-                          variant={product.totalStock > 0 ? "emerald" : "danger"}
-                        >
-                          {product.totalStock > 0 ? "In Stock" : "Out of Stock"}
-                        </Badge>
-                      </td>
-                      {!product.hasSizes ? (
-                        <td
-                          colSpan={AVAILABLE_SIZES.length}
-                          className="px-3 py-3 text-center text-paper-dim"
-                        >
-                          Regular Stock (No Sizes):{" "}
-                          <span className="font-mono font-semibold text-paper">
-                            {product.totalStock} units
-                          </span>
-                        </td>
-                      ) : (
-                        AVAILABLE_SIZES.map((size) => {
-                          const qty = product.sizeStocks[size] ?? 0;
-                          return (
-                            <td
-                              key={size}
-                              className="px-2.5 py-3 text-center font-mono"
-                            >
-                              <span
-                                className={
-                                  qty === 0
-                                    ? "text-paper-dim/40"
-                                    : "font-semibold text-paper"
-                                }
-                              >
-                                {qty}
-                              </span>
-                            </td>
-                          );
-                        })
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
+                <DashboardStockTable
+          initialProducts={stockOverview.products}
+          initialPagination={stockOverview.pagination}
+        />
       </div>
 
       {/* Recent Orders */}

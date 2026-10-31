@@ -11,6 +11,8 @@ import { unitsToCents } from "@/lib/money";
 import {
   DEFAULT_HERO_CONFIG,
   normalizeHeroConfig,
+  normalizeFooterConfig,
+  type FooterCustomConfig,
   type HeroBannerMode,
   type HeroButtonConfig,
   type HeroButtonIcon,
@@ -335,6 +337,45 @@ export async function updateStoreSettingsAction(
     promoSlides: resolvedPromoSlides,
   };
 
+  // Parse and process FooterCustomConfig (social links + shop info)
+  const previousFooterConfig = normalizeFooterConfig(existing?.socialLinks);
+  let nextFooterConfig: FooterCustomConfig = previousFooterConfig;
+  const footerConfigJsonRaw = formData.get("footerConfigJson")?.toString();
+
+  if (footerConfigJsonRaw) {
+    try {
+      const parsedFooter = JSON.parse(footerConfigJsonRaw);
+      nextFooterConfig = normalizeFooterConfig({ footerConfig: parsedFooter });
+    } catch {
+      // fallback
+    }
+  } else {
+    const getSocialItem = (name: string, defaultUrl: string) => {
+      const enabled = formData.get(`social_${name}_enabled`) === "on";
+      const url = (formData.get(`social_${name}_url`)?.toString() ?? defaultUrl).trim();
+      return { enabled, url };
+    };
+
+    nextFooterConfig = {
+      socials: {
+        instagram: getSocialItem("instagram", "https://instagram.com"),
+        facebook: getSocialItem("facebook", "https://facebook.com"),
+        twitter: getSocialItem("twitter", "https://x.com"),
+        whatsapp: getSocialItem("whatsapp", "https://wa.me"),
+        tiktok: getSocialItem("tiktok", "https://tiktok.com"),
+        telegram: getSocialItem("telegram", "https://t.me"),
+      },
+      shopInfo: {
+        address: (formData.get("footerShopAddress")?.toString() ?? previousFooterConfig.shopInfo.address).trim(),
+        phone: (formData.get("footerShopPhone")?.toString() ?? previousFooterConfig.shopInfo.phone).trim(),
+        secondaryPhone: (formData.get("footerShopSecondaryPhone")?.toString() ?? "").trim(),
+        email: (formData.get("footerShopEmail")?.toString() ?? previousFooterConfig.shopInfo.email).trim(),
+        hours: (formData.get("footerShopHours")?.toString() ?? previousFooterConfig.shopInfo.hours).trim(),
+        aboutText: (formData.get("footerAboutText")?.toString() ?? previousFooterConfig.shopInfo.aboutText).trim(),
+      },
+    };
+  }
+
   const existingSocialLinks =
     existing?.socialLinks &&
     typeof existing.socialLinks === "object" &&
@@ -345,6 +386,7 @@ export async function updateStoreSettingsAction(
   const socialLinks = {
     ...existingSocialLinks,
     heroConfig: nextHeroConfig,
+    footerConfig: nextFooterConfig,
   } as unknown as Prisma.InputJsonValue;
 
   const { heroProduct1, heroProduct2, heroProduct3, ...rest } = parsed.data;

@@ -127,7 +127,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <NavbarServer />
             </Suspense>
           }
-          footer={<Footer />}
+          footer={
+            <Suspense fallback={<footer className="h-64 border-t border-ink-border bg-ink" />}>
+              <Footer />
+            </Suspense>
+          }
         >
           {children}
         </SiteChrome>
