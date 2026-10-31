@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { SignIn } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { ShieldCheck } from "lucide-react";
@@ -22,6 +23,12 @@ export default async function AdminLoginPage({
 }) {
   const { userId } = await auth();
   const session = userId ? await getAdminSession() : null;
+
+  // If already authenticated as the allowed admin, proceed directly to the dashboard
+  if (session) {
+    redirect("/admin");
+  }
+
   const signedInWithWrongAccount = Boolean(userId) && !session;
   const rejectedNonAdmin = (await searchParams).reason === "not-admin";
 

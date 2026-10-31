@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useClerk } from "@clerk/nextjs";
 
 /**
@@ -12,18 +12,33 @@ import { useClerk } from "@clerk/nextjs";
  */
 export function WrongAccountGuard() {
   const { signOut } = useClerk();
+  const [signingOut, setSigningOut] = useState(true);
 
   useEffect(() => {
-    // The query flag lets the login page explain why the visitor landed back
-    // on it, instead of silently showing the sign-in form again.
-    void signOut({ redirectUrl: "/admin/login?reason=not-admin" });
+    let active = true;
+    void signOut({ redirectUrl: "/admin/login?reason=not-admin" }).catch(() => {
+      if (active) setSigningOut(false);
+    });
+    return () => {
+      active = false;
+    };
   }, [signOut]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-ink px-4 text-center">
+    <div className="flex flex-col items-center justify-center gap-4 border border-ink-border bg-ink-raised p-6 text-center">
+      {signingOut ? (
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-gold-bright border-t-transparent" />
+      ) : null}
       <p className="text-sm text-paper-dim">
         You&apos;re signed in with an account that isn&apos;t the JAF admin. Signing out…
       </p>
+      <button
+        type="button"
+        onClick={() => void signOut({ redirectUrl: "/admin/login" })}
+        className="mt-2 text-xs font-semibold uppercase tracking-wider text-gold-bright hover:underline"
+      >
+        Click here to force sign out
+      </button>
     </div>
   );
 }
