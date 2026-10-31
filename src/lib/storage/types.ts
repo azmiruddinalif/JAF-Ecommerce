@@ -6,9 +6,8 @@ export interface UploadedImage {
 }
 
 /**
- * Storage provider abstraction so the active provider (Supabase Storage by
- * default; Cloudinary also implemented) can be swapped without touching
- * any caller.
+ * Storage provider abstraction so the active provider (Cloudinary by default)
+ * can be swapped without touching any caller.
  */
 export interface ImageStorage {
   upload(

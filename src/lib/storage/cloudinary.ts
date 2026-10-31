@@ -34,9 +34,9 @@ class CloudinaryStorage implements ImageStorage {
           folder: options.folder,
           public_id: options.filename,
           resource_type: options.contentType === "application/pdf" ? "raw" : "image",
-          // Matches Supabase's upsert:true — callers that reuse a fixed
-          // filename (e.g. invoice regeneration) expect the new upload to
-          // replace the old one at the same path, not be silently ignored.
+          // Overwrite enabled so callers that reuse a fixed
+          // filename (e.g. invoice regeneration) replace the old one
+          // at the same path, rather than silently creating duplicates.
           overwrite: true,
         },
         (error, result) => {

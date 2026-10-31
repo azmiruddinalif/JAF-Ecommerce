@@ -1,6 +1,6 @@
 # JAF — WE ARE THE ION TO FASHION
 
-A premium, dynamic ecommerce platform for the JAF jersey brand, built with Next.js (App Router, Cache Components), PostgreSQL, Prisma ORM and Supabase Storage.
+A premium, dynamic ecommerce platform for the JAF jersey brand, built with Next.js (App Router, Cache Components), PostgreSQL, Prisma ORM and Cloudinary.
 
 ## Stack
 
@@ -9,7 +9,7 @@ A premium, dynamic ecommerce platform for the JAF jersey brand, built with Next.
 - **Styling:** Tailwind CSS v4
 - **Components:** shadcn/ui (Radix UI primitives + `class-variance-authority`) in `src/components/ui` — Button, Badge, Input/Textarea/Label, Select, Checkbox, Sheet (cart drawer, mobile nav), Dropdown Menu (nav categories), themed via the CSS variable bridge in `globals.css`
 - **Database:** PostgreSQL via Prisma ORM 7 (`pg` driver adapter)
-- **Image storage:** Supabase Storage by default, Cloudinary also implemented — both behind one `ImageStorage` interface in `src/lib/storage`, picked by the `STORAGE_PROVIDER` env var. Swapping providers never touches a caller.
+- **Image storage:** Cloudinary via `src/lib/storage`
 - **Auth:** [Clerk](https://clerk.com) for the admin dashboard — single dedicated admin identity (email + strong password, provisioned from env vars), session verified in `proxy.ts` and independently re-checked in every admin server action
 - **Validation:** Zod
 
@@ -30,17 +30,6 @@ The admin dashboard is a single-admin area — there's no public sign-up, just o
 
 **Also signed in with a different Clerk account?** If a browser already has an unrelated Clerk session (e.g. from running the Clerk CLI, or a previous project using the same dev domain), `/admin/login` will detect it doesn't match `ADMIN_EMAIL` and automatically sign it out before showing the sign-in form — no manual cleanup needed.
 
-### Setting up Supabase Storage
-
-Supabase is a hosted cloud service — there's no separate "deploy" step for it:
-
-1. Create a free project at [supabase.com](https://supabase.com) (pick a region). You'll land on a dashboard for a live project at `https://<project-ref>.supabase.co`.
-2. In **Storage**, create a new bucket named `jaf-jersey` (or whatever you set `SUPABASE_STORAGE_BUCKET` to) and mark it **public**, so product/section images are servable directly by URL.
-3. In **Project Settings → API**, copy the **Project URL** and the **service_role** key (not the `anon` key — the service role key is required for server-side uploads and must never reach the browser).
-4. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env` (and in your hosting platform's environment variables when you deploy the Next.js app itself — the same project works for both dev and production, or create a second Supabase project if you want separate environments).
-
-Until these are set, image uploads fail with a clear in-app error; everything else (browsing, cart, checkout, orders) works normally with the seeded placeholder images.
-
 ## Local setup
 
 1. **Install dependencies**
@@ -60,8 +49,7 @@ Until these are set, image uploads fail with a clear in-app error; everything el
 3. **Configure environment variables.** Copy `.env.example` to `.env` and fill in:
    - `DATABASE_URL` — e.g. `postgresql://jaf:jafpassword@localhost:55432/jaf_jersey?schema=public`
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` / `ADMIN_EMAIL` / `ADMIN_PASSWORD` — see "Setting up Clerk" above. The storefront works fully without these; only `/admin` needs them.
-   - `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_STORAGE_BUCKET` — see "Setting up Supabase Storage" below. Admin image uploads are disabled (with a clear error) until these are set; everything else works without them, using the seeded placeholder images.
-   - `STORAGE_PROVIDER` — `supabase` (default) or `cloudinary`. If using Cloudinary instead, set `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET`.
+   - `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` — for image uploads.
    - `NEXT_PUBLIC_SITE_URL` — used for canonical URLs / sitemap / OG metadata
 
 4. **Run migrations, seed demo data, and provision the admin user**
@@ -105,7 +93,7 @@ src/components/       layout, home, products, product, cart, checkout, admin, ui
 src/lib/data/         read-only Prisma queries (Suspense-wrapped server components call these)
 src/lib/actions/      "use server" mutations — cart, checkout, admin CRUD
 src/lib/auth/         admin session resolution (Clerk-backed, with the ADMIN_EMAIL allowlist check)
-src/lib/storage/      image storage abstraction (Supabase + Cloudinary implementations, provider switch, validation)
+src/lib/storage/      image storage via Cloudinary, validation
 scripts/              provision-admin.ts — creates/updates the one Clerk admin user from env vars
 src/proxy.ts          runs Clerk's middleware for /admin/* (Next 16 renamed middleware.ts -> proxy.ts; it must live under src/ here since app/ does too — Clerk throws a clear error at runtime if it's at the project root instead); the storefront has no proxy coverage and needs none
 ```
@@ -116,6 +104,6 @@ src/proxy.ts          runs Clerk's middleware for /admin/* (Next 16 renamed midd
 - **Cart** is a database-backed `Cart`/`CartItem` pair keyed by a random token in an httpOnly cookie — not purely client-side — so stock is always validated server-side before checkout.
 - **Checkout → Order** runs in a single Prisma transaction: it snapshots product/variant/price, decrements variant stock, and clears the cart.
 - **Admin auth** is handled by Clerk, scoped to `/admin` only via a dedicated `src/app/admin/layout.tsx` (`<ClerkProvider>` never wraps the storefront, so a missing/misconfigured Clerk key can only ever break the admin area, never the shop). `proxy.ts` runs Clerk's middleware to populate the session; `admin/(dashboard)/layout.tsx` is the actual gate (redirects on no session), and every admin server action independently re-checks via `requireAdminSession()` — defense in depth, since server actions are reachable directly via POST. `requireAdminSession()` additionally enforces that the authenticated email matches `ADMIN_EMAIL`, so this stays a single-admin dashboard even if Clerk sign-up were ever left open by mistake. There is no sign-up flow anywhere in the app — the one admin identity is provisioned via `npm run admin:provision`.
-- **Images**: admin uploads go straight to Supabase Storage from a server action (`src/lib/storage/supabase.ts`); only the returned `publicId` (storage path) and `secureUrl` are stored in Postgres. `src/lib/storage/index.ts` picks the active provider from `STORAGE_PROVIDER`, so switching providers — or adding a new one — never touches a caller.
+- **Images**: admin uploads go to Cloudinary from a server action; only the returned `publicId` (storage path) and `secureUrl` are stored in Postgres.
 - **Homepage content**: every visual section (hero, editorial, final CTA) plus the announcement bar and delivery/payment defaults are stored on the singleton `StoreSetting` row and editable from `/admin/settings`, each with its own image upload where relevant. Categories and products each manage their own images on their respective admin pages.
 - **Money** is stored as integer "cents" (paisa-equivalent) throughout to avoid floating-point rounding; `src/lib/money.ts` formats to BDT.

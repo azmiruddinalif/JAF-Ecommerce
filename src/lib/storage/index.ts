@@ -3,12 +3,9 @@ import { mkdir, writeFile, unlink } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 import type { ImageStorage, UploadedImage } from "./types";
-import { imageStorage as supabaseStorage } from "./supabase";
 import { imageStorage as cloudinaryStorage } from "./cloudinary";
 
-const provider = (process.env.STORAGE_PROVIDER ?? "supabase").toLowerCase();
-const primaryStorage: ImageStorage =
-  provider === "cloudinary" ? cloudinaryStorage : supabaseStorage;
+const primaryStorage: ImageStorage = cloudinaryStorage;
 
 function extForMime(contentType?: string): string {
   switch (contentType) {
