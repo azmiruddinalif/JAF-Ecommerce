@@ -14,7 +14,10 @@ async function ProductStocksContent() {
 
   return (
     <ProductStocksManager
-      products={overview.products}
+      initialProducts={overview.products}
+      initialPagination={overview.pagination}
+      sizeTotals={overview.sizeTotals}
+      attentionProducts={overview.attentionProducts}
       categories={overview.categories}
       totals={overview.totals}
     />

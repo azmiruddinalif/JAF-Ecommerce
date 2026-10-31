@@ -1,29 +1,41 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-const FALLBACK_CLOUD_DATABASE_URL =
-  "postgres://58259a1fa2c20b1ebfd6ca3724964b5296df893b2033712717ab5adf34536a50:sk_2gJcaizLLnZf35GHGd6ma@db.prisma.io:5432/postgres?sslmode=require";
+const LOCAL_DEV_DATABASE_URL =
+  "postgresql://jaf:jafpassword@localhost:55432/jaf_jersey?schema=public";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
+  prismaUrl: string | undefined;
 };
 
 function resolveDatabaseUrl(): string {
-  const raw = process.env.DATABASE_URL?.trim();
-  if (!raw) return FALLBACK_CLOUD_DATABASE_URL;
-  if (process.env.NODE_ENV === "production" && (raw.includes("localhost") || raw.includes("127.0.0.1"))) {
-    return FALLBACK_CLOUD_DATABASE_URL;
+  if (process.env.NODE_ENV !== "production") {
+    const localUrl = process.env.LOCAL_DATABASE_URL?.trim();
+    if (localUrl) return localUrl;
   }
-  return raw;
+
+  const raw = process.env.DATABASE_URL?.trim();
+  if (raw && !raw.includes("58259a1fa2c20b1ebfd6ca3724964b5296df893b2033712717ab5adf34536a50")) {
+    return raw;
+  }
+
+  return LOCAL_DEV_DATABASE_URL;
 }
 
-function createPrismaClient() {
-  const adapter = new PrismaPg({ connectionString: resolveDatabaseUrl() });
+const activeUrl = resolveDatabaseUrl();
+
+function createPrismaClient(connectionString: string) {
+  const adapter = new PrismaPg({ connectionString });
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
-globalForPrisma.prisma = prisma;
+if (!globalForPrisma.prisma || globalForPrisma.prismaUrl !== activeUrl) {
+  globalForPrisma.prisma = createPrismaClient(activeUrl);
+  globalForPrisma.prismaUrl = activeUrl;
+}
+
+export const prisma = globalForPrisma.prisma;

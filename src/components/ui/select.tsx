@@ -17,8 +17,8 @@ export function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "flex w-full items-center justify-between gap-2 border border-ink-border bg-ink-raised px-4 py-2.5 text-sm text-paper outline-none transition-colors focus:border-gold disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-        className
+        "flex h-10 w-full items-center justify-between gap-2 border border-ink-border bg-ink-raised px-3.5 py-2 text-sm text-paper outline-none transition-colors focus:border-gold disabled:cursor-not-allowed disabled:opacity-50 [&>span]:truncate",
+        className,
       )}
       {...props}
     >
@@ -40,10 +40,10 @@ export function SelectContent({
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         className={cn(
-          "relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] overflow-hidden border border-ink-border bg-ink-raised text-paper shadow-xl",
+          "relative z-50 max-h-(--radix-select-content-available-height) min-w-32 overflow-hidden border border-ink-border bg-ink-raised text-paper shadow-xl",
           position === "popper" &&
             "data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1 w-(--radix-select-trigger-width)",
-          className
+          className,
         )}
         position={position}
         {...props}
@@ -51,7 +51,7 @@ export function SelectContent({
         <SelectPrimitive.Viewport
           className={cn(
             "p-1",
-            position === "popper" && "h-(--radix-select-trigger-height) w-full"
+            position === "popper" && "h-(--radix-select-trigger-height) w-full",
           )}
         >
           {children}
@@ -69,8 +69,8 @@ export function SelectItem({
   return (
     <SelectPrimitive.Item
       className={cn(
-        "relative flex w-full cursor-pointer select-none items-center py-2 pl-8 pr-2 text-sm text-paper outline-none data-[highlighted]:bg-ink data-[highlighted]:text-gold data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        className
+        "relative flex w-full cursor-pointer select-none items-center py-2 pl-8 pr-2 text-sm text-paper outline-none data-highlighted:bg-ink data-highlighted:text-gold data-disabled:pointer-events-none data-disabled:opacity-50",
+        className,
       )}
       {...props}
     >

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { ChevronRight, Phone, ShoppingBag } from "lucide-react";
 import type { OrderStatus } from "@prisma/client";
 import { getAdminOrders } from "@/lib/data/orders";
 import { Badge } from "@/components/ui/badge";
@@ -39,35 +40,104 @@ async function OrdersContent({
 
   return (
     <>
-      <form method="GET" className="mb-6 flex flex-wrap gap-3">
+      <form method="GET" className="mb-5 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:gap-3">
         <input
           type="search"
           name="query"
           defaultValue={params.query}
           placeholder="Search order #, name, phone..."
-          className="w-64 border border-ink-border bg-ink-raised px-4 py-2.5 text-sm placeholder:text-paper-dim focus:border-gold focus:outline-none"
+          className="w-full border border-ink-border bg-ink-raised px-4 py-2.5 text-sm placeholder:text-paper-dim focus:border-gold focus:outline-none sm:w-64"
         />
-        <Select
-          name="status"
-          defaultValue={params.status ?? ""}
-          className="w-44"
-        >
-          <option value="">All Statuses</option>
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </Select>
-        <button
-          type="submit"
-          className="border border-gold/40 px-4 py-2 text-xs uppercase tracking-wider text-gold hover:border-gold"
-        >
-          Filter
-        </button>
+        <div className="grid grid-cols-3 gap-2.5 sm:flex sm:gap-3">
+          <div className="col-span-2 sm:w-44">
+            <Select
+              name="status"
+              defaultValue={params.status ?? ""}
+              className="w-full"
+            >
+              <option value="">All Statuses</option>
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <button
+            type="submit"
+            className="border border-gold/40 bg-gold/10 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gold hover:border-gold hover:bg-gold hover:text-ink"
+          >
+            Filter
+          </button>
+        </div>
       </form>
 
-      <div className="overflow-x-auto border border-ink-border">
+      {/* Mobile App Order Cards */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 min-[1200px]:hidden">
+        {result.items.length === 0 && (
+          <div className="border border-ink-border bg-ink-raised p-8 text-center text-sm text-paper-dim">
+            No orders found.
+          </div>
+        )}
+        {result.items.map((order) => (
+          <div
+            key={order.id}
+            className="border border-ink-border bg-ink-raised/50 p-4"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <Link
+                  href={`/admin/orders/${order.id}`}
+                  className="font-display text-lg tracking-wide text-gold-bright hover:underline"
+                >
+                  {order.orderNumber}
+                </Link>
+                <p className="text-[11px] text-paper-dim">
+                  {new Date(order.createdAt).toLocaleDateString()} ·{" "}
+                  {new Date(order.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+              <Badge variant="neutral">{order.status}</Badge>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between border-t border-ink-border pt-3 text-sm">
+              <div>
+                <p className="font-medium text-paper">{order.customerName}</p>
+                <a
+                  href={`tel:${order.customerPhone}`}
+                  className="mt-0.5 inline-flex items-center gap-1 text-xs text-paper-dim hover:text-gold"
+                >
+                  <Phone size={11} />
+                  {order.customerPhone}
+                </a>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold text-gold-bright">
+                  {formatCents(order.totalCents)}
+                </p>
+                <p className="inline-flex items-center gap-1 text-xs text-paper-dim">
+                  <ShoppingBag size={11} />
+                  {order.items.length} {order.items.length === 1 ? "item" : "items"}
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href={`/admin/orders/${order.id}`}
+              className="mt-3 flex w-full items-center justify-between border border-ink-border bg-ink px-3 py-2 text-xs font-semibold uppercase tracking-wider text-paper hover:border-gold hover:text-gold"
+            >
+              <span>View &amp; Manage Order</span>
+              <ChevronRight size={14} />
+            </Link>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Orders Table */}
+      <div className="hidden overflow-x-auto border border-ink-border min-[1200px]:block">
         <table className="w-full min-w-175 text-sm">
           <thead className="border-b border-ink-border bg-ink-raised text-left text-xs uppercase tracking-wider text-paper-dim">
             <tr>
@@ -146,7 +216,7 @@ export default function AdminOrdersPage({
 }) {
   return (
     <div>
-      <h1 className="mb-6 font-display text-3xl">ORDERS</h1>
+      <h1 className="mb-5 font-display text-2xl sm:mb-6 sm:text-3xl">ORDERS</h1>
       <Suspense fallback={<div className="h-96 animate-pulse bg-ink-raised" />}>
         <OrdersContent searchParams={searchParams} />
       </Suspense>

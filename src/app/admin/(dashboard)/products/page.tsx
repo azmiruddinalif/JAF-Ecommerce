@@ -5,7 +5,6 @@ import { getAdminProducts } from "@/lib/data/products";
 import { getAllCategories } from "@/lib/data/categories";
 import { ProductsTable } from "@/components/admin/products-table";
 import { Button } from "@/components/ui/button";
-import { Pagination } from "@/components/products/pagination";
 
 export const metadata = { title: "Products", robots: { index: false } };
 export const instant = false;
@@ -42,8 +41,13 @@ async function ProductsContent({
     return `/admin/products?${sp.toString()}`;
   }
 
+  const rangeStart =
+    result.total === 0 ? 0 : (result.page - 1) * result.pageSize + 1;
+  const rangeEnd = Math.min(result.total, result.page * result.pageSize);
+  const pages = Array.from({ length: result.totalPages }, (_, i) => i + 1);
+
   return (
-    <>
+    <div className="min-[1200px]:flex min-[1200px]:min-h-0 min-[1200px]:flex-1 min-[1200px]:flex-col">
       <ProductsTable
         categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
         products={result.items.map((p) => ({
@@ -66,8 +70,58 @@ async function ProductsContent({
         }))}
       />
 
-      <Pagination page={result.page} totalPages={result.totalPages} buildHref={buildHref} />
-    </>
+      {result.total > 0 && (
+        <div className="mt-3 flex shrink-0 flex-col items-center justify-between gap-3 border border-ink-border bg-ink-raised px-4 py-2.5 sm:flex-row">
+          <span className="text-xs text-paper-dim">
+            Showing{" "}
+            <strong className="text-paper">
+              {rangeStart}–{rangeEnd}
+            </strong>{" "}
+            of <strong className="text-paper">{result.total}</strong> products
+            (10 per page)
+          </span>
+
+          <nav className="flex items-center gap-1.5" aria-label="Pagination">
+            <Link
+              href={buildHref(Math.max(1, result.page - 1))}
+              aria-disabled={result.page === 1}
+              className={`border border-ink-border px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                result.page === 1
+                  ? "pointer-events-none opacity-40"
+                  : "bg-ink text-paper hover:border-gold hover:text-gold"
+              }`}
+            >
+              Prev
+            </Link>
+            {pages.map((p) => (
+              <Link
+                key={p}
+                href={buildHref(p)}
+                aria-current={p === result.page ? "page" : undefined}
+                className={`flex h-8 w-8 items-center justify-center border text-xs font-semibold transition-colors ${
+                  p === result.page
+                    ? "border-gold-bright bg-gold-bright text-ink"
+                    : "border-ink-border bg-ink text-paper hover:border-gold hover:text-gold"
+                }`}
+              >
+                {p}
+              </Link>
+            ))}
+            <Link
+              href={buildHref(Math.min(result.totalPages, result.page + 1))}
+              aria-disabled={result.page === result.totalPages}
+              className={`border border-ink-border px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                result.page === result.totalPages
+                  ? "pointer-events-none opacity-40"
+                  : "bg-ink text-paper hover:border-gold hover:text-gold"
+              }`}
+            >
+              Next
+            </Link>
+          </nav>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -77,8 +131,8 @@ export default function AdminProductsPage({
   searchParams: Promise<ProductsSearchParams>;
 }) {
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
+    <div className="min-[1200px]:flex min-[1200px]:h-[calc(100dvh-4rem)] min-[1200px]:flex-col min-[1200px]:overflow-hidden">
+      <div className="mb-4 flex shrink-0 items-center justify-between">
         <h1 className="font-display text-3xl">PRODUCTS</h1>
         <Link href="/admin/products/new">
           <Button variant="primary">

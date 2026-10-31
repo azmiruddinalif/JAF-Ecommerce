@@ -37,46 +37,83 @@ export type ProductListItem = Prisma.ProductGetPayload<{
 }>;
 
 function buildWhere(filters: ShopFilters): Prisma.ProductWhereInput {
-  const where: Prisma.ProductWhereInput = { published: true };
+  const andConditions: Prisma.ProductWhereInput[] = [{ published: true }];
 
   if (filters.query) {
-    where.OR = [
-      { name: { contains: filters.query, mode: "insensitive" } },
-      { description: { contains: filters.query, mode: "insensitive" } },
-      { tags: { has: filters.query.toLowerCase() } },
-    ];
+    andConditions.push({
+      OR: [
+        { name: { contains: filters.query, mode: "insensitive" } },
+        { description: { contains: filters.query, mode: "insensitive" } },
+        { tags: { has: filters.query.toLowerCase() } },
+      ],
+    });
   }
 
   if (filters.category) {
-    where.category = { slug: filters.category };
+    andConditions.push({ category: { slug: filters.category } });
   }
 
   if (filters.type && JERSEY_TYPE_VALUES.includes(filters.type as JerseyType)) {
-    where.type = filters.type as JerseyType;
+    const normalizedType = filters.type.toUpperCase() as JerseyType;
+    const lowerType = normalizedType.toLowerCase();
+    andConditions.push({
+      OR: [
+        { type: normalizedType },
+        { tags: { hasSome: [`club-type:${lowerType}`, `sub-type:${lowerType}`, lowerType] } },
+      ],
+    });
   }
 
-  if (filters.size) {
-    where.variants = { some: { size: filters.size } };
+  if (filters.size || filters.availability === "in-stock") {
+    andConditions.push({
+      variants: {
+        some: {
+          ...(filters.size
+            ? { size: { equals: filters.size, mode: "insensitive" } }
+            : {}),
+          ...(filters.availability === "in-stock" ? { stock: { gt: 0 } } : {}),
+        },
+      },
+    });
   }
 
   if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
     const priceFilter: Prisma.IntFilter = {};
     if (filters.minPrice !== undefined) priceFilter.gte = filters.minPrice;
     if (filters.maxPrice !== undefined) priceFilter.lte = filters.maxPrice;
-    where.basePriceCents = priceFilter;
+    // Match against effective selling price (discountPriceCents when present, else basePriceCents)
+    andConditions.push({
+      OR: [
+        { discountPriceCents: priceFilter },
+        { discountPriceCents: null, basePriceCents: priceFilter },
+      ],
+    });
   }
 
-  if (filters.availability === "in-stock") {
-    where.variants = {
-      ...(where.variants as Prisma.ProductVariantListRelationFilter | undefined),
-      some: {
-        ...(filters.size ? { size: filters.size } : {}),
-        stock: { gt: 0 },
-      },
-    };
-  }
+  return andConditions.length === 1 ? andConditions[0] : { AND: andConditions };
+}
 
-  return where;
+function getEffectivePriceCents(p: {
+  basePriceCents: number;
+  discountPriceCents: number | null;
+}): number {
+  return p.discountPriceCents !== null && p.discountPriceCents < p.basePriceCents
+    ? p.discountPriceCents
+    : p.basePriceCents;
+}
+
+function getDiscountRatio(p: {
+  basePriceCents: number;
+  discountPriceCents: number | null;
+}): number {
+  if (
+    p.discountPriceCents === null ||
+    p.discountPriceCents >= p.basePriceCents ||
+    p.basePriceCents <= 0
+  ) {
+    return 0;
+  }
+  return (p.basePriceCents - p.discountPriceCents) / p.basePriceCents;
 }
 
 function buildOrderBy(sort: SortOption | undefined): Prisma.ProductOrderByWithRelationInput[] {
@@ -88,7 +125,7 @@ function buildOrderBy(sort: SortOption | undefined): Prisma.ProductOrderByWithRe
     case "featured":
       return [{ featured: "desc" }, { createdAt: "desc" }];
     case "discount":
-      return [{ discountPriceCents: "desc" }, { createdAt: "desc" }];
+      return [{ discountPriceCents: "asc" }, { createdAt: "desc" }];
     case "newest":
     default:
       return [{ createdAt: "desc" }];
@@ -99,7 +136,42 @@ export async function getShopProducts(filters: ShopFilters) {
   await connection();
   const page = Math.max(1, filters.page ?? 1);
   const where = buildWhere(filters);
-  const orderBy = buildOrderBy(filters.sort);
+  const sort = filters.sort ?? "newest";
+
+  // For effective-price and biggest-discount sorting, sort across matching products accurately
+  if (sort === "price-asc" || sort === "price-desc" || sort === "discount") {
+    const allItems = await prisma.product.findMany({
+      where,
+      orderBy: [{ createdAt: "desc" }],
+      include: productListInclude,
+    });
+
+    allItems.sort((a, b) => {
+      if (sort === "price-asc") {
+        return getEffectivePriceCents(a) - getEffectivePriceCents(b);
+      }
+      if (sort === "price-desc") {
+        return getEffectivePriceCents(b) - getEffectivePriceCents(a);
+      }
+      // discount
+      const diff = getDiscountRatio(b) - getDiscountRatio(a);
+      if (diff !== 0) return diff;
+      return getEffectivePriceCents(a) - getEffectivePriceCents(b);
+    });
+
+    const total = allItems.length;
+    const items = allItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+    return {
+      items,
+      total,
+      page,
+      pageSize: PAGE_SIZE,
+      totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    };
+  }
+
+  const orderBy = buildOrderBy(sort);
 
   const [items, total] = await Promise.all([
     prisma.product.findMany({
@@ -278,6 +350,7 @@ export async function getAdminProducts(params: {
     where.type = params.type as JerseyType;
   }
 
+  const pageSize = 10;
   const [items, total] = await Promise.all([
     prisma.product.findMany({
       where,
@@ -287,13 +360,19 @@ export async function getAdminProducts(params: {
         variants: { select: { stock: true } },
       },
       orderBy: [{ createdAt: "desc" }],
-      skip: (page - 1) * 20,
-      take: 20,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     }),
     prisma.product.count({ where }),
   ]);
 
-  return { items, total, page, pageSize: 20, totalPages: Math.max(1, Math.ceil(total / 20)) };
+  return {
+    items,
+    total,
+    page,
+    pageSize,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  };
 }
 
 export async function getLowStockProducts(threshold = 5) {
@@ -389,8 +468,34 @@ export async function getProductStockOverview() {
   ).length;
   const outOfStockProductsCount = productRows.filter((p) => p.totalStock === 0).length;
 
+  const sizeTotals: Record<string, number> = {};
+  for (const p of productRows) {
+    if (!p.hasSizes) continue;
+    for (const v of p.variants) {
+      const key = v.size.toUpperCase();
+      sizeTotals[key] = (sizeTotals[key] ?? 0) + v.stock;
+    }
+  }
+
+  const attentionProducts = productRows
+    .filter((p) => p.totalStock <= 5)
+    .sort((a, b) => a.totalStock - b.totalStock)
+    .slice(0, 6);
+
+  const defaultPageSize = 10;
+  const totalItems = productRows.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / defaultPageSize));
+
   return {
-    products: productRows,
+    products: productRows.slice(0, defaultPageSize),
+    pagination: {
+      page: 1,
+      pageSize: defaultPageSize,
+      totalItems,
+      totalPages,
+    },
+    sizeTotals,
+    attentionProducts,
     categories: categorySummaries,
     totals: {
       totalProducts: productRows.length,
@@ -399,5 +504,110 @@ export async function getProductStockOverview() {
       lowStockProductsCount,
       outOfStockProductsCount,
     },
+  };
+}
+
+export async function getPaginatedProductStocks(params: {
+  page?: number;
+  pageSize?: number;
+  category?: string;
+  status?: "all" | "in" | "low" | "out";
+  search?: string;
+  sortBy?: "default" | "stock-asc" | "stock-desc" | "name-asc";
+}) {
+  await connection();
+  const page = Math.max(1, params.page ?? 1);
+  const pageSize = Math.min(50, Math.max(5, params.pageSize ?? 10));
+  const category = params.category && params.category !== "__all__" ? params.category : undefined;
+  const status = params.status ?? "all";
+  const search = params.search?.trim().toLowerCase() ?? "";
+  const sortBy = params.sortBy ?? "default";
+
+  const where: Prisma.ProductWhereInput = {};
+  if (category) {
+    where.category = { slug: category };
+  }
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { sku: { contains: search, mode: "insensitive" } },
+      { category: { name: { contains: search, mode: "insensitive" } } },
+    ];
+  }
+
+  const products = await prisma.product.findMany({
+    where,
+    include: {
+      category: true,
+      images: { orderBy: { displayOrder: "asc" }, take: 1 },
+      variants: {
+        select: { id: true, size: true, sku: true, stock: true, priceCents: true },
+        orderBy: { createdAt: "asc" },
+      },
+    },
+    orderBy: [{ category: { displayOrder: "asc" } }, { createdAt: "desc" }],
+  });
+
+  let rows = products.map((p) => {
+    const sizeStocks: Record<string, number> = {};
+    let totalStock = 0;
+    for (const v of p.variants) {
+      sizeStocks[v.size] = (sizeStocks[v.size] ?? 0) + v.stock;
+      totalStock += v.stock;
+    }
+
+    const hasSizes =
+      p.variants.length > 0 &&
+      !(p.variants.length === 1 && isNoSizeVariant(p.variants[0]?.size));
+
+    return {
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      sku: p.sku,
+      published: p.published,
+      categoryId: p.categoryId,
+      categoryName: p.category.name,
+      categorySlug: p.category.slug,
+      type: p.type,
+      tags: p.tags,
+      basePriceCents: p.basePriceCents,
+      discountPriceCents: p.discountPriceCents,
+      imageUrl: p.images[0]?.secureUrl ?? null,
+      totalStock,
+      hasSizes,
+      sizeStocks,
+      variants: p.variants,
+    };
+  });
+
+  if (status === "in") {
+    rows = rows.filter((p) => p.totalStock > 0);
+  } else if (status === "out") {
+    rows = rows.filter((p) => p.totalStock === 0);
+  } else if (status === "low") {
+    rows = rows.filter((p) => p.totalStock > 0 && p.totalStock <= 5);
+  }
+
+  if (sortBy === "stock-asc") {
+    rows.sort((a, b) => a.totalStock - b.totalStock);
+  } else if (sortBy === "stock-desc") {
+    rows.sort((a, b) => b.totalStock - a.totalStock);
+  } else if (sortBy === "name-asc") {
+    rows.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  const totalItems = rows.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * pageSize;
+  const items = rows.slice(start, start + pageSize);
+
+  return {
+    items,
+    page: safePage,
+    pageSize,
+    totalItems,
+    totalPages,
   };
 }

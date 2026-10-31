@@ -35,15 +35,17 @@ export interface HeroSlide {
 const AUTO_ADVANCE_MS = 5000;
 const SLIDE_SLOTS = 3;
 
-// Fades the hero image itself to transparent at the seam (rather than painting a color
-// block over it), so it dissolves into the ground behind it with no visible edge at all.
-const HERO_MASK =
-  "[mask-image:linear-gradient(to_bottom,rgba(0,0,0,0)_0%,rgba(0,0,0,0.05)_15%,rgba(0,0,0,0.16)_28%,rgba(0,0,0,0.34)_40%,rgba(0,0,0,0.56)_52%,rgba(0,0,0,0.76)_64%,rgba(0,0,0,0.9)_76%,rgba(0,0,0,0.98)_88%,rgba(0,0,0,1)_100%)] " +
-  "[-webkit-mask-image:linear-gradient(to_bottom,rgba(0,0,0,0)_0%,rgba(0,0,0,0.05)_15%,rgba(0,0,0,0.16)_28%,rgba(0,0,0,0.34)_40%,rgba(0,0,0,0.56)_52%,rgba(0,0,0,0.76)_64%,rgba(0,0,0,0.9)_76%,rgba(0,0,0,0.98)_88%,rgba(0,0,0,1)_100%)] " +
+// Fades the hero image itself to transparent at the seam on desktop so it dissolves
+// into the ground behind it with no visible edge.
+const HERO_DESKTOP_MASK =
   "lg:[mask-image:linear-gradient(to_right,rgba(0,0,0,0)_0%,rgba(0,0,0,0.05)_15%,rgba(0,0,0,0.16)_28%,rgba(0,0,0,0.34)_40%,rgba(0,0,0,0.56)_52%,rgba(0,0,0,0.76)_64%,rgba(0,0,0,0.9)_76%,rgba(0,0,0,0.98)_88%,rgba(0,0,0,1)_100%)] " +
   "lg:[-webkit-mask-image:linear-gradient(to_right,rgba(0,0,0,0)_0%,rgba(0,0,0,0.05)_15%,rgba(0,0,0,0.16)_28%,rgba(0,0,0,0.34)_40%,rgba(0,0,0,0.56)_52%,rgba(0,0,0,0.76)_64%,rgba(0,0,0,0.9)_76%,rgba(0,0,0,0.98)_88%,rgba(0,0,0,1)_100%)]";
 
-function renderHeadline(headline: string, accentWord = "fashion", accentColor?: string) {
+function renderHeadline(
+  headline: string,
+  accentWord = "fashion",
+  accentColor?: string,
+) {
   const targets = accentWord
     .split(",")
     .map((w) => w.trim().toLowerCase())
@@ -94,13 +96,15 @@ function ButtonIconGraphic({ icon }: { icon?: HeroButtonIcon }) {
 
 function HeroButtonsRow({
   buttons,
+  className = "mt-9",
 }: {
   buttons: HeroButtonConfig[];
+  className?: string;
 }) {
   if (buttons.length === 0) return null;
 
   return (
-    <div className="mt-9 flex flex-wrap items-center gap-3">
+    <div className={`flex flex-wrap items-center gap-3 ${className}`}>
       {buttons.map((btn, idx) => {
         const customStyle: React.CSSProperties = {};
         if (btn.bgColor) {
@@ -113,12 +117,18 @@ function HeroButtonsRow({
         const resolvedIcon: HeroButtonIcon =
           btn.icon ?? (idx === 0 ? "arrow-right" : "none");
         return (
-          <Link key={btn.id || idx} href={btn.href || "/shop"} className="inline-block">
+          <Link
+            key={btn.id || idx}
+            href={btn.href || "/shop"}
+            className="inline-block"
+          >
             <Button
               variant={btn.variant || "primary"}
               size="lg"
-              className="group"
-              style={Object.keys(customStyle).length > 0 ? customStyle : undefined}
+              className="group px-6 py-3.5 text-[16px] leading-none sm:px-8 sm:py-4"
+              style={
+                Object.keys(customStyle).length > 0 ? customStyle : undefined
+              }
             >
               <ButtonIconGraphic icon={resolvedIcon} />
               {btn.label}
@@ -142,7 +152,10 @@ function FullWidthBannerSlider({
 
   useEffect(() => {
     if (count < 2) return;
-    const id = setInterval(() => setActive((i) => (i + 1) % count), AUTO_ADVANCE_MS);
+    const id = setInterval(
+      () => setActive((i) => (i + 1) % count),
+      AUTO_ADVANCE_MS,
+    );
     return () => clearInterval(id);
   }, [count]);
 
@@ -151,20 +164,27 @@ function FullWidthBannerSlider({
   return (
     <section
       className="relative overflow-hidden bg-ink"
-      style={heroConfig.bgColor ? { backgroundColor: heroConfig.bgColor } : undefined}
+      style={
+        heroConfig.bgColor ? { backgroundColor: heroConfig.bgColor } : undefined
+      }
     >
-      <div className="relative h-105 w-full sm:h-135 lg:h-165">
+      <div className="relative h-125 w-full sm:h-140 lg:h-165">
         {promoSlides.map((slide, i) => {
           const isCurrent = i === safeActive;
           const isImageOnly = slide.textAlign === "none";
           const slideAccent = slide.accentColor || heroConfig.accentColor || "";
           const slideText = slide.textColor || heroConfig.textColor || "";
           const slideEyebrowColor =
-            slide.eyebrowColor || heroConfig.eyebrowColor || heroConfig.subtextColor || "";
+            slide.eyebrowColor ||
+            heroConfig.eyebrowColor ||
+            heroConfig.subtextColor ||
+            "";
           const slideSubtextColor =
             slide.subtextColor || heroConfig.subtextColor || "";
           const activeButtons =
-            slide.buttons && slide.buttons.length > 0 ? slide.buttons : heroConfig.buttons;
+            slide.buttons && slide.buttons.length > 0
+              ? slide.buttons
+              : heroConfig.buttons;
 
           const imageNode = (
             <Image
@@ -213,43 +233,58 @@ function FullWidthBannerSlider({
                   backgroundColor: `rgba(11, 11, 11, ${(slide.overlayOpacity ?? 45) / 100})`,
                 }}
               />
-              <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-ink via-transparent to-transparent opacity-80" />
+              <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/95 via-black/70 to-transparent lg:from-ink lg:via-transparent" />
 
-              <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-center px-4 py-16 sm:px-6 lg:px-12">
+              <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-14 pt-20 sm:px-6 lg:justify-center lg:px-12 lg:py-16">
                 <div className={`flex max-w-2xl flex-col ${alignClasses}`}>
                   {slide.eyebrow && (
                     <p
-                      className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-paper-dim"
+                      className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-paper-dim sm:mb-4"
                       style={
-                        slideEyebrowColor ? { color: slideEyebrowColor } : undefined
+                        slideEyebrowColor
+                          ? { color: slideEyebrowColor }
+                          : undefined
                       }
                     >
                       <span
                         className="size-1.5 shrink-0 rounded-full bg-gold-bright"
-                        style={slideAccent ? { backgroundColor: slideAccent } : undefined}
+                        style={
+                          slideAccent
+                            ? { backgroundColor: slideAccent }
+                            : undefined
+                        }
                       />
                       {slide.eyebrow}
                     </p>
                   )}
                   {slide.headline && (
                     <h1
-                      className="font-display text-5xl uppercase leading-[0.95] text-paper sm:text-7xl"
+                      className="font-display text-4xl uppercase leading-[0.95] text-paper sm:text-6xl lg:text-7xl"
                       style={slideText ? { color: slideText } : undefined}
                     >
-                      {renderHeadline(slide.headline, heroConfig.accentWord, slideAccent)}
+                      {renderHeadline(
+                        slide.headline,
+                        heroConfig.accentWord,
+                        slideAccent,
+                      )}
                     </h1>
                   )}
                   {slide.subheadline && (
                     <p
-                      className="mt-5 max-w-xl text-sm text-paper-dim sm:text-base"
+                      className="mt-3 max-w-xl text-xs text-paper/85 sm:mt-5 sm:text-base"
                       style={
-                        slideSubtextColor ? { color: slideSubtextColor } : undefined
+                        slideSubtextColor
+                          ? { color: slideSubtextColor }
+                          : undefined
                       }
                     >
                       {slide.subheadline}
                     </p>
                   )}
-                  <HeroButtonsRow buttons={activeButtons} />
+                  <HeroButtonsRow
+                    buttons={activeButtons}
+                    className="mt-5 sm:mt-8"
+                  />
                 </div>
               </div>
             </div>
@@ -275,7 +310,7 @@ function FullWidthBannerSlider({
               <ChevronRight size={18} />
             </button>
 
-            <div className="absolute inset-x-0 bottom-6 z-20 flex items-center justify-center gap-5">
+            <div className="absolute inset-x-0 bottom-5 z-20 flex items-center justify-center gap-5">
               {promoSlides.map((slide, i) => {
                 const isActive = i === safeActive;
                 return (
@@ -287,7 +322,9 @@ function FullWidthBannerSlider({
                     className="flex items-center gap-2 text-xs font-semibold tabular-nums"
                   >
                     <span
-                      className={isActive ? "text-gold-bright" : "text-paper-dim"}
+                      className={
+                        isActive ? "text-gold-bright" : "text-paper-dim"
+                      }
                       style={
                         isActive && heroConfig.accentColor
                           ? { color: heroConfig.accentColor }
@@ -405,17 +442,238 @@ export function HeroInteractive({
       }
     : undefined;
 
+  const activeSlide = count > 0 ? slides[active < count ? active : 0] : null;
+
   return (
     <section className="relative overflow-hidden bg-ink" style={sectionBgStyle}>
-      <div className="grid lg:grid-cols-2">
-        <div className="flex flex-col justify-center px-4 py-16 sm:px-6 lg:px-12 lg:py-0 xl:px-20">
+      {/* =================================================================== */}
+      {/* MOBILE & TABLET (< lg): Uncropped Full-Width Sliding Image +        */}
+      {/* Bottom Black Gradient Overlay with Text, Product Price & CTA        */}
+      {/* =================================================================== */}
+      <div
+        className="relative w-full overflow-hidden bg-[radial-gradient(ellipse_at_50%_30%,#2a2a2a_0%,#141414_60%,#0a0b09_100%)] lg:hidden"
+        style={rightBackdropStyle}
+      >
+        {/* Top Uncropped Image Stage (shows full jersey width & height with soft bottom dissolve) */}
+        <div className="relative aspect-square w-full mask-[linear-gradient(to_bottom,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_52%,rgba(0,0,0,0.78)_68%,rgba(0,0,0,0.38)_84%,rgba(0,0,0,0)_100%)] [-webkit-mask-image:linear-gradient(to_bottom,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_52%,rgba(0,0,0,0.78)_68%,rgba(0,0,0,0.38)_84%,rgba(0,0,0,0)_100%)] sm:aspect-5/4">
+          {count > 0 ? (
+            slides.map((slide, i) => {
+              const isCurrent = i === active;
+              const img = (
+                <>
+                  <Image
+                    src={slide.imageUrl}
+                    alt=""
+                    fill
+                    aria-hidden="true"
+                    sizes="100vw"
+                    className="scale-110 object-cover opacity-35 blur-xl"
+                  />
+                  <Image
+                    src={slide.imageUrl}
+                    alt={slide.name ?? headline}
+                    fill
+                    priority={i === 0}
+                    sizes="100vw"
+                    className="object-contain object-top"
+                  />
+                </>
+              );
+              const cls = `absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                isCurrent ? "opacity-100" : "pointer-events-none opacity-0"
+              }`;
+              return slide.slug ? (
+                <Link
+                  key={slide.id}
+                  href={`/product/${slide.slug}`}
+                  aria-hidden={!isCurrent}
+                  tabIndex={isCurrent ? undefined : -1}
+                  className={cls}
+                >
+                  {img}
+                </Link>
+              ) : (
+                <div key={slide.id} aria-hidden={!isCurrent} className={cls}>
+                  {img}
+                </div>
+              );
+            })
+          ) : fallbackImageUrl ? (
+            <>
+              <Image
+                src={fallbackImageUrl}
+                alt=""
+                fill
+                aria-hidden="true"
+                sizes="100vw"
+                className="scale-110 object-cover opacity-35 blur-xl"
+              />
+              <Image
+                src={fallbackImageUrl}
+                alt={headline}
+                fill
+                priority
+                sizes="100vw"
+                className="object-contain object-top"
+              />
+            </>
+          ) : null}
+
+          {/* Multi-stop soft black shade on the lower image stage */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-[linear-gradient(to_top,#0a0b09_0%,rgba(10,11,9,0.92)_24%,rgba(10,11,9,0.68)_50%,rgba(10,11,9,0.28)_76%,rgba(10,11,9,0)_100%)]"
+          />
+        </div>
+
+        {/* Bottom Black Overlay Content overlapping the lower edge of the image */}
+        <div className="relative z-10 -mt-24 bg-[linear-gradient(to_top,#0a0b09_0%,#0a0b09_68%,rgba(10,11,9,0.82)_84%,rgba(10,11,9,0)_100%)] px-4 pb-6 pt-12 sm:-mt-28 sm:px-6 sm:pb-8">
+          <div className="flex flex-col gap-2.5">
+            {heroConfig.eyebrow && (
+              <p
+                className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-paper/90 sm:text-xs"
+                style={
+                  heroConfig.eyebrowColor || heroConfig.subtextColor
+                    ? {
+                        color:
+                          heroConfig.eyebrowColor || heroConfig.subtextColor,
+                      }
+                    : undefined
+                }
+              >
+                <span
+                  className="size-1.5 shrink-0 rounded-full bg-gold-bright"
+                  style={
+                    heroConfig.accentColor
+                      ? { backgroundColor: heroConfig.accentColor }
+                      : undefined
+                  }
+                />
+                {heroConfig.eyebrow}
+              </p>
+            )}
+
+            <h1
+              className="font-display text-4xl uppercase leading-[0.95] text-paper sm:text-6xl"
+              style={
+                heroConfig.textColor
+                  ? { color: heroConfig.textColor }
+                  : undefined
+              }
+            >
+              {renderHeadline(
+                headline,
+                heroConfig.accentWord,
+                heroConfig.accentColor,
+              )}
+            </h1>
+
+            <p
+              className="max-w-md text-xs leading-relaxed text-paper/80 sm:text-sm"
+              style={
+                heroConfig.subtextColor
+                  ? { color: heroConfig.subtextColor }
+                  : undefined
+              }
+            >
+              {subheadline}
+            </p>
+
+            {/* Active Slide Product Title + Price Card inside the Bottom Overlay */}
+            {activeSlide &&
+              activeSlide.slug &&
+              activeSlide.name !== null &&
+              activeSlide.priceCents !== null && (
+                <Link
+                  href={`/product/${activeSlide.slug}`}
+                  className="mt-1 flex items-center justify-between gap-3 rounded-xl border border-gold-bright/30 bg-black/65 px-3.5 py-2.5 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.25)] backdrop-blur-md transition-colors hover:border-gold-bright sm:max-w-sm"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-[10px] font-semibold uppercase tracking-widest text-paper/90 sm:text-xs">
+                      {activeSlide.name}
+                    </p>
+                    <span className="mt-1 block h-0.5 w-6 bg-gold-bright/70" />
+                  </div>
+                  <p
+                    className="shrink-0 font-display text-lg tracking-wide text-gold-bright sm:text-xl"
+                    style={
+                      heroConfig.accentColor
+                        ? { color: heroConfig.accentColor }
+                        : undefined
+                    }
+                  >
+                    {formatCentsBDT(activeSlide.priceCents)}
+                  </p>
+                </Link>
+              )}
+
+            {/* Action Buttons + Slide Number Switcher */}
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
+              <HeroButtonsRow buttons={heroConfig.buttons} className="mt-0" />
+
+              {count > 0 && (
+                <div className="flex items-center gap-4">
+                  {Array.from({ length: SLIDE_SLOTS }, (_, i) => {
+                    const enabled = i < count;
+                    const isActive = enabled && i === active;
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        disabled={!enabled}
+                        onClick={() => enabled && setActive(i)}
+                        aria-label={`Show slide ${i + 1}`}
+                        className={`flex items-center gap-1.5 text-xs font-semibold tabular-nums ${
+                          enabled ? "" : "cursor-default opacity-40"
+                        }`}
+                      >
+                        <span
+                          className={
+                            isActive ? "text-gold-bright" : "text-paper/70"
+                          }
+                          style={
+                            isActive && heroConfig.accentColor
+                              ? { color: heroConfig.accentColor }
+                              : undefined
+                          }
+                        >
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        {isActive && (
+                          <span
+                            className="h-px w-4 bg-gold-bright"
+                            style={
+                              heroConfig.accentColor
+                                ? { backgroundColor: heroConfig.accentColor }
+                                : undefined
+                            }
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =================================================================== */}
+      {/* DESKTOP (>= lg): 2-Column Editorial Hero + Bottom-Right Price Card  */}
+      {/* =================================================================== */}
+      <div className="hidden lg:grid lg:grid-cols-2">
+        <div className="flex flex-col justify-center px-12 py-0 xl:px-20">
           <div className="max-w-lg">
             {heroConfig.eyebrow && (
               <p
                 className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-paper-dim"
                 style={
                   heroConfig.eyebrowColor || heroConfig.subtextColor
-                    ? { color: heroConfig.eyebrowColor || heroConfig.subtextColor }
+                    ? {
+                        color:
+                          heroConfig.eyebrowColor || heroConfig.subtextColor,
+                      }
                     : undefined
                 }
               >
@@ -431,15 +689,25 @@ export function HeroInteractive({
               </p>
             )}
             <h1
-              className="font-display text-6xl uppercase leading-[0.95] text-paper sm:text-7xl"
-              style={heroConfig.textColor ? { color: heroConfig.textColor } : undefined}
+              className="font-display text-7xl uppercase leading-[0.95] text-paper"
+              style={
+                heroConfig.textColor
+                  ? { color: heroConfig.textColor }
+                  : undefined
+              }
             >
-              {renderHeadline(headline, heroConfig.accentWord, heroConfig.accentColor)}
+              {renderHeadline(
+                headline,
+                heroConfig.accentWord,
+                heroConfig.accentColor,
+              )}
             </h1>
             <p
-              className="mt-6 text-sm text-paper-dim sm:text-base"
+              className="mt-6 text-base text-paper-dim"
               style={
-                heroConfig.subtextColor ? { color: heroConfig.subtextColor } : undefined
+                heroConfig.subtextColor
+                  ? { color: heroConfig.subtextColor }
+                  : undefined
               }
             >
               {subheadline}
@@ -494,7 +762,7 @@ export function HeroInteractive({
         </div>
 
         <div
-          className={`relative h-85 overflow-hidden bg-[radial-gradient(ellipse_at_55%_45%,#2a2a2a_0%,#141414_55%,#0b0b0b_100%)] sm:h-105 lg:h-165 ${HERO_MASK}`}
+          className={`relative h-165 overflow-hidden bg-[radial-gradient(ellipse_at_55%_45%,#2a2a2a_0%,#141414_55%,#0b0b0b_100%)] ${HERO_DESKTOP_MASK}`}
           style={rightBackdropStyle}
         >
           {count > 0 ? (
@@ -506,7 +774,7 @@ export function HeroInteractive({
                     alt={slide.name ?? ""}
                     fill
                     priority={i === 0}
-                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    sizes="50vw"
                     className="object-cover"
                   />
                 );
@@ -524,24 +792,30 @@ export function HeroInteractive({
                     {image}
                   </Link>
                 ) : (
-                  <div key={slide.id} aria-hidden={i !== active} className={className}>
+                  <div
+                    key={slide.id}
+                    aria-hidden={i !== active}
+                    className={className}
+                  >
                     {image}
                   </div>
                 );
               })}
 
               {slides.map((slide, i) => {
-                // Only product-linked slides have a name/price to show — a
-                // custom-image-only slide (no resolved product) renders with
-                // no card at all rather than a card with blank fields.
-                if (!slide.slug || slide.name === null || slide.priceCents === null) return null;
+                if (
+                  !slide.slug ||
+                  slide.name === null ||
+                  slide.priceCents === null
+                )
+                  return null;
                 return (
                   <Link
                     key={`info-${slide.id}`}
                     href={`/product/${slide.slug}`}
                     aria-hidden={i !== active}
                     tabIndex={i === active ? undefined : -1}
-                    className={`absolute inset-x-0 bottom-4 z-10 mx-auto flex w-50 flex-col gap-2 overflow-hidden rounded-2xl border border-gold-bright/25 bg-ink/65 px-3 py-3 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.35),inset_0_-10px_16px_-12px_rgba(255,255,255,0.15)] backdrop-blur-md backdrop-saturate-150 transition-opacity duration-1000 ease-in-out sm:inset-x-auto sm:right-0 sm:bottom-auto sm:top-1/2 sm:mx-0 sm:w-40.5 sm:-translate-y-1/2 sm:gap-2.5 sm:rounded-l-2xl sm:rounded-r-none sm:px-4 sm:py-4 ${
+                    className={`absolute right-0 bottom-8 z-10 flex w-44 flex-col gap-2.5 overflow-hidden rounded-l-2xl rounded-r-none border border-r-0 border-gold-bright/25 bg-ink/65 px-4 py-4 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.35),inset_0_-10px_16px_-12px_rgba(255,255,255,0.15)] backdrop-blur-md backdrop-saturate-150 transition-opacity duration-1000 ease-in-out ${
                       i === active
                         ? "opacity-100"
                         : "pointer-events-none opacity-0"
@@ -549,20 +823,22 @@ export function HeroInteractive({
                   >
                     <span
                       aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/25 via-white/0 to-transparent"
+                      className="pointer-events-none absolute inset-0 bg-linear-to-b from-white/25 via-white/0 to-transparent"
                     />
                     <span
                       aria-hidden="true"
                       className="pointer-events-none absolute -inset-x-2 -top-6 h-10 rotate-2 bg-white/20 blur-md"
                     />
-                    <p className="relative text-[10px] font-semibold uppercase leading-normal tracking-widest text-paper sm:text-[11px]">
+                    <p className="relative text-[11px] font-semibold uppercase leading-normal tracking-widest text-paper">
                       {slide.name}
                     </p>
                     <span className="relative h-px w-6 bg-gold-bright/50" />
                     <p
-                      className="relative text-base font-semibold text-gold-bright sm:text-xl"
+                      className="relative text-xl font-semibold text-gold-bright"
                       style={
-                        heroConfig.accentColor ? { color: heroConfig.accentColor } : undefined
+                        heroConfig.accentColor
+                          ? { color: heroConfig.accentColor }
+                          : undefined
                       }
                     >
                       {formatCentsBDT(slide.priceCents)}
@@ -577,7 +853,7 @@ export function HeroInteractive({
               alt=""
               fill
               priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
+              sizes="50vw"
               className="object-cover"
             />
           ) : (

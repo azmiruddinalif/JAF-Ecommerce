@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Anton, Inter, Playfair_Display } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
@@ -29,8 +29,21 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const description =
   "Shop authentic football jerseys, club kits, national team shirts, and retro soccer apparel at JAF (Jerseys & Fashion). Premium matchday and streetwear football kits delivered nationwide with Cash on Delivery.";
 
+export const viewport: Viewport = {
+  themeColor: "#0a0b09",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "JAF Admin",
+  },
   title: {
     default: "JAF — Authentic Football Jerseys, Club Kits & Retro Soccer Apparel",
     template: "%s | JAF — Jerseys & Fashion",
