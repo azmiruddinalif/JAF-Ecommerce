@@ -5,7 +5,10 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 // guidance: `admin/(dashboard)/layout.tsx` redirects unauthenticated/
 // non-admin visitors, and every admin server action independently re-checks
 // via `requireAdminSession()` — defense in depth, not path-matching alone.
-export const proxy = clerkMiddleware();
+const middleware = clerkMiddleware();
+
+export const proxy = middleware;
+export default middleware;
 
 export const config = {
   matcher: ["/admin/:path*"],

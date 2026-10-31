@@ -19,20 +19,25 @@ function getAllowedAdminEmail(): string {
  * defense in depth against Clerk sign-up ever being left open by mistake.
  */
 export async function getAdminSession(): Promise<AdminSessionPayload | null> {
-  const { userId } = await auth();
-  if (!userId) return null;
+  try {
+    const { userId } = await auth();
+    if (!userId) return null;
 
-  const user = await currentUser();
-  if (!user) return null;
+    const user = await currentUser();
+    if (!user) return null;
 
-  const email = user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0]?.emailAddress;
-  if (!email || email.toLowerCase() !== getAllowedAdminEmail()) {
+    const email = user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0]?.emailAddress;
+    if (!email || email.toLowerCase() !== getAllowedAdminEmail()) {
+      return null;
+    }
+
+    const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || "Admin";
+
+    return { userId, email, name };
+  } catch (error) {
+    console.error("[auth] Failed to retrieve Clerk admin session:", error);
     return null;
   }
-
-  const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || "Admin";
-
-  return { userId, email, name };
 }
 
 export async function requireAdminSession(): Promise<AdminSessionPayload> {
