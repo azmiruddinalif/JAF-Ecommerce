@@ -15,7 +15,12 @@ function buildInvoiceNumber(orderNumber: string): string {
  * checkout always succeeds and admin can see what happened and retry.
  */
 export async function generateAndDeliverInvoice(orderId: string): Promise<{ success: boolean; message: string }> {
-  const order = await prisma.order.findUnique({ where: { id: orderId }, include: { items: true } });
+  let order;
+  try {
+    order = await prisma.order.findUnique({ where: { id: orderId }, include: { items: true } });
+  } catch {
+    return { success: false, message: "Could not load the order — the database is unreachable." };
+  }
   if (!order) {
     return { success: false, message: "Order not found." };
   }
@@ -61,7 +66,7 @@ export async function generateAndDeliverInvoice(orderId: string): Promise<{ succ
     await prisma.order.update({
       where: { id: order.id },
       data: { invoiceNumber },
-    });
+    }).catch(() => {});
     return {
       success: false,
       message: `Could not store the invoice PDF: ${error instanceof Error ? error.message : "unknown error"}`,
@@ -89,10 +94,14 @@ export async function generateAndDeliverInvoice(orderId: string): Promise<{ succ
     }
   }
 
-  await prisma.order.update({
-    where: { id: order.id },
-    data: { invoiceNumber, invoicePdfUrl, invoicePdfPublicId, invoiceEmailSentAt, invoiceEmailError },
-  });
+  try {
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { invoiceNumber, invoicePdfUrl, invoicePdfPublicId, invoiceEmailSentAt, invoiceEmailError },
+    });
+  } catch {
+    return { success: false, message: "Invoice generated, but could not save it to the order record." };
+  }
 
   if (order.customerEmail && invoiceEmailError) {
     return { success: false, message: `Invoice created, but the email failed to send: ${invoiceEmailError}` };

@@ -171,6 +171,7 @@ export async function updateStoreSettingsAction(
     return { success: false, message: "Please fix the errors below.", fieldErrors };
   }
 
+  try {
   const existing = await prisma.storeSetting.findUnique({ where: { id: 1 } });
 
   const imageUpdates: Record<string, string | null> = {};
@@ -412,4 +413,7 @@ export async function updateStoreSettingsAction(
   }
 
   return { success: true, message: "Settings saved." };
+  } catch {
+    return { success: false, message: "Couldn't save settings — the database is unreachable. Please try again shortly." };
+  }
 }

@@ -21,28 +21,28 @@ export async function updateOrderStatusAction(
     return { success: false, message: "You must be signed in as an admin." };
   }
 
-  const existingOrder = await prisma.order.findUnique({
-    where: { id: orderId },
-    include: { items: true },
-  });
-
-  if (!existingOrder) {
-    return { success: false, message: "Order not found." };
-  }
-
-  if (existingOrder.status === status) {
-    return { success: true, message: "Order status is already up to date." };
-  }
-
-  const wasCancelled = existingOrder.status === "CANCELLED";
-  const willBeCancelled = status === "CANCELLED";
-
-  // Pre-delivery cancellations automatically restore resellable stock;
-  // already-DELIVERED orders do not automatically return items to stock unless explicitly confirmed.
-  const shouldRestoreOnCancel =
-    options?.restoreStock ?? existingOrder.status !== "DELIVERED";
-
   try {
+    const existingOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: true },
+    });
+
+    if (!existingOrder) {
+      return { success: false, message: "Order not found." };
+    }
+
+    if (existingOrder.status === status) {
+      return { success: true, message: "Order status is already up to date." };
+    }
+
+    const wasCancelled = existingOrder.status === "CANCELLED";
+    const willBeCancelled = status === "CANCELLED";
+
+    // Pre-delivery cancellations automatically restore resellable stock;
+    // already-DELIVERED orders do not automatically return items to stock unless explicitly confirmed.
+    const shouldRestoreOnCancel =
+      options?.restoreStock ?? existingOrder.status !== "DELIVERED";
+
     await prisma.$transaction(async (tx) => {
       // Atomic compare-and-swap on status prevents duplicate stock restorations or deductions
       const updated = await tx.order.updateMany({
@@ -120,10 +120,14 @@ export async function updatePaymentStatusAction(
     return { success: false, message: "You must be signed in as an admin." };
   }
 
-  await prisma.order.update({ where: { id: orderId }, data: { paymentStatus } });
-  revalidatePath("/admin/orders");
-  revalidatePath(`/admin/orders/${orderId}`);
-  revalidatePath("/admin", "layout");
+  try {
+    await prisma.order.update({ where: { id: orderId }, data: { paymentStatus } });
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${orderId}`);
+    revalidatePath("/admin", "layout");
 
-  return { success: true, message: "Payment status updated." };
+    return { success: true, message: "Payment status updated." };
+  } catch {
+    return { success: false, message: "Something went wrong while updating the payment status." };
+  }
 }

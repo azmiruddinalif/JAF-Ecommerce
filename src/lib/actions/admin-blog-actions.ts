@@ -141,12 +141,12 @@ export async function updateBlogPostAction(
     return { success: false, message: "Please fix the errors below.", fieldErrors: fieldErrorsFrom(parsed.error) };
   }
 
-  const existing = await prisma.blogPost.findUnique({ where: { id: postId } });
-  if (!existing) {
-    return { success: false, message: "Post not found." };
-  }
-
   try {
+    const existing = await prisma.blogPost.findUnique({ where: { id: postId } });
+    if (!existing) {
+      return { success: false, message: "Post not found." };
+    }
+
     await prisma.blogPost.update({
       where: { id: postId },
       data: {
@@ -228,15 +228,19 @@ export async function toggleBlogPostPublishedAction(postId: string): Promise<Blo
     return { success: false, message: "You must be signed in as an admin." };
   }
 
-  const post = await prisma.blogPost.findUnique({ where: { id: postId } });
-  if (!post) return { success: false, message: "Post not found." };
+  try {
+    const post = await prisma.blogPost.findUnique({ where: { id: postId } });
+    if (!post) return { success: false, message: "Post not found." };
 
-  const published = !post.published;
-  await prisma.blogPost.update({
-    where: { id: postId },
-    data: { published, publishedAt: published ? (post.publishedAt ?? new Date()) : post.publishedAt },
-  });
+    const published = !post.published;
+    await prisma.blogPost.update({
+      where: { id: postId },
+      data: { published, publishedAt: published ? (post.publishedAt ?? new Date()) : post.publishedAt },
+    });
 
-  revalidateBlogPaths(post.slug);
-  return { success: true, message: "Updated." };
+    revalidateBlogPaths(post.slug);
+    return { success: true, message: "Updated." };
+  } catch {
+    return { success: false, message: "Something went wrong while updating the post." };
+  }
 }

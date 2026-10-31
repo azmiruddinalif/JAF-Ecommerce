@@ -31,15 +31,15 @@ export async function uploadProductImageAction(
     return { success: false, message: validationError };
   }
 
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    include: { images: true },
-  });
-  if (!product) {
-    return { success: false, message: "Product not found." };
-  }
-
   try {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { images: true },
+    });
+    if (!product) {
+      return { success: false, message: "Product not found." };
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
     const uploaded = await imageStorage.upload(buffer, {
       folder: `products/${productId}`,
@@ -87,32 +87,36 @@ export async function addProductImageUrlAction(
     return { success: false, message: "Enter a valid image URL (https://... or /...)." };
   }
 
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    include: { images: true },
-  });
-  if (!product) {
-    return { success: false, message: "Product not found." };
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { images: true },
+    });
+    if (!product) {
+      return { success: false, message: "Product not found." };
+    }
+
+    await prisma.productImage.create({
+      data: {
+        productId,
+        publicId: `url:${Date.now()}`,
+        secureUrl: url,
+        altText: product.name,
+        displayOrder: product.images.length,
+        isPrimary: product.images.length === 0,
+      },
+    });
+
+    revalidatePath(`/admin/products/${productId}`);
+    revalidatePath("/admin/products");
+    revalidatePath(`/product/${product.slug}`);
+    revalidatePath("/shop");
+    revalidatePath("/");
+
+    return { success: true, message: "Image added." };
+  } catch {
+    return { success: false, message: "Something went wrong while adding the image." };
   }
-
-  await prisma.productImage.create({
-    data: {
-      productId,
-      publicId: `url:${Date.now()}`,
-      secureUrl: url,
-      altText: product.name,
-      displayOrder: product.images.length,
-      isPrimary: product.images.length === 0,
-    },
-  });
-
-  revalidatePath(`/admin/products/${productId}`);
-  revalidatePath("/admin/products");
-  revalidatePath(`/product/${product.slug}`);
-  revalidatePath("/shop");
-  revalidatePath("/");
-
-  return { success: true, message: "Image added." };
 }
 
 export async function deleteProductImageAction(imageId: string): Promise<ImageActionResult> {
@@ -122,34 +126,38 @@ export async function deleteProductImageAction(imageId: string): Promise<ImageAc
     return { success: false, message: "You must be signed in as an admin." };
   }
 
-  const image = await prisma.productImage.findUnique({
-    where: { id: imageId },
-    include: { product: true },
-  });
-  if (!image) return { success: false, message: "Image not found." };
-
-  await prisma.productImage.delete({ where: { id: imageId } });
-
   try {
-    await imageStorage.remove(image.publicId);
-  } catch {
-    // Non-fatal: the DB record is gone even if the remote asset cleanup failed.
-  }
-
-  if (image.isPrimary) {
-    const next = await prisma.productImage.findFirst({
-      where: { productId: image.productId },
-      orderBy: { displayOrder: "asc" },
+    const image = await prisma.productImage.findUnique({
+      where: { id: imageId },
+      include: { product: true },
     });
-    if (next) {
-      await prisma.productImage.update({ where: { id: next.id }, data: { isPrimary: true } });
+    if (!image) return { success: false, message: "Image not found." };
+
+    await prisma.productImage.delete({ where: { id: imageId } });
+
+    try {
+      await imageStorage.remove(image.publicId);
+    } catch {
+      // Non-fatal: the DB record is gone even if the remote asset cleanup failed.
     }
+
+    if (image.isPrimary) {
+      const next = await prisma.productImage.findFirst({
+        where: { productId: image.productId },
+        orderBy: { displayOrder: "asc" },
+      });
+      if (next) {
+        await prisma.productImage.update({ where: { id: next.id }, data: { isPrimary: true } });
+      }
+    }
+
+    revalidatePath(`/admin/products/${image.productId}`);
+    revalidatePath(`/product/${image.product.slug}`);
+
+    return { success: true, message: "Image deleted." };
+  } catch {
+    return { success: false, message: "Something went wrong while deleting the image." };
   }
-
-  revalidatePath(`/admin/products/${image.productId}`);
-  revalidatePath(`/product/${image.product.slug}`);
-
-  return { success: true, message: "Image deleted." };
 }
 
 export async function setPrimaryProductImageAction(imageId: string): Promise<ImageActionResult> {
@@ -159,21 +167,25 @@ export async function setPrimaryProductImageAction(imageId: string): Promise<Ima
     return { success: false, message: "You must be signed in as an admin." };
   }
 
-  const image = await prisma.productImage.findUnique({ where: { id: imageId }, include: { product: true } });
-  if (!image) return { success: false, message: "Image not found." };
+  try {
+    const image = await prisma.productImage.findUnique({ where: { id: imageId }, include: { product: true } });
+    if (!image) return { success: false, message: "Image not found." };
 
-  await prisma.$transaction([
-    prisma.productImage.updateMany({
-      where: { productId: image.productId },
-      data: { isPrimary: false },
-    }),
-    prisma.productImage.update({ where: { id: imageId }, data: { isPrimary: true } }),
-  ]);
+    await prisma.$transaction([
+      prisma.productImage.updateMany({
+        where: { productId: image.productId },
+        data: { isPrimary: false },
+      }),
+      prisma.productImage.update({ where: { id: imageId }, data: { isPrimary: true } }),
+    ]);
 
-  revalidatePath(`/admin/products/${image.productId}`);
-  revalidatePath(`/product/${image.product.slug}`);
+    revalidatePath(`/admin/products/${image.productId}`);
+    revalidatePath(`/product/${image.product.slug}`);
 
-  return { success: true, message: "Primary image updated." };
+    return { success: true, message: "Primary image updated." };
+  } catch {
+    return { success: false, message: "Something went wrong while updating the primary image." };
+  }
 }
 
 export async function reorderProductImagesAction(
@@ -186,13 +198,17 @@ export async function reorderProductImagesAction(
     return { success: false, message: "You must be signed in as an admin." };
   }
 
-  await prisma.$transaction(
-    orderedImageIds.map((id, index) =>
-      prisma.productImage.update({ where: { id }, data: { displayOrder: index } })
-    )
-  );
+  try {
+    await prisma.$transaction(
+      orderedImageIds.map((id, index) =>
+        prisma.productImage.update({ where: { id }, data: { displayOrder: index } })
+      )
+    );
 
-  revalidatePath(`/admin/products/${productId}`);
+    revalidatePath(`/admin/products/${productId}`);
 
-  return { success: true, message: "Image order updated." };
+    return { success: true, message: "Image order updated." };
+  } catch {
+    return { success: false, message: "Something went wrong while reordering images." };
+  }
 }

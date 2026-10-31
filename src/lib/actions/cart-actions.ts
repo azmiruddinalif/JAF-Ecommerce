@@ -48,50 +48,54 @@ export async function addToCartAction(
     return { success: false, message: "Quantity must be at least 1." };
   }
 
-  const variant = await prisma.productVariant.findUnique({
-    where: { id: variantId },
-    include: { product: true },
-  });
+  try {
+    const variant = await prisma.productVariant.findUnique({
+      where: { id: variantId },
+      include: { product: true },
+    });
 
-  if (!variant || !variant.product.published) {
-    return { success: false, message: "This item is no longer available." };
+    if (!variant || !variant.product.published) {
+      return { success: false, message: "This item is no longer available." };
+    }
+
+    if (variant.stock < 1) {
+      return { success: false, message: "This size is currently out of stock." };
+    }
+
+    const token = await ensureCartToken();
+    const cart = await ensureCart(token);
+
+    const existing = await prisma.cartItem.findUnique({
+      where: { cartId_variantId: { cartId: cart.id, variantId } },
+    });
+
+    const desiredQuantity = (existing?.quantity ?? 0) + quantity;
+    const cappedQuantity = Math.min(desiredQuantity, variant.stock);
+
+    await prisma.cartItem.upsert({
+      where: { cartId_variantId: { cartId: cart.id, variantId } },
+      create: {
+        cartId: cart.id,
+        productId: variant.productId,
+        variantId,
+        quantity: cappedQuantity,
+      },
+      update: { quantity: cappedQuantity },
+    });
+
+    refreshCartViews();
+
+    if (cappedQuantity < desiredQuantity) {
+      return {
+        success: true,
+        message: `Only ${variant.stock} in stock — added the maximum available.`,
+      };
+    }
+
+    return { success: true, message: "Added to cart." };
+  } catch {
+    return { success: false, message: "Couldn't add this to your cart. Please try again." };
   }
-
-  if (variant.stock < 1) {
-    return { success: false, message: "This size is currently out of stock." };
-  }
-
-  const token = await ensureCartToken();
-  const cart = await ensureCart(token);
-
-  const existing = await prisma.cartItem.findUnique({
-    where: { cartId_variantId: { cartId: cart.id, variantId } },
-  });
-
-  const desiredQuantity = (existing?.quantity ?? 0) + quantity;
-  const cappedQuantity = Math.min(desiredQuantity, variant.stock);
-
-  await prisma.cartItem.upsert({
-    where: { cartId_variantId: { cartId: cart.id, variantId } },
-    create: {
-      cartId: cart.id,
-      productId: variant.productId,
-      variantId,
-      quantity: cappedQuantity,
-    },
-    update: { quantity: cappedQuantity },
-  });
-
-  refreshCartViews();
-
-  if (cappedQuantity < desiredQuantity) {
-    return {
-      success: true,
-      message: `Only ${variant.stock} in stock — added the maximum available.`,
-    };
-  }
-
-  return { success: true, message: "Added to cart." };
 }
 
 export async function updateCartItemQuantityAction(
@@ -102,29 +106,33 @@ export async function updateCartItemQuantityAction(
   const token = cookieStore.get(CART_COOKIE_NAME)?.value;
   if (!token) return { success: false, message: "Your cart has expired." };
 
-  const line = await prisma.cartItem.findUnique({
-    where: { id: lineId },
-    include: { cart: true, variant: true },
-  });
+  try {
+    const line = await prisma.cartItem.findUnique({
+      where: { id: lineId },
+      include: { cart: true, variant: true },
+    });
 
-  if (!line || line.cart.sessionToken !== token) {
-    return { success: false, message: "Item not found in your cart." };
-  }
+    if (!line || line.cart.sessionToken !== token) {
+      return { success: false, message: "Item not found in your cart." };
+    }
 
-  if (quantity < 1) {
-    await prisma.cartItem.delete({ where: { id: lineId } });
+    if (quantity < 1) {
+      await prisma.cartItem.delete({ where: { id: lineId } });
+      refreshCartViews();
+      return { success: true, message: "Item removed." };
+    }
+
+    const cappedQuantity = Math.min(quantity, line.variant.stock);
+    await prisma.cartItem.update({
+      where: { id: lineId },
+      data: { quantity: cappedQuantity },
+    });
+
     refreshCartViews();
-    return { success: true, message: "Item removed." };
+    return { success: true, message: "Cart updated." };
+  } catch {
+    return { success: false, message: "Couldn't update your cart. Please try again." };
   }
-
-  const cappedQuantity = Math.min(quantity, line.variant.stock);
-  await prisma.cartItem.update({
-    where: { id: lineId },
-    data: { quantity: cappedQuantity },
-  });
-
-  refreshCartViews();
-  return { success: true, message: "Cart updated." };
 }
 
 export async function removeCartItemAction(lineId: string): Promise<CartActionResult> {
@@ -132,16 +140,20 @@ export async function removeCartItemAction(lineId: string): Promise<CartActionRe
   const token = cookieStore.get(CART_COOKIE_NAME)?.value;
   if (!token) return { success: false, message: "Your cart has expired." };
 
-  const line = await prisma.cartItem.findUnique({
-    where: { id: lineId },
-    include: { cart: true },
-  });
+  try {
+    const line = await prisma.cartItem.findUnique({
+      where: { id: lineId },
+      include: { cart: true },
+    });
 
-  if (!line || line.cart.sessionToken !== token) {
-    return { success: false, message: "Item not found in your cart." };
+    if (!line || line.cart.sessionToken !== token) {
+      return { success: false, message: "Item not found in your cart." };
+    }
+
+    await prisma.cartItem.delete({ where: { id: lineId } });
+    refreshCartViews();
+    return { success: true, message: "Item removed." };
+  } catch {
+    return { success: false, message: "Couldn't remove this item. Please try again." };
   }
-
-  await prisma.cartItem.delete({ where: { id: lineId } });
-  refreshCartViews();
-  return { success: true, message: "Item removed." };
 }

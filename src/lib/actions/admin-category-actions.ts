@@ -220,15 +220,19 @@ export async function toggleCategoryEnabledAction(categoryId: string): Promise<C
     return { success: false, message: "You must be signed in as an admin." };
   }
 
-  const category = await prisma.category.findUnique({ where: { id: categoryId } });
-  if (!category) return { success: false, message: "Category not found." };
+  try {
+    const category = await prisma.category.findUnique({ where: { id: categoryId } });
+    if (!category) return { success: false, message: "Category not found." };
 
-  await prisma.category.update({ where: { id: categoryId }, data: { enabled: !category.enabled } });
-  revalidatePath("/admin/categories");
-  revalidatePath("/admin", "layout");
-  revalidatePath("/", "layout");
+    await prisma.category.update({ where: { id: categoryId }, data: { enabled: !category.enabled } });
+    revalidatePath("/admin/categories");
+    revalidatePath("/admin", "layout");
+    revalidatePath("/", "layout");
 
-  return { success: true, message: "Updated." };
+    return { success: true, message: "Updated." };
+  } catch {
+    return { success: false, message: "Something went wrong while updating the category." };
+  }
 }
 
 export async function createQuickCategoryAction(rawName: string): Promise<CategoryActionResult> {

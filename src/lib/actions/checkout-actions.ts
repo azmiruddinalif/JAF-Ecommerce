@@ -65,38 +65,38 @@ export async function placeOrderAction(
     return { success: false, message: "Your cart is empty." };
   }
 
-  const cart = await prisma.cart.findUnique({
-    where: { sessionToken: token },
-    include: { items: { include: { product: true, variant: true } } },
-  });
-
-  if (!cart || cart.items.length === 0) {
-    return { success: false, message: "Your cart is empty." };
-  }
-
-  for (const item of cart.items) {
-    if (item.quantity > item.variant.stock) {
-      const sizeSuffix = isNoSizeVariant(item.variant.size) ? "" : ` (${item.variant.size})`;
-      return {
-        success: false,
-        message: `"${item.product.name}"${sizeSuffix} only has ${item.variant.stock} left in stock. Please update your cart.`,
-      };
-    }
-  }
-
-  const settings = await getStoreSettings();
-  const subtotalCents = cart.items.reduce((sum, item) => {
-    const unitPrice = item.variant.priceCents ?? item.product.discountPriceCents ?? item.product.basePriceCents;
-    return sum + unitPrice * item.quantity;
-  }, 0);
-
-  const deliveryFeeCents =
-    subtotalCents >= settings.freeDeliveryThresholdCents ? 0 : settings.deliveryFeeCents;
-  const discountCents = 0;
-  const totalCents = subtotalCents + deliveryFeeCents - discountCents;
-
   let order: { id: string };
   try {
+    const cart = await prisma.cart.findUnique({
+      where: { sessionToken: token },
+      include: { items: { include: { product: true, variant: true } } },
+    });
+
+    if (!cart || cart.items.length === 0) {
+      return { success: false, message: "Your cart is empty." };
+    }
+
+    for (const item of cart.items) {
+      if (item.quantity > item.variant.stock) {
+        const sizeSuffix = isNoSizeVariant(item.variant.size) ? "" : ` (${item.variant.size})`;
+        return {
+          success: false,
+          message: `"${item.product.name}"${sizeSuffix} only has ${item.variant.stock} left in stock. Please update your cart.`,
+        };
+      }
+    }
+
+    const settings = await getStoreSettings();
+    const subtotalCents = cart.items.reduce((sum, item) => {
+      const unitPrice = item.variant.priceCents ?? item.product.discountPriceCents ?? item.product.basePriceCents;
+      return sum + unitPrice * item.quantity;
+    }, 0);
+
+    const deliveryFeeCents =
+      subtotalCents >= settings.freeDeliveryThresholdCents ? 0 : settings.deliveryFeeCents;
+    const discountCents = 0;
+    const totalCents = subtotalCents + deliveryFeeCents - discountCents;
+
     order = await prisma.$transaction(async (tx) => {
       // Atomically validate and deduct stock first so concurrent orders can never oversell or make stock negative
       for (const item of cart.items) {
@@ -166,7 +166,7 @@ export async function placeOrderAction(
     }
     return {
       success: false,
-      message: "Could not complete your order due to a stock update. Please try again.",
+      message: "Could not complete your order. Please try again shortly.",
     };
   }
 

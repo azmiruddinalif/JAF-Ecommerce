@@ -57,6 +57,7 @@ export async function updateCustomPageAction(
     return { success: false, message: "Invalid page selected." };
   }
 
+  try {
   const allPages = await getAllCustomPages();
   const current = allPages[pageKey];
   const fallback = DEFAULT_PAGES[pageKey];
@@ -320,5 +321,11 @@ export async function updateCustomPageAction(
     message: `${fallback.label} updated successfully.`,
     updatedPage,
   };
+  } catch {
+    return {
+      success: false,
+      message: "Couldn't save this page — the database is unreachable. Please try again shortly.",
+    };
+  }
 }
 

@@ -432,36 +432,37 @@ export async function updateProductAction(
   }
 
   const data = parsed.data;
-  const validCategoryId = await resolveValidCategoryId(data.categoryId, fallbackCatName);
-  const existingVariants = await prisma.productVariant.findMany({
-    where: { productId },
-    select: { id: true, size: true, sku: true },
-  });
-  const existingById = new Map(existingVariants.map((v) => [v.id, v]));
-  const existingBySize = new Map(
-    existingVariants.map((v) => [v.size.trim().toUpperCase(), v])
-  );
-
-  // Match incoming variants by explicit id first, or by size if re-added without id
-  const matchedExistingIds = new Set<string>();
-  const resolvedVariants = data.variants.map((v) => {
-    if (v.id && existingById.has(v.id)) {
-      matchedExistingIds.add(v.id);
-      return { ...v, resolvedId: v.id };
-    }
-    const bySize = existingBySize.get(v.size.trim().toUpperCase());
-    if (bySize && !matchedExistingIds.has(bySize.id)) {
-      matchedExistingIds.add(bySize.id);
-      return { ...v, resolvedId: bySize.id };
-    }
-    return { ...v, resolvedId: undefined };
-  });
-
-  const idsToDelete = existingVariants
-    .map((v) => v.id)
-    .filter((id) => !matchedExistingIds.has(id));
 
   try {
+    const validCategoryId = await resolveValidCategoryId(data.categoryId, fallbackCatName);
+    const existingVariants = await prisma.productVariant.findMany({
+      where: { productId },
+      select: { id: true, size: true, sku: true },
+    });
+    const existingById = new Map(existingVariants.map((v) => [v.id, v]));
+    const existingBySize = new Map(
+      existingVariants.map((v) => [v.size.trim().toUpperCase(), v])
+    );
+
+    // Match incoming variants by explicit id first, or by size if re-added without id
+    const matchedExistingIds = new Set<string>();
+    const resolvedVariants = data.variants.map((v) => {
+      if (v.id && existingById.has(v.id)) {
+        matchedExistingIds.add(v.id);
+        return { ...v, resolvedId: v.id };
+      }
+      const bySize = existingBySize.get(v.size.trim().toUpperCase());
+      if (bySize && !matchedExistingIds.has(bySize.id)) {
+        matchedExistingIds.add(bySize.id);
+        return { ...v, resolvedId: bySize.id };
+      }
+      return { ...v, resolvedId: undefined };
+    });
+
+    const idsToDelete = existingVariants
+      .map((v) => v.id)
+      .filter((id) => !matchedExistingIds.has(id));
+
     const updatedProduct = await prisma.$transaction(async (tx) => {
       const updated = await tx.product.update({
         where: { id: productId },
@@ -607,60 +608,64 @@ export async function duplicateProductAction(productId: string): Promise<Product
     return { success: false, message: "You must be signed in as an admin." };
   }
 
-  const original = await prisma.product.findUnique({
-    where: { id: productId },
-    include: { variants: true, images: true },
-  });
+  try {
+    const original = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { variants: true, images: true },
+    });
 
-  if (!original) {
-    return { success: false, message: "Product not found." };
+    if (!original) {
+      return { success: false, message: "Product not found." };
+    }
+
+    const suffix = Math.random().toString(36).slice(2, 6);
+
+    const copy = await prisma.product.create({
+      data: {
+        name: `${original.name} (Copy)`,
+        slug: `${original.slug}-copy-${suffix}`,
+        description: original.description,
+        categoryId: original.categoryId,
+        type: original.type,
+        basePriceCents: original.basePriceCents,
+        discountPriceCents: original.discountPriceCents,
+        sku: `${original.sku}-COPY-${suffix.toUpperCase()}`,
+        brand: original.brand,
+        tags: original.tags,
+        featured: false,
+        newArrival: false,
+        published: false,
+        customizable: original.customizable,
+        showInHeroBanner: false,
+        variants: {
+          create: original.variants.map((variant) => ({
+            size: variant.size,
+            sku: `${variant.sku}-COPY-${suffix.toUpperCase()}`,
+            priceCents: variant.priceCents,
+            stock: variant.stock,
+            color: variant.color,
+            edition: variant.edition,
+            playerName: variant.playerName,
+            playerNumber: variant.playerNumber,
+          })),
+        },
+        images: {
+          create: original.images.map((image) => ({
+            publicId: image.publicId,
+            secureUrl: image.secureUrl,
+            altText: image.altText,
+            displayOrder: image.displayOrder,
+            isPrimary: image.isPrimary,
+          })),
+        },
+      },
+    });
+
+    revalidatePath("/admin/products");
+    return { success: true, message: "Product duplicated as a draft.", productId: copy.id };
+  } catch {
+    return { success: false, message: "Something went wrong while duplicating the product." };
   }
-
-  const suffix = Math.random().toString(36).slice(2, 6);
-
-  const copy = await prisma.product.create({
-    data: {
-      name: `${original.name} (Copy)`,
-      slug: `${original.slug}-copy-${suffix}`,
-      description: original.description,
-      categoryId: original.categoryId,
-      type: original.type,
-      basePriceCents: original.basePriceCents,
-      discountPriceCents: original.discountPriceCents,
-      sku: `${original.sku}-COPY-${suffix.toUpperCase()}`,
-      brand: original.brand,
-      tags: original.tags,
-      featured: false,
-      newArrival: false,
-      published: false,
-      customizable: original.customizable,
-      showInHeroBanner: false,
-      variants: {
-        create: original.variants.map((variant) => ({
-          size: variant.size,
-          sku: `${variant.sku}-COPY-${suffix.toUpperCase()}`,
-          priceCents: variant.priceCents,
-          stock: variant.stock,
-          color: variant.color,
-          edition: variant.edition,
-          playerName: variant.playerName,
-          playerNumber: variant.playerNumber,
-        })),
-      },
-      images: {
-        create: original.images.map((image) => ({
-          publicId: image.publicId,
-          secureUrl: image.secureUrl,
-          altText: image.altText,
-          displayOrder: image.displayOrder,
-          isPrimary: image.isPrimary,
-        })),
-      },
-    },
-  });
-
-  revalidatePath("/admin/products");
-  return { success: true, message: "Product duplicated as a draft.", productId: copy.id };
 }
 
 export async function toggleProductFlagAction(
@@ -673,21 +678,25 @@ export async function toggleProductFlagAction(
     return { success: false, message: "You must be signed in as an admin." };
   }
 
-  const product = await prisma.product.findUnique({ where: { id: productId } });
-  if (!product) return { success: false, message: "Product not found." };
+  try {
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product) return { success: false, message: "Product not found." };
 
-  await prisma.product.update({
-    where: { id: productId },
-    data: { [flag]: !product[flag] },
-  });
+    await prisma.product.update({
+      where: { id: productId },
+      data: { [flag]: !product[flag] },
+    });
 
-  revalidatePath("/admin/products");
-  revalidatePath("/admin/stocks");
-  revalidatePath("/admin", "layout");
-  revalidatePath("/shop");
-  revalidatePath("/", "layout");
+    revalidatePath("/admin/products");
+    revalidatePath("/admin/stocks");
+    revalidatePath("/admin", "layout");
+    revalidatePath("/shop");
+    revalidatePath("/", "layout");
 
-  return { success: true, message: "Updated." };
+    return { success: true, message: "Updated." };
+  } catch {
+    return { success: false, message: "Something went wrong while updating the product." };
+  }
 }
 
 export async function updateProductSizeStocksAction(
@@ -701,16 +710,16 @@ export async function updateProductSizeStocksAction(
     return { success: false, message: "You must be signed in as an admin." };
   }
 
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    include: { variants: true, category: true },
-  });
-
-  if (!product) {
-    return { success: false, message: "Product not found." };
-  }
-
   try {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { variants: true, category: true },
+    });
+
+    if (!product) {
+      return { success: false, message: "Product not found." };
+    }
+
     await prisma.$transaction(async (tx) => {
       for (const [rawSize, rawQty] of Object.entries(sizeQuantities)) {
         const size = rawSize.trim();
