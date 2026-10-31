@@ -351,16 +351,20 @@ export async function getProductByIdForAdmin(id: string) {
 
 export async function getRelatedProducts(categoryId: string, excludeProductId: string, limit = 4) {
   await connection();
-  return prisma.product.findMany({
-    where: {
-      published: true,
-      categoryId,
-      id: { not: excludeProductId },
-    },
-    include: productListInclude,
-    orderBy: { createdAt: "desc" },
-    take: limit,
-  });
+  try {
+    return await prisma.product.findMany({
+      where: {
+        published: true,
+        categoryId,
+        id: { not: excludeProductId },
+      },
+      include: productListInclude,
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getAdminProducts(params: {
@@ -425,16 +429,20 @@ export async function getAdminProducts(params: {
 
 export async function getLowStockProducts(threshold = 5) {
   await connection();
-  return prisma.product.findMany({
-    where: {
-      published: true,
-      variants: { some: { stock: { lte: threshold } } },
-    },
-    include: {
-      variants: { where: { stock: { lte: threshold } } },
-    },
-    take: 10,
-  });
+  try {
+    return await prisma.product.findMany({
+      where: {
+        published: true,
+        variants: { some: { stock: { lte: threshold } } },
+      },
+      include: {
+        variants: { where: { stock: { lte: threshold } } },
+      },
+      take: 10,
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getProductStockOverview() {
