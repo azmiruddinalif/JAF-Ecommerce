@@ -235,7 +235,7 @@ function FullWidthBannerSlider({
               />
               <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/95 via-black/70 to-transparent lg:from-ink lg:via-transparent" />
 
-              <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-14 pt-20 sm:px-6 lg:justify-center lg:px-12 lg:py-16">
+              <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-14 pt-20 sm:px-6 lg:justify-center lg:px-8 lg:py-16">
                 <div className={`flex max-w-2xl flex-col ${alignClasses}`}>
                   {slide.eyebrow && (
                     <p
@@ -528,7 +528,8 @@ export function HeroInteractive({
 
         {/* Bottom Black Overlay Content overlapping the lower edge of the image */}
         <div className="relative z-10 -mt-24 bg-[linear-gradient(to_top,#0a0b09_0%,#0a0b09_68%,rgba(10,11,9,0.82)_84%,rgba(10,11,9,0)_100%)] px-4 pb-6 pt-12 sm:-mt-28 sm:px-6 sm:pb-8">
-          <div className="flex flex-col gap-2.5">
+          <div className="mx-auto max-w-7xl">
+            <div className="flex flex-col gap-2.5">
             {heroConfig.eyebrow && (
               <p
                 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-paper/90 sm:text-xs"
@@ -658,13 +659,16 @@ export function HeroInteractive({
           </div>
         </div>
       </div>
+      </div>
 
       {/* =================================================================== */}
       {/* DESKTOP (>= lg): 2-Column Editorial Hero + Bottom-Right Price Card  */}
       {/* =================================================================== */}
-      <div className="hidden lg:grid lg:grid-cols-2">
-        <div className="flex flex-col justify-center px-12 py-0 xl:px-20">
-          <div className="max-w-lg">
+      <div className="hidden lg:block">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 lg:gap-8 xl:gap-14 lg:items-center">
+            <div className="flex flex-col justify-center py-12 lg:py-16">
+              <div className="max-w-xl">
             {heroConfig.eyebrow && (
               <p
                 className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-paper-dim"
@@ -761,10 +765,10 @@ export function HeroInteractive({
           </div>
         </div>
 
-        <div
-          className={`relative h-165 overflow-hidden bg-[radial-gradient(ellipse_at_55%_45%,#2a2a2a_0%,#141414_55%,#0b0b0b_100%)] ${HERO_DESKTOP_MASK}`}
-          style={rightBackdropStyle}
-        >
+            <div
+              className={`relative h-150 xl:h-165 w-full overflow-hidden rounded-2xl bg-[radial-gradient(ellipse_at_55%_45%,#2a2a2a_0%,#141414_55%,#0b0b0b_100%)] ${HERO_DESKTOP_MASK}`}
+              style={rightBackdropStyle}
+            >
           {count > 0 ? (
             <>
               {slides.map((slide, i) => {
@@ -815,7 +819,7 @@ export function HeroInteractive({
                     href={`/product/${slide.slug}`}
                     aria-hidden={i !== active}
                     tabIndex={i === active ? undefined : -1}
-                    className={`absolute right-0 bottom-8 z-10 flex w-44 flex-col gap-2.5 overflow-hidden rounded-l-2xl rounded-r-none border border-r-0 border-gold-bright/25 bg-ink/65 px-4 py-4 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.35),inset_0_-10px_16px_-12px_rgba(255,255,255,0.15)] backdrop-blur-md backdrop-saturate-150 transition-opacity duration-1000 ease-in-out ${
+                    className={`absolute right-4 bottom-6 z-10 flex w-44 flex-col gap-2.5 overflow-hidden rounded-xl border border-gold-bright/30 bg-ink/75 px-4 py-3.5 shadow-2xl backdrop-blur-md backdrop-saturate-150 transition-opacity duration-1000 ease-in-out ${
                       i === active
                         ? "opacity-100"
                         : "pointer-events-none opacity-0"
@@ -859,6 +863,8 @@ export function HeroInteractive({
           ) : (
             <div className="h-full w-full bg-ink-raised" />
           )}
+            </div>
+          </div>
         </div>
       </div>
     </section>

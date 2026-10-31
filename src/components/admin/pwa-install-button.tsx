@@ -24,9 +24,12 @@ if (typeof window !== "undefined") {
 }
 
 export function usePwaInstall() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(
-    () => (typeof window !== "undefined" ? (window.__jafDeferredPwaPrompt ?? null) : null),
-  );
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(() =>
+      typeof window !== "undefined"
+        ? (window.__jafDeferredPwaPrompt ?? null)
+        : null,
+    );
   const [isStandalone, setIsStandalone] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
 
@@ -40,7 +43,9 @@ export function usePwaInstall() {
 
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+      (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+        true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsStandalone(standalone);
 
     if (window.__jafDeferredPwaPrompt) {
@@ -140,13 +145,21 @@ export function PwaInstallGuideModal({
             </div>
             <ol className="space-y-1.5 text-paper-dim">
               <li>
-                1. Click the <strong className="text-paper">Install icon</strong> in the right side
-                of your browser address bar (or open the <strong className="text-paper">⋮</strong>{" "}
-                browser menu).
+                1. Click the{" "}
+                <strong className="text-paper">Install icon</strong> in the
+                right side of your browser address bar (or open the{" "}
+                <strong className="text-paper">⋮</strong> browser menu).
               </li>
               <li>
-                2. Select <strong className="text-paper">&ldquo;Install JAF&rdquo;</strong> or{" "}
-                <strong className="text-paper">&ldquo;Install App&rdquo;</strong>.
+                2. Select{" "}
+                <strong className="text-paper">
+                  &ldquo;Install JAF&rdquo;
+                </strong>{" "}
+                or{" "}
+                <strong className="text-paper">
+                  &ldquo;Install App&rdquo;
+                </strong>
+                .
               </li>
             </ol>
           </div>
@@ -159,13 +172,15 @@ export function PwaInstallGuideModal({
             </div>
             <ol className="space-y-1.5 text-paper-dim">
               <li>
-                1. Tap the <strong className="text-paper">Share</strong> button at the bottom of
-                Safari.
+                1. Tap the <strong className="text-paper">Share</strong> button
+                at the bottom of Safari.
               </li>
               <li>
                 2. Scroll down and tap{" "}
-                <strong className="text-paper">&ldquo;Add to Home Screen&rdquo;</strong>, then tap{" "}
-                <strong className="text-paper">Add</strong>.
+                <strong className="text-paper">
+                  &ldquo;Add to Home Screen&rdquo;
+                </strong>
+                , then tap <strong className="text-paper">Add</strong>.
               </li>
             </ol>
           </div>
@@ -193,7 +208,8 @@ export function PwaInstallButton({
   label?: string;
   variant?: "primary" | "secondary" | "outline";
 }) {
-  const { isStandalone, showGuideModal, setShowGuideModal, triggerInstall } = usePwaInstall();
+  const { isStandalone, showGuideModal, setShowGuideModal, triggerInstall } =
+    usePwaInstall();
 
   if (isStandalone) {
     return (
@@ -221,8 +237,10 @@ export function PwaInstallButton({
         <Download size={14} />
         <span>{label}</span>
       </Button>
-      <PwaInstallGuideModal open={showGuideModal} onClose={() => setShowGuideModal(false)} />
+      <PwaInstallGuideModal
+        open={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+      />
     </>
   );
 }
-

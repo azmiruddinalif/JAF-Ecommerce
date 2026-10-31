@@ -1,5 +1,3 @@
-const CACHE_NAME = "jaf-pwa-v3";
-
 self.addEventListener("install", () => {
   self.skipWaiting();
 });
@@ -18,7 +16,5 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
 
   // Always network-first so Next.js HMR, CSS, JS, and live admin data are never stale
-  event.respondWith(
-    fetch(request).catch(() => caches.match(request)),
-  );
+  event.respondWith(fetch(request).catch(() => caches.match(request)));
 });
