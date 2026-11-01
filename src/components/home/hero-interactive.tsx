@@ -54,10 +54,40 @@ const DEFAULT_MATCHDAY_SHOWCASE: HeroSlide[] = [
 
 const STADIUM_DAYLIGHT_BG = "/images/hero-stadium-daylight.jpg";
 
+function renderHeadline(
+  headline: string,
+  accentWord = "fashion",
+  accentColor?: string,
+) {
+  if (!headline) return null;
+  const targets = (accentWord || "")
+    .split(",")
+    .map((w) => w.trim().toLowerCase())
+    .filter(Boolean);
+
+  return headline.split(/(\s+)/).map((part, i) => {
+    const bare = part.replace(/[.,!?;:]+$/, "").toLowerCase();
+    if (targets.length > 0 && targets.includes(bare)) {
+      return (
+        <span
+          key={i}
+          className="text-amber-500"
+          style={accentColor ? { color: accentColor } : undefined}
+        >
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+}
+
 export function HeroInteractive({
+  headline,
   subheadline,
   fallbackImageUrl,
   slides,
+  heroConfig,
 }: {
   headline: string;
   subheadline: string;
@@ -150,45 +180,120 @@ export function HeroInteractive({
           <div className="order-2 flex flex-col items-start lg:order-1 lg:col-span-6 xl:col-span-7">
             {/* Tag / Eyebrow Row */}
             <div className="mb-4 sm:mb-6 flex flex-wrap items-center gap-2.5">
-              <span className="text-xs sm:text-sm font-black uppercase tracking-[0.22em] text-slate-800">
-                2026 MATCHDAY COLLECTION
+              <span
+                className="text-xs sm:text-sm font-black uppercase tracking-[0.22em] text-slate-800"
+                style={
+                  heroConfig?.eyebrowColor
+                    ? { color: heroConfig.eyebrowColor }
+                    : undefined
+                }
+              >
+                {heroConfig?.eyebrow || "Authentic Football Jerseys"}
               </span>
               <span className="rounded-md bg-amber-400 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-950 shadow-xs">
                 NEW DROP
               </span>
             </div>
 
-            {/* Massive Condensed Headline — "WEAR THE PASSION." (Original JAF copy to avoid copyright) */}
-            <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl xl:text-[96px] uppercase leading-[0.88] tracking-tight text-slate-950 drop-shadow-xs">
-              WEAR <br />
-              <span className="text-slate-950">THE PASSION.</span>
+            {/* Dynamic Headline configured from Dashboard */}
+            <h1
+              className="font-display text-4xl sm:text-6xl lg:text-7xl xl:text-8xl uppercase leading-[0.92] tracking-tight text-slate-950 drop-shadow-xs"
+              style={
+                heroConfig?.textColor
+                  ? { color: heroConfig.textColor }
+                  : undefined
+              }
+            >
+              {renderHeadline(
+                headline || "WE ARE THE DEFINITIVE IN FOOTBALL FASHION",
+                heroConfig?.accentWord,
+                heroConfig?.accentColor,
+              )}
             </h1>
 
-            {/* Subheadline */}
-            <p className="mt-4 sm:mt-6 max-w-xl text-xs sm:text-base leading-relaxed text-slate-600 font-medium">
+            {/* Subheadline configured from Dashboard */}
+            <p
+              className="mt-4 sm:mt-6 max-w-xl text-xs sm:text-base leading-relaxed text-slate-600 font-medium"
+              style={
+                heroConfig?.subtextColor
+                  ? { color: heroConfig.subtextColor }
+                  : undefined
+              }
+            >
               {subheadline ||
-                "Engineered with authentic matchday mesh, high-definition club crests, and moisture-wicking technology. Hand-inspected quality delivered across Bangladesh."}
+                "Premium football jerseys crafted for the modern fan. Discover iconic club designs, authentic-inspired fits, and timeless football culture blended with contemporary streetwear style."}
             </p>
 
-            {/* CTA Buttons Row (Image 5 style: warm amber pill + outline pill) */}
+            {/* CTA Buttons Row from Dashboard Config */}
             <div className="mt-7 sm:mt-9 flex flex-wrap items-center gap-3 sm:gap-4">
-              <Link
-                href="/shop"
-                className="group inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-950 shadow-md shadow-amber-400/25 hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
-              >
-                <span>SHOP NEW KITS</span>
-                <ArrowRight
-                  size={16}
-                  className="transition-transform duration-200 group-hover:translate-x-1"
-                />
-              </Link>
+              {heroConfig?.buttons && heroConfig.buttons.length > 0 ? (
+                <>
+                  {heroConfig.buttons.map((btn, idx) => {
+                    const isPrimary = btn.variant === "primary";
+                    const customStyle: React.CSSProperties = {};
+                    if (btn.bgColor) {
+                      customStyle.backgroundColor = btn.bgColor;
+                      customStyle.borderColor = btn.bgColor;
+                    }
+                    if (btn.textColor) {
+                      customStyle.color = btn.textColor;
+                    }
 
-              <Link
-                href="/category/club-jerseys"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
-              >
-                <span>EXPLORE COLLECTION</span>
-              </Link>
+                    return (
+                      <Link
+                        key={btn.id || idx}
+                        href={btn.href || "/shop"}
+                        style={
+                          Object.keys(customStyle).length > 0
+                            ? customStyle
+                            : undefined
+                        }
+                        className={
+                          isPrimary
+                            ? "group inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-950 shadow-md shadow-amber-400/25 hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
+                            : "inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                        }
+                      >
+                        <span>{btn.label}</span>
+                        {(btn.icon === "arrow-right" || (!btn.icon && isPrimary)) && (
+                          <ArrowRight
+                            size={16}
+                            className="transition-transform duration-200 group-hover:translate-x-1"
+                          />
+                        )}
+                      </Link>
+                    );
+                  })}
+                  {heroConfig.buttons.length === 1 && (
+                    <Link
+                      href="/category/club-jerseys"
+                      className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                    >
+                      <span>EXPLORE COLLECTION</span>
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/shop"
+                    className="group inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-950 shadow-md shadow-amber-400/25 hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    <span>SHOP NEW KITS</span>
+                    <ArrowRight
+                      size={16}
+                      className="transition-transform duration-200 group-hover:translate-x-1"
+                    />
+                  </Link>
+
+                  <Link
+                    href="/category/club-jerseys"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    <span>EXPLORE COLLECTION</span>
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Micro Feature Badges Row */}
@@ -353,17 +458,17 @@ export function HeroInteractive({
             type="button"
             onClick={handlePrev}
             aria-label="Previous jersey"
-            className="size-9 sm:size-10 rounded-full border border-white/30 bg-white/40 text-white backdrop-blur-md shadow-lg hover:bg-white/10 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+            className="size-9 sm:size-10 rounded-full border border-white/20 bg-slate-950/60 text-white backdrop-blur-md shadow-lg hover:bg-slate-950/80 hover:border-white/40 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
           >
-            <ChevronLeft size={16} color="black" />
+            <ChevronLeft size={16} className="text-white" />
           </button>
           <button
             type="button"
             onClick={handleNext}
             aria-label="Next jersey"
-            className="size-9 sm:size-10 rounded-full border border-white/30 bg-white/40 text-white backdrop-blur-md shadow-lg hover:bg-white/10 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+            className="size-9 sm:size-10 rounded-full border border-white/20 bg-slate-950/60 text-white backdrop-blur-md shadow-lg hover:bg-slate-950/80 hover:border-white/40 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
           >
-            <ChevronRight size={16} color="black" />
+            <ChevronRight size={16} className="text-white" />
           </button>
         </div>
       </div>
