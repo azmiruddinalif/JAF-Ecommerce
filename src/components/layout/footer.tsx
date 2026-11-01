@@ -130,18 +130,17 @@ export async function Footer() {
       />
 
       <div className="relative mx-auto max-w-7xl px-4 pt-16 pb-12 sm:px-6 lg:px-8">
-        {/* FULL WIDTH Architectural Flagship Showroom & Address Card (Top Bar) */}
         {shopInfo.address && (
           <div
             tabIndex={0}
             role="region"
             aria-label="Flagship Showroom & Outlet Location"
-            className="group relative mb-14 w-full border border-slate-200/90 bg-white p-6 shadow-xs backdrop-blur-md transition-all duration-300 hover:border-amber-400/40 hover:shadow-[0_0_36px_-8px_rgba(245,158,11,0.18)] focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 select-text cursor-text sm:p-7"
+            className="group relative mb-14 w-full border border-slate-200/90 bg-white p-6 shadow-xs backdrop-blur-md transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-amber-400 select-text cursor-text sm:p-7"
           >
             {/* Header Strip with Glowing Badge */}
             <div className="flex flex-col gap-3 border-b border-amber-400/20 pb-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-md border border-amber-400/30 bg-amber-400/10 text-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.2)]">
+                <span className="flex h-7 w-7 items-center justify-center rounded-md border border-amber-400/30 bg-amber-400/10 text-amber-500">
                   <MapPin size={14} />
                 </span>
                 <div>
@@ -161,34 +160,33 @@ export async function Footer() {
               </div>
             </div>
 
-            {/* 2-Column Spacious Grid: Location & Hotlines */}
             <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-12 md:gap-8">
-              {/* Left Column: Full Address Description (15px font normal) */}
               <div className="flex flex-col justify-between gap-3 md:col-span-7">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-paper-dim">
                     Store Location &amp; Visit Address:
                   </span>
-                  <p className="mt-1.5 text-[15px] font-normal leading-relaxed text-paper">
+                  <p className="mt-1.5 text-sm font-normal leading-relaxed text-paper">
                     {shopInfo.address}
                   </p>
                 </div>
-                {shopInfo.locationBadges && shopInfo.locationBadges.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-paper-dim">
-                    {shopInfo.locationBadges.map((badge) => (
-                      <span
-                        key={badge.id || badge.label}
-                        className={
-                          badge.highlight
-                            ? "inline-flex items-center gap-1.5 rounded-sm border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-1 font-mono text-[10px] uppercase text-emerald-400"
-                            : "inline-flex items-center gap-1.5 rounded-sm border border-ink-border bg-ink px-2.5 py-1 font-mono text-[10px] uppercase text-paper-dim"
-                        }
-                      >
-                        {badge.label}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                {shopInfo.locationBadges &&
+                  shopInfo.locationBadges.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-paper-dim">
+                      {shopInfo.locationBadges.map((badge) => (
+                        <span
+                          key={badge.id || badge.label}
+                          className={
+                            badge.highlight
+                              ? "inline-flex items-center gap-1.5 rounded-sm border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-1 font-mono text-[10px] uppercase text-emerald-400"
+                              : "inline-flex items-center gap-1.5 rounded-sm border border-ink-border bg-ink px-2.5 py-1 font-mono text-[10px] uppercase text-paper-dim"
+                          }
+                        >
+                          {badge.label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
               </div>
 
               {/* Right Column: Direct Hotline Buttons & Concierge */}

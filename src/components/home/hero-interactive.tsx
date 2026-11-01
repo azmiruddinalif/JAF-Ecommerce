@@ -157,10 +157,7 @@ export function HeroInteractive({
         />
 
         {/* Global soft white wash over entire banner (silvery, bright daylight atmosphere) */}
-        <div className="pointer-events-none absolute inset-0 bg-white/35 backdrop-blur-[0.5px]" />
-
-        {/* Global soft white wash over entire banner (silvery, bright daylight atmosphere) */}
-        <div className="pointer-events-none absolute inset-0 bg-white/10 backdrop-blur-[0.5px]" />
+        <div className="pointer-events-none absolute inset-0 bg-white/20 backdrop-blur-[0.5px]" />
 
         {/* Sunlight flare & ambient brightness in the upper sky */}
         <div className="pointer-events-none absolute inset-0 bg-radial-at-t from-amber-100/40 via-sky-50/20 to-transparent" />
@@ -169,18 +166,10 @@ export function HeroInteractive({
         <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-white via-white/80 to-white/20 sm:via-white/70 sm:to-white/10" />
 
         {/* Top sky soft white wash */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-linear-to-b from-white/85 via-white/35 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-linear-to-b from-white/10 via-white/35 to-transparent" />
 
         {/* Bottom soft white ground fade blending seamlessly into the page */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 sm:h-52 bg-linear-to-t from-white via-white/70 to-transparent" />
-
-        {/* Bottom subtle edge divider */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-slate-200/60" />
-      </div>
-
-      {/* Giant Faint 2026 Watermark in bottom-right (Picture 2 style) */}
-      <div className="pointer-events-none absolute right-4 sm:right-10 bottom-6 sm:bottom-10 z-10 select-none font-display text-8xl sm:text-9xl lg:text-[140px] xl:text-[160px] font-black tracking-tighter text-slate-900/[0.05] leading-none">
-        2026
       </div>
 
       {/* Giant Faint 2026 Watermark in bottom-right (Picture 2 style) */}
@@ -426,23 +415,43 @@ export function HeroInteractive({
                 </div>
               </div>
             </div>
-
-            {/* Slide Navigation Dots (Mobile friendly) */}
-            <div className="absolute -bottom-4.5 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:hidden z-20">
-              {activeSlides.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setActive(i)}
-                  aria-label={`Jump to slide ${i + 1}`}
-                  className={`h-1.5 transition-all rounded-full ${
-                    i === active ? "w-6 bg-slate-950" : "w-1.5 bg-slate-300"
-                  }`}
-                />
-              ))}
-            </div>
           </div>
         </div>
+      </div>
+
+      {/* ===================================================================== */}
+      {/* BOTTOM-LEFT: Slider Indication Lines (Outside container, banner edge) */}
+      {/* ===================================================================== */}
+      <div className="absolute left-5 bottom-5 sm:left-8 sm:bottom-7 lg:left-10 lg:bottom-8 xl:left-12 xl:bottom-9 z-30 flex items-center gap-2 sm:gap-3 select-none">
+        {activeSlides.map((_, i) => {
+          const isActive = i === active;
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setActive(i)}
+              aria-label={`Jump to slide ${i + 1}`}
+              className="group flex items-center gap-1.5 sm:gap-2 py-1.5 cursor-pointer transition-all focus:outline-none"
+            >
+              <span
+                className={`font-mono text-[10px] sm:text-xs font-bold tabular-nums transition-colors ${
+                  isActive
+                    ? "text-slate-950 font-black"
+                    : "text-slate-400 group-hover:text-slate-700"
+                }`}
+              >
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span
+                className={`h-0.5 sm:h-1 transition-all duration-300 rounded-full ${
+                  isActive
+                    ? "w-7 sm:w-10 bg-amber-400 shadow-xs"
+                    : "w-3 sm:w-4 bg-slate-300 group-hover:bg-slate-400 group-hover:w-5"
+                }`}
+              />
+            </button>
+          );
+        })}
       </div>
 
       {/* ===================================================================== */}
