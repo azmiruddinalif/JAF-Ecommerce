@@ -162,8 +162,11 @@ export function HeroInteractive({
         {/* Atmospheric White Gradient for text legibility on left (pure minimal white) */}
         <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-white/95 via-white/85 to-white/20 sm:via-white/70 sm:to-transparent lg:w-3/5" />
 
-        {/* Multi-angle subtle vignette to frame the open stadium pitch */}
-        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-white/90 via-transparent to-transparent lg:from-white/40" />
+        {/* Subtle white ground vignette strictly on left side */}
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-white/80 via-transparent to-transparent lg:w-3/5" />
+
+        {/* Bottom-Right Cinematic Stadium Shadow for crystal-clear readability (matching reference banner) */}
+        <div className="pointer-events-none absolute right-0 bottom-0 h-52 sm:h-68 w-80 sm:w-120 bg-radial-at-br from-slate-950/90 via-slate-950/50 to-transparent" />
 
         {/* Bottom Concrete Stadium Parapet / Railing Geometry */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 sm:h-14 bg-linear-to-t from-slate-900/10 via-slate-900/5 to-transparent border-t border-slate-300/40 backdrop-blur-[2px]" />
@@ -430,23 +433,23 @@ export function HeroInteractive({
       {/* Positioned outside max-w-7xl container, at the banner's outer edge   */}
       {/* ===================================================================== */}
       <div className="absolute right-5 bottom-5 sm:right-8 sm:bottom-7 lg:right-10 lg:bottom-8 xl:right-12 xl:bottom-9 z-30 flex flex-col items-end gap-3 sm:gap-4 select-none">
-        {/* Technical Bracket + Stacked Kit Title */}
-        <div className="flex items-stretch gap-2.5 text-left">
+        {/* Technical Bracket + Stacked Kit Title (Frosted dark pill for crystal-clear readability) */}
+        <div className="flex items-stretch gap-3 text-left rounded-xl bg-slate-950/70 px-3.5 py-2.5 backdrop-blur-md border border-white/15 shadow-2xl">
           {/* Architectural bracket with top & bottom ticks */}
-          <div className="relative w-1.5 border-l-2 border-white/80 flex flex-col justify-between py-0.5">
-            <span className="h-0.5 w-1.5 bg-white/80 block" />
-            <span className="h-0.5 w-1.5 bg-white/80 block" />
+          <div className="relative w-1.5 border-l-2 border-white flex flex-col justify-between py-0.5">
+            <span className="h-0.5 w-2 bg-white block shadow-xs" />
+            <span className="h-0.5 w-2 bg-white block shadow-xs" />
           </div>
 
           {/* Stacked typography */}
           <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.2em] leading-tight">
-            <p className="text-[11px] sm:text-xs font-black text-white">
+            <p className="text-[11px] sm:text-xs font-black text-white max-w-44 sm:max-w-56 leading-snug drop-shadow-sm">
               {currentSlide.name || "MATCHDAY KIT"}
             </p>
-            <p className="text-[9px] sm:text-[10px] font-bold text-slate-200">
+            <p className="text-[9px] sm:text-[10px] font-extrabold text-slate-300 drop-shadow-sm">
               AUTHENTIC FIT
             </p>
-            <p className="text-[9px] sm:text-[10px] font-black text-amber-400">
+            <p className="text-[9px] sm:text-[10px] font-black text-amber-400 drop-shadow-sm">
               2026
             </p>
           </div>
