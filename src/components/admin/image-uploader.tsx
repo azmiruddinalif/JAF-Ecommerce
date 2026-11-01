@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
-import Image from "next/image";
-import { ArrowDown, ArrowUp, Plus, Star, Trash2, UploadCloud } from "lucide-react";
+import { useOptimistic, useRef, useState, useTransition } from "react";
+import { Plus, Star, Trash2, UploadCloud } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { SortableImageGrid } from "@/components/admin/sortable-image-grid";
+import { compressImageForUpload, sortFilesNaturally } from "@/lib/image-client";
 import {
   addProductImageUrlAction,
   deleteProductImageAction,
@@ -25,24 +26,34 @@ export function ImageUploader({ productId, images }: { productId: string; images
   const [isPending, startTransition] = useTransition();
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [imageUrlInput, setImageUrlInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Reorders show instantly; the server result replaces this when the action settles.
+  const [optimisticImages, setOptimisticImages] = useOptimistic(images);
+
   function uploadFiles(files: FileList | File[]) {
     setError(null);
-    const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    // Serial order: natural filename order (1, 2, 3 … 10), uploaded one after another.
+    const fileArray = sortFilesNaturally(
+      Array.from(files).filter((f) => f.type.startsWith("image/")),
+    );
     if (fileArray.length === 0) return;
 
     startTransition(async () => {
-      for (const file of fileArray) {
+      setProgress({ done: 0, total: fileArray.length });
+      for (let i = 0; i < fileArray.length; i++) {
         const formData = new FormData();
-        formData.set("file", file);
+        formData.set("file", await compressImageForUpload(fileArray[i]));
         const result = await uploadProductImageAction(productId, formData);
         if (!result.success) {
-          setError(result.message);
+          setError(`${fileArray[i].name}: ${result.message}`);
           break;
         }
+        setProgress({ done: i + 1, total: fileArray.length });
       }
+      setProgress(null);
     });
   }
 
@@ -72,13 +83,19 @@ export function ImageUploader({ productId, images }: { productId: string; images
     });
   }
 
-  function move(index: number, direction: -1 | 1) {
-    const next = [...images];
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= next.length) return;
-    [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+  function reorder(orderedIds: string[]) {
+    const byId = new Map(images.map((img) => [img.id, img]));
+    const next = orderedIds
+      .map((id, index) => {
+        const img = byId.get(id);
+        return img ? { ...img, displayOrder: index, isPrimary: index === 0 } : null;
+      })
+      .filter((img): img is ProductImageRow => img !== null);
+
     startTransition(async () => {
-      await reorderProductImagesAction(productId, next.map((img) => img.id));
+      setOptimisticImages(next);
+      const result = await reorderProductImagesAction(productId, orderedIds);
+      if (!result.success) setError(result.message);
     });
   }
 
@@ -86,11 +103,14 @@ export function ImageUploader({ productId, images }: { productId: string; images
     <div className="flex flex-col gap-4">
       <div
         onDragOver={(e) => {
+          // Only react to files dragged in from the desktop, not thumbnail re-ordering.
+          if (!e.dataTransfer.types.includes("Files")) return;
           e.preventDefault();
           setIsDragging(true);
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={(e) => {
+          if (!e.dataTransfer.types.includes("Files")) return;
           e.preventDefault();
           setIsDragging(false);
           uploadFiles(e.dataTransfer.files);
@@ -101,15 +121,20 @@ export function ImageUploader({ productId, images }: { productId: string; images
         }`}
       >
         <UploadCloud size={28} className="text-gold" />
-        <p className="text-sm text-paper">Drag & drop images here, or click to browse</p>
-        <p className="text-xs text-paper-dim">JPEG, PNG, WEBP or AVIF — up to 8MB each</p>
+        <p className="text-sm text-paper">Drag &amp; drop multiple images here, or click to select many at once</p>
+        <p className="text-xs text-paper-dim">
+          They upload one after another in file-name order. JPEG, PNG, WEBP or AVIF — large photos are auto-resized.
+        </p>
         <input
           ref={inputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp,image/avif"
           multiple
           className="hidden"
-          onChange={(e) => e.target.files && uploadFiles(e.target.files)}
+          onChange={(e) => {
+            if (e.target.files) uploadFiles(e.target.files);
+            e.target.value = "";
+          }}
         />
       </div>
 
@@ -137,34 +162,57 @@ export function ImageUploader({ productId, images }: { productId: string; images
       </div>
 
       {error && <p className="border border-danger/40 bg-danger/10 px-4 py-2 text-sm text-danger">{error}</p>}
-      {isPending && <p className="text-xs text-paper-dim">Working...</p>}
-
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {images.map((image, index) => (
-          <div key={image.id} className="group relative aspect-square overflow-hidden border border-ink-border">
-            <Image src={image.secureUrl} alt={image.altText ?? "Product image"} fill sizes="200px" className="object-cover" />
-            {image.isPrimary && (
-              <span className="absolute left-1 top-1 bg-gold-bright px-2 py-0.5 text-[10px] font-semibold uppercase text-ink">
-                Primary
-              </span>
-            )}
-            <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-paper/85 py-1.5 opacity-0 transition-opacity group-hover:opacity-100">
-              <button type="button" onClick={() => move(index, -1)} aria-label="Move left" className="p-1 text-ink hover:text-gold-bright">
-                <ArrowUp size={14} className="-rotate-90" />
-              </button>
-              <button type="button" onClick={() => setPrimary(image.id)} aria-label="Set as primary" className="p-1 text-ink hover:text-gold-bright">
-                <Star size={14} fill={image.isPrimary ? "currentColor" : "none"} />
-              </button>
-              <button type="button" onClick={() => move(index, 1)} aria-label="Move right" className="p-1 text-ink hover:text-gold-bright">
-                <ArrowDown size={14} className="-rotate-90" />
-              </button>
-              <button type="button" onClick={() => remove(image.id)} aria-label="Delete image" className="p-1 text-ink hover:text-danger">
-                <Trash2 size={14} />
-              </button>
-            </div>
+      {progress ? (
+        <div className="flex flex-col gap-1.5">
+          <p className="text-xs text-paper-dim">
+            Uploading {Math.min(progress.done + 1, progress.total)} of {progress.total}…
+          </p>
+          <div className="h-1 w-full bg-ink-border">
+            <div
+              className="h-full bg-gold-bright transition-all"
+              style={{ width: `${(progress.done / progress.total) * 100}%` }}
+            />
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        isPending && <p className="text-xs text-paper-dim">Working...</p>
+      )}
+
+      {optimisticImages.length > 1 && (
+        <p className="text-xs text-paper-dim">
+          Drag images to change their order (or use the arrows). The first image is the primary cover photo.
+        </p>
+      )}
+
+      <SortableImageGrid
+        items={optimisticImages.map((img) => ({
+          id: img.id,
+          url: img.secureUrl,
+          alt: img.altText ?? "Product image",
+        }))}
+        onReorder={reorder}
+        disabled={isPending}
+        renderActions={(item, index) => (
+          <>
+            <button
+              type="button"
+              onClick={() => setPrimary(item.id)}
+              aria-label="Set as primary"
+              className="p-1 text-paper hover:text-gold-bright"
+            >
+              <Star size={14} fill={index === 0 ? "currentColor" : "none"} />
+            </button>
+            <button
+              type="button"
+              onClick={() => remove(item.id)}
+              aria-label="Delete image"
+              className="p-1 text-paper hover:text-danger"
+            >
+              <Trash2 size={14} />
+            </button>
+          </>
+        )}
+      />
     </div>
   );
 }

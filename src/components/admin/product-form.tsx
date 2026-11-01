@@ -4,6 +4,8 @@ import { useActionState, useCallback, useEffect, useRef, useState, useTransition
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, ImagePlus, Plus, Trash2, UploadCloud, X } from "lucide-react";
+import { SortableImageGrid } from "@/components/admin/sortable-image-grid";
+import { compressImageForUpload, sortFilesNaturally } from "@/lib/image-client";
 import { Input, Textarea, Label, FieldError } from "@/components/ui/input";
 import {
   Select,
@@ -384,13 +386,23 @@ function ProductFormInner({
     setAddingSubType(false);
   }
 
-  function addNewProductFiles(files: FileList | File[]) {
-    const valid = Array.from(files).filter((f) => f.type.startsWith("image/"));
+  async function addNewProductFiles(files: FileList | File[]) {
+    // Serial order: natural filename order (1, 2, 3 … 10), appended after existing picks.
+    const valid = sortFilesNaturally(
+      Array.from(files).filter((f) => f.type.startsWith("image/")),
+    );
     if (valid.length === 0) return;
-    const nextFiles = [...selectedFiles, ...valid];
-    setSelectedFiles(nextFiles);
-    const newUrls = valid.map((f) => URL.createObjectURL(f));
+    const prepared = await Promise.all(valid.map((f) => compressImageForUpload(f)));
+    setSelectedFiles((prev) => [...prev, ...prepared]);
+    const newUrls = prepared.map((f) => URL.createObjectURL(f));
     setFilePreviews((prev) => [...prev, ...newUrls]);
+  }
+
+  function reorderSelectedFiles(orderedPreviewUrls: string[]) {
+    const order = orderedPreviewUrls.map((url) => filePreviews.indexOf(url));
+    if (order.some((i) => i < 0) || order.length !== filePreviews.length) return;
+    setSelectedFiles((prev) => order.map((i) => prev[i]));
+    setFilePreviews(orderedPreviewUrls);
   }
 
   function removeSelectedFile(idx: number) {
@@ -1020,9 +1032,11 @@ function ProductFormInner({
           >
             <UploadCloud size={26} className="text-gold" />
             <p className="text-sm text-paper">
-              Drag & drop product images here, or click to select files
+              Drag & drop multiple images here, or click to select many at once
             </p>
-            <p className="text-xs text-paper-dim">JPEG, PNG, WEBP or AVIF — up to 8MB each</p>
+            <p className="text-xs text-paper-dim">
+              Added in file-name order — reorder them below. JPEG, PNG, WEBP or AVIF; large photos are auto-resized.
+            </p>
             <input
               ref={fileInputRef}
               type="file"
@@ -1035,33 +1049,30 @@ function ProductFormInner({
           </div>
 
           {filePreviews.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
-              {filePreviews.map((previewUrl, idx) => (
-                <div
-                  key={previewUrl}
-                  className="group relative aspect-square overflow-hidden border border-ink-border bg-ink"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={previewUrl}
-                    alt={`Selected preview ${idx + 1}`}
-                    className="h-full w-full object-cover"
-                  />
-                  {idx === 0 && (
-                    <span className="absolute left-1.5 top-1.5 bg-gold-bright px-2 py-0.5 text-[10px] font-bold uppercase text-ink">
-                      Primary
-                    </span>
-                  )}
+            <div className="mt-4">
+              {filePreviews.length > 1 && (
+                <p className="mb-2 text-xs text-paper-dim">
+                  Drag images to change their order (or use the arrows). The first image is the primary cover photo.
+                </p>
+              )}
+              <SortableImageGrid
+                items={filePreviews.map((url, idx) => ({
+                  id: url,
+                  url,
+                  alt: `Selected preview ${idx + 1}`,
+                }))}
+                onReorder={reorderSelectedFiles}
+                renderActions={(item) => (
                   <button
                     type="button"
-                    onClick={() => removeSelectedFile(idx)}
+                    onClick={() => removeSelectedFile(filePreviews.indexOf(item.id))}
                     aria-label="Remove image"
-                    className="absolute right-1.5 top-1.5 bg-ink/85 p-1.5 text-paper hover:text-danger"
+                    className="p-1 text-paper hover:text-danger"
                   >
-                    <Trash2 size={13} />
+                    <Trash2 size={14} />
                   </button>
-                </div>
-              ))}
+                )}
+              />
             </div>
           )}
 

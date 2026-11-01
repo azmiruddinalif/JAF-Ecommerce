@@ -171,16 +171,24 @@ export async function setPrimaryProductImageAction(imageId: string): Promise<Ima
     const image = await prisma.productImage.findUnique({ where: { id: imageId }, include: { product: true } });
     if (!image) return { success: false, message: "Image not found." };
 
-    await prisma.$transaction([
-      prisma.productImage.updateMany({
-        where: { productId: image.productId },
-        data: { isPrimary: false },
-      }),
-      prisma.productImage.update({ where: { id: imageId }, data: { isPrimary: true } }),
-    ]);
+    // The primary image is always the first one: move it to the front and keep the rest in order.
+    const siblings = await prisma.productImage.findMany({
+      where: { productId: image.productId },
+      orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
+      select: { id: true },
+    });
+    const orderedIds = [imageId, ...siblings.map((s) => s.id).filter((id) => id !== imageId)];
 
-    revalidatePath(`/admin/products/${image.productId}`);
-    revalidatePath(`/product/${image.product.slug}`);
+    await prisma.$transaction(
+      orderedIds.map((id, index) =>
+        prisma.productImage.update({
+          where: { id },
+          data: { displayOrder: index, isPrimary: index === 0 },
+        })
+      )
+    );
+
+    revalidateProductImagePaths(image.productId, image.product.slug);
 
     return { success: true, message: "Primary image updated." };
   } catch {
@@ -199,16 +207,33 @@ export async function reorderProductImagesAction(
   }
 
   try {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { slug: true },
+    });
+
+    // The first image in the new order becomes the primary (cover) image.
     await prisma.$transaction(
       orderedImageIds.map((id, index) =>
-        prisma.productImage.update({ where: { id }, data: { displayOrder: index } })
+        prisma.productImage.update({
+          where: { id },
+          data: { displayOrder: index, isPrimary: index === 0 },
+        })
       )
     );
 
-    revalidatePath(`/admin/products/${productId}`);
+    revalidateProductImagePaths(productId, product?.slug);
 
     return { success: true, message: "Image order updated." };
   } catch {
     return { success: false, message: "Something went wrong while reordering images." };
   }
+}
+
+function revalidateProductImagePaths(productId: string, slug?: string) {
+  revalidatePath(`/admin/products/${productId}`);
+  revalidatePath("/admin/products");
+  if (slug) revalidatePath(`/product/${slug}`);
+  revalidatePath("/shop");
+  revalidatePath("/");
 }
