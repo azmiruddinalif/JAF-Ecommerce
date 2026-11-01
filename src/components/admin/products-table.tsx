@@ -24,6 +24,7 @@ import {
 } from "@/lib/constants";
 import {
   deleteProductAction,
+  deleteMultipleProductsAction,
   duplicateProductAction,
   toggleProductFlagAction,
 } from "@/lib/actions/admin-product-actions";
@@ -62,6 +63,9 @@ export function ProductsTable({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  // Multi-select state
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
   const activeCategory = searchParams.get("category") ?? "";
   const activeType = searchParams.get("type") ?? "";
   const activeQuery = searchParams.get("query") ?? "";
@@ -79,7 +83,51 @@ export function ProductsTable({
       }
     }
     params.delete("page");
+    setSelectedIds([]); // reset selection when filters change
     router.push(`${pathname}?${params.toString()}`);
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  }
+
+  function toggleSelectAll() {
+    if (products.length === 0) return;
+    const allCurrentPageSelected = products.every((p) => selectedIds.includes(p.id));
+    if (allCurrentPageSelected) {
+      // Deselect all on current page
+      const currentPageIds = new Set(products.map((p) => p.id));
+      setSelectedIds((prev) => prev.filter((id) => !currentPageIds.has(id)));
+    } else {
+      // Select all on current page
+      const combined = new Set([...selectedIds, ...products.map((p) => p.id)]);
+      setSelectedIds(Array.from(combined));
+    }
+  }
+
+  function handleBulkDelete() {
+    if (selectedIds.length === 0) return;
+    const count = selectedIds.length;
+    if (
+      !confirm(
+        `Are you sure you want to delete ${count} selected product(s)? This action cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    setError(null);
+    startTransition(async () => {
+      const result = await deleteMultipleProductsAction(selectedIds);
+      if (!result.success) {
+        setError(result.message);
+      } else {
+        setSelectedIds([]);
+        router.refresh();
+      }
+    });
   }
 
   function remove(id: string) {
@@ -90,6 +138,7 @@ export function ProductsTable({
       if (!result.success) {
         setError(result.message);
       } else {
+        setSelectedIds((prev) => prev.filter((item) => item !== id));
         router.refresh();
       }
     });
@@ -104,7 +153,7 @@ export function ProductsTable({
 
   function toggleFlag(
     id: string,
-    flag: "featured" | "newArrival" | "published" | "showInHeroBanner",
+    flag: "featured" | "newArrival" | "published" | "showInHeroBanner"
   ) {
     startTransition(async () => {
       await toggleProductFlagAction(id, flag);
@@ -112,8 +161,11 @@ export function ProductsTable({
     });
   }
 
+  const allSelectedOnPage =
+    products.length > 0 && products.every((p) => selectedIds.includes(p.id));
+
   return (
-    <div className="min-[1200px]:flex min-[1200px]:min-h-0 min-[1200px]:flex-1 min-[1200px]:flex-col">
+    <div className="relative min-[1200px]:flex min-[1200px]:min-h-0 min-[1200px]:flex-1 min-[1200px]:flex-col">
       {categories.length > 0 && (
         <div className="mb-4 shrink-0 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
           <form
@@ -192,15 +244,17 @@ export function ProductsTable({
       )}
 
       {error && (
-        <p className="mb-4 border border-danger/40 bg-danger/10 px-4 py-2 text-sm text-danger">
+        <p className="mb-4 rounded-xl border border-danger/40 bg-danger/10 px-4 py-2.5 text-xs font-semibold text-danger">
           {error}
         </p>
       )}
 
       {/* Mobile App Card List */}
-      <div className={`grid grid-cols-1 gap-3 md:grid-cols-2 min-[1200px]:hidden ${isPending ? "opacity-70" : ""}`}>
+      <div
+        className={`grid grid-cols-1 gap-3 md:grid-cols-2 min-[1200px]:hidden ${isPending ? "opacity-70" : ""}`}
+      >
         {products.length === 0 && (
-          <div className="border border-ink-border bg-ink-raised p-8 text-center text-sm text-paper-dim">
+          <div className="border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 rounded-2xl">
             No products found.
           </div>
         )}
@@ -216,16 +270,32 @@ export function ProductsTable({
             : isJersey
               ? product.categoryName
               : (getSubTypeFromTags(product.tags) ?? "Standard");
+          const isSelected = selectedIds.includes(product.id);
 
           return (
             <div
               key={product.id}
-              className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs"
+              className={`rounded-2xl border p-4 shadow-xs transition-colors ${
+                isSelected
+                  ? "border-emerald-500 bg-emerald-50/40"
+                  : "border-slate-200/80 bg-white"
+              }`}
             >
               <div className="flex gap-3.5">
+                {/* Mobile Checkbox */}
+                <div className="pt-1">
+                  <input
+                    type="checkbox"
+                    aria-label={`Select ${product.name}`}
+                    checked={isSelected}
+                    onChange={() => toggleSelect(product.id)}
+                    className="size-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer"
+                  />
+                </div>
+
                 <Link
                   href={`/admin/products/${product.id}`}
-                  className="relative h-20 w-16 shrink-0 overflow-hidden border border-ink-border bg-ink"
+                  className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
                 >
                   {product.imageUrl ? (
                     <Image
@@ -236,7 +306,7 @@ export function ProductsTable({
                       className="object-cover"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-[10px] text-paper-dim">
+                    <div className="flex h-full items-center justify-center text-[10px] text-slate-400">
                       No img
                     </div>
                   )}
@@ -246,22 +316,22 @@ export function ProductsTable({
                   <div className="flex items-start justify-between gap-2">
                     <Link
                       href={`/admin/products/${product.id}`}
-                      className="line-clamp-2 text-sm font-semibold leading-snug text-paper hover:text-gold"
+                      className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 hover:text-emerald-600"
                     >
                       {product.name}
                     </Link>
                     <span
-                      className={`shrink-0 border px-2 py-0.5 font-mono text-[11px] font-bold ${
+                      className={`shrink-0 rounded-md border px-2 py-0.5 font-mono text-[11px] font-bold ${
                         product.totalStock <= 5
-                          ? "border-danger/40 bg-danger/10 text-danger"
-                          : "border-gold/40 bg-gold/10 text-gold-bright"
+                          ? "border-danger/30 bg-danger/10 text-danger"
+                          : "border-emerald-200 bg-emerald-50 text-emerald-800"
                       }`}
                     >
                       {product.totalStock} in stock
                     </span>
                   </div>
 
-                  <p className="mt-0.5 font-mono text-[11px] text-paper-dim">
+                  <p className="mt-0.5 font-mono text-[11px] text-slate-500">
                     {product.sku} ·{" "}
                     {isJersey ? `Jersey · ${product.categoryName}` : product.categoryName} ·{" "}
                     {subTypeLabel}
@@ -270,15 +340,15 @@ export function ProductsTable({
                   <div className="mt-1.5 flex items-baseline gap-2 text-sm">
                     {product.discountPriceCents !== null ? (
                       <>
-                        <span className="font-semibold text-gold-bright">
+                        <span className="font-semibold text-emerald-700">
                           {formatCents(product.discountPriceCents)}
                         </span>
-                        <span className="text-xs text-paper-dim line-through">
+                        <span className="text-xs text-slate-400 line-through">
                           {formatCents(product.basePriceCents)}
                         </span>
                       </>
                     ) : (
-                      <span className="font-semibold text-paper">
+                      <span className="font-semibold text-slate-900">
                         {formatCents(product.basePriceCents)}
                       </span>
                     )}
@@ -287,60 +357,42 @@ export function ProductsTable({
               </div>
 
               {/* Quick Toggle Flags */}
-              <div className="mt-3 flex flex-wrap gap-1.5 border-t border-ink-border pt-2.5">
-                <button
-                  type="button"
-                  onClick={() => toggleFlag(product.id, "published")}
-                >
+              <div className="mt-3 flex flex-wrap gap-1.5 border-t border-slate-100 pt-2.5">
+                <button type="button" onClick={() => toggleFlag(product.id, "published")}>
                   <Badge variant={product.published ? "success" : "neutral"}>
                     {product.published ? "Published" : "Draft"}
                   </Badge>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => toggleFlag(product.id, "featured")}
-                >
-                  <Badge variant={product.featured ? "gold" : "neutral"}>
-                    Featured
-                  </Badge>
+                <button type="button" onClick={() => toggleFlag(product.id, "featured")}>
+                  <Badge variant={product.featured ? "gold" : "neutral"}>Featured</Badge>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => toggleFlag(product.id, "newArrival")}
-                >
-                  <Badge variant={product.newArrival ? "emerald" : "neutral"}>
-                    New
-                  </Badge>
+                <button type="button" onClick={() => toggleFlag(product.id, "newArrival")}>
+                  <Badge variant={product.newArrival ? "emerald" : "neutral"}>New</Badge>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => toggleFlag(product.id, "showInHeroBanner")}
-                >
-                  <Badge variant={product.showInHeroBanner ? "gold" : "neutral"}>
-                    Banner
-                  </Badge>
+                <button type="button" onClick={() => toggleFlag(product.id, "showInHeroBanner")}>
+                  <Badge variant={product.showInHeroBanner ? "gold" : "neutral"}>Banner</Badge>
                 </button>
               </div>
 
               {/* Touch Action Bar */}
-              <div className="mt-2.5 grid grid-cols-3 gap-2 border-t border-ink-border pt-2.5">
+              <div className="mt-2.5 grid grid-cols-3 gap-2 border-t border-slate-100 pt-2.5">
                 <Link
                   href={`/admin/products/${product.id}`}
-                  className="flex items-center justify-center gap-1.5 border border-ink-border bg-ink py-2 text-xs font-semibold uppercase tracking-wider text-paper hover:border-gold hover:text-gold"
+                  className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   <Pencil size={13} /> Edit
                 </Link>
                 <button
                   type="button"
                   onClick={() => duplicate(product.id)}
-                  className="flex items-center justify-center gap-1.5 border border-ink-border bg-ink py-2 text-xs font-semibold uppercase tracking-wider text-paper-dim hover:border-gold hover:text-gold"
+                  className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   <Copy size={13} /> Copy
                 </button>
                 <button
                   type="button"
                   onClick={() => remove(product.id)}
-                  className="flex items-center justify-center gap-1.5 border border-ink-border bg-ink py-2 text-xs font-semibold uppercase tracking-wider text-paper-dim hover:border-danger hover:text-danger"
+                  className="flex items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-white py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50"
                 >
                   <Trash2 size={13} /> Delete
                 </button>
@@ -352,11 +404,22 @@ export function ProductsTable({
 
       {/* Desktop Table (Fixed Screen Height matching Sidebar) */}
       <div
-        className={`hidden overflow-auto rounded-2xl border border-slate-200/90 bg-white shadow-xs min-[1200px]:block min-[1200px]:min-h-0 min-[1200px]:flex-1 ${isPending ? "opacity-70" : ""}`}
+        className={`hidden overflow-auto rounded-2xl border border-slate-200/90 bg-white shadow-xs min-[1200px]:block min-[1200px]:min-h-0 min-[1200px]:flex-1 ${
+          isPending ? "opacity-70" : ""
+        }`}
       >
         <table className="w-full min-w-200 text-sm">
           <thead className="sticky top-0 z-10 border-b border-slate-200/90 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
             <tr>
+              <th className="w-12 px-4 py-3 text-center">
+                <input
+                  type="checkbox"
+                  aria-label="Select all products on page"
+                  checked={allSelectedOnPage}
+                  onChange={toggleSelectAll}
+                  className="size-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer"
+                />
+              </th>
               <th className="px-4 py-3">Product</th>
               <th className="px-4 py-3">Category</th>
               <th className="px-4 py-3">Type / Sub-Type</th>
@@ -369,10 +432,7 @@ export function ProductsTable({
           <tbody>
             {products.length === 0 && (
               <tr>
-                <td
-                  colSpan={7}
-                  className="px-4 py-10 text-center text-paper-dim"
-                >
+                <td colSpan={8} className="px-4 py-10 text-center text-slate-400">
                   No products found.
                 </td>
               </tr>
@@ -389,11 +449,27 @@ export function ProductsTable({
                 : isJersey
                   ? product.categoryName
                   : (getSubTypeFromTags(product.tags) ?? "Standard");
+              const isSelected = selectedIds.includes(product.id);
+
               return (
                 <tr
                   key={product.id}
-                  className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors"
+                  className={`border-b border-slate-100 last:border-0 transition-colors ${
+                    isSelected ? "bg-emerald-50/70" : "hover:bg-slate-50/60"
+                  }`}
                 >
+                  {/* Select Checkbox Column */}
+                  <td className="w-12 px-4 py-3 text-center">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${product.name}`}
+                      checked={isSelected}
+                      onChange={() => toggleSelect(product.id)}
+                      className="size-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer"
+                    />
+                  </td>
+
+                  {/* Product Details */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="relative h-12 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
@@ -414,70 +490,54 @@ export function ProductsTable({
                         >
                           {product.name}
                         </Link>
-                        <p className="text-xs text-paper-dim">{product.sku}</p>
+                        <p className="text-xs text-slate-400">{product.sku}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-paper-dim">
+                  <td className="px-4 py-3 text-slate-600">
                     {isJersey ? `Jersey · ${product.categoryName}` : product.categoryName}
                   </td>
-                  <td className="px-4 py-3 text-paper-dim">
-                    {subTypeLabel}
-                  </td>
+                  <td className="px-4 py-3 text-slate-600">{subTypeLabel}</td>
                   <td className="px-4 py-3">
                     {product.discountPriceCents !== null ? (
                       <span>
-                        <span className="text-gold">
+                        <span className="font-semibold text-emerald-700">
                           {formatCents(product.discountPriceCents)}
                         </span>{" "}
-                        <span className="text-paper-dim line-through">
+                        <span className="text-xs text-slate-400 line-through">
                           {formatCents(product.basePriceCents)}
                         </span>
                       </span>
                     ) : (
-                      formatCents(product.basePriceCents)
+                      <span className="font-semibold text-slate-900">
+                        {formatCents(product.basePriceCents)}
+                      </span>
                     )}
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={product.totalStock <= 5 ? "text-danger" : ""}
+                      className={`font-semibold ${
+                        product.totalStock <= 5 ? "text-rose-600" : "text-slate-800"
+                      }`}
                     >
                       {product.totalStock}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
-                      <button
-                        type="button"
-                        onClick={() => toggleFlag(product.id, "published")}
-                      >
+                      <button type="button" onClick={() => toggleFlag(product.id, "published")}>
                         <Badge variant={product.published ? "success" : "neutral"}>
                           {product.published ? "Published" : "Draft"}
                         </Badge>
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleFlag(product.id, "featured")}
-                      >
-                        <Badge variant={product.featured ? "gold" : "neutral"}>
-                          Featured
-                        </Badge>
+                      <button type="button" onClick={() => toggleFlag(product.id, "featured")}>
+                        <Badge variant={product.featured ? "gold" : "neutral"}>Featured</Badge>
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleFlag(product.id, "newArrival")}
-                      >
-                        <Badge variant={product.newArrival ? "emerald" : "neutral"}>
-                          New
-                        </Badge>
+                      <button type="button" onClick={() => toggleFlag(product.id, "newArrival")}>
+                        <Badge variant={product.newArrival ? "emerald" : "neutral"}>New</Badge>
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleFlag(product.id, "showInHeroBanner")}
-                      >
-                        <Badge variant={product.showInHeroBanner ? "gold" : "neutral"}>
-                          Banner
-                        </Badge>
+                      <button type="button" onClick={() => toggleFlag(product.id, "showInHeroBanner")}>
+                        <Badge variant={product.showInHeroBanner ? "gold" : "neutral"}>Banner</Badge>
                       </button>
                     </div>
                   </td>
@@ -486,7 +546,7 @@ export function ProductsTable({
                       <Link
                         href={`/admin/products/${product.id}`}
                         aria-label="Edit product"
-                        className="text-paper-dim hover:text-gold"
+                        className="text-slate-400 hover:text-slate-900 transition-colors"
                       >
                         <Pencil size={16} />
                       </Link>
@@ -494,7 +554,7 @@ export function ProductsTable({
                         type="button"
                         onClick={() => duplicate(product.id)}
                         aria-label="Duplicate product"
-                        className="text-paper-dim hover:text-gold"
+                        className="text-slate-400 hover:text-slate-900 transition-colors cursor-pointer"
                       >
                         <Copy size={16} />
                       </button>
@@ -502,7 +562,7 @@ export function ProductsTable({
                         type="button"
                         onClick={() => remove(product.id)}
                         aria-label="Delete product"
-                        className="text-paper-dim hover:text-danger"
+                        className="text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -514,6 +574,38 @@ export function ProductsTable({
           </tbody>
         </table>
       </div>
+
+      {/* Floating Bulk Action Bar (Visible when 1 or more products are selected) */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3.5 rounded-2xl bg-slate-900 px-5 py-3 text-white shadow-2xl border border-slate-700 animate-in fade-in-50 slide-in-from-bottom-5">
+          <div className="flex items-center gap-2 pr-3.5 border-r border-slate-700 text-xs font-semibold">
+            <span className="flex size-5 items-center justify-center rounded-full bg-emerald-500 text-[11px] font-bold text-slate-950">
+              {selectedIds.length}
+            </span>
+            <span>{selectedIds.length === 1 ? "Product" : "Products"} Selected</span>
+          </div>
+
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleBulkDelete}
+            className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-rose-700 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+          >
+            <Trash2 size={13} />
+            <span>Delete Selected ({selectedIds.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedIds([])}
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+            aria-label="Clear selection"
+            title="Deselect all"
+          >
+            <X size={15} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

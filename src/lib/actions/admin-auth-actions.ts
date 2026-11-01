@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
 import { headers } from "next/headers";
@@ -16,7 +17,10 @@ async function getClientIp(): Promise<string> {
     const realIp = headerList.get("x-real-ip");
     const cfIp = headerList.get("cf-connecting-ip");
 
-    const rawIp = cfIp || (forwardedFor ? forwardedFor.split(",")[0].trim() : realIp) || "127.0.0.1";
+    const rawIp =
+      cfIp ||
+      (forwardedFor ? forwardedFor.split(",")[0].trim() : realIp) ||
+      "127.0.0.1";
     return rawIp.trim();
   } catch {
     return "127.0.0.1";
@@ -39,7 +43,7 @@ function maskEmail(email: string): string {
 async function sendSecurityCodeEmail(
   email: string,
   code: string,
-  clientIp: string
+  clientIp: string,
 ): Promise<{ sent: boolean; reason?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -53,7 +57,8 @@ async function sendSecurityCodeEmail(
 
   try {
     const resend = new Resend(apiKey);
-    const from = process.env.RESEND_FROM_EMAIL || "JAF Security <onboarding@resend.dev>";
+    const from =
+      process.env.RESEND_FROM_EMAIL || "JAF Security <onboarding@resend.dev>";
 
     await resend.emails.send({
       from,
@@ -92,7 +97,10 @@ async function sendSecurityCodeEmail(
 
     return { sent: true };
   } catch (error: any) {
-    console.error("[JAF Security] Failed to send security email:", error.message || error);
+    console.error(
+      "[JAF Security] Failed to send security email:",
+      error.message || error,
+    );
     return { sent: false, reason: error.message };
   }
 }
@@ -123,7 +131,7 @@ export async function preAuthenticateAdminAction(params: {
     const envPassword = process.env.ADMIN_PASSWORD?.trim();
 
     const isEnvAdminMatch = Boolean(
-      envEmail && envPassword && email === envEmail && password === envPassword
+      envEmail && envPassword && email === envEmail && password === envPassword,
     );
 
     if (isEnvAdminMatch) {
@@ -141,7 +149,7 @@ export async function preAuthenticateAdminAction(params: {
         });
 
         const credentialAccount = existingUser.accounts.find(
-          (a) => a.providerId === "credential"
+          (a) => a.providerId === "credential",
         );
         if (credentialAccount) {
           await prisma.account.update({
@@ -192,11 +200,14 @@ export async function preAuthenticateAdminAction(params: {
     if (user.banned) {
       return {
         success: false,
-        error: "This staff account has been deactivated. Please contact the store owner.",
+        error:
+          "This staff account has been deactivated. Please contact the store owner.",
       };
     }
 
-    const credentialAccount = user.accounts.find((a) => a.providerId === "credential");
+    const credentialAccount = user.accounts.find(
+      (a) => a.providerId === "credential",
+    );
     if (!credentialAccount || !credentialAccount.password) {
       return { success: false, error: "Invalid email or password." };
     }
@@ -282,7 +293,9 @@ export async function preAuthenticateAdminAction(params: {
     };
   } catch (err: unknown) {
     const errorMsg =
-      err instanceof Error ? err.message : "Failed to authenticate administrator.";
+      err instanceof Error
+        ? err.message
+        : "Failed to authenticate administrator.";
     console.error("[preAuthenticateAdminAction Error]:", err);
     return { success: false, error: errorMsg };
   }
@@ -346,11 +359,15 @@ export async function verifyAdminOtpAction(params: {
     }
 
     // Clean up the single-use OTP
-    await prisma.verification.deleteMany({ where: { identifier: otpIdentifier } });
+    await prisma.verification.deleteMany({
+      where: { identifier: otpIdentifier },
+    });
 
     // Save this IP as trusted for 90 days
     const ipIdentifier = `trusted_ip:${user.id}:${clientIp || savedIp}`;
-    await prisma.verification.deleteMany({ where: { identifier: ipIdentifier } });
+    await prisma.verification.deleteMany({
+      where: { identifier: ipIdentifier },
+    });
     await prisma.verification.create({
       data: {
         identifier: ipIdentifier,

@@ -603,6 +603,63 @@ export async function deleteProductAction(productId: string): Promise<ProductAct
   }
 }
 
+export async function deleteMultipleProductsAction(
+  productIds: string[],
+): Promise<ProductActionResult> {
+  try {
+    await requirePermission("products:manage");
+  } catch {
+    return { success: false, message: "You must be signed in as an admin." };
+  }
+
+  if (!productIds || productIds.length === 0) {
+    return { success: false, message: "No products selected." };
+  }
+
+  try {
+    let deletedCount = 0;
+    let failedCount = 0;
+
+    for (const id of productIds) {
+      try {
+        await prisma.product.delete({ where: { id } });
+        deletedCount++;
+      } catch (e: any) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003") {
+          failedCount++;
+        } else {
+          failedCount++;
+        }
+      }
+    }
+
+    revalidatePath("/admin/products");
+    revalidatePath("/admin", "layout");
+    revalidatePath("/shop");
+    revalidatePath("/", "layout");
+
+    if (failedCount > 0 && deletedCount > 0) {
+      return {
+        success: true,
+        message: `${deletedCount} product(s) deleted. ${failedCount} product(s) could not be deleted because they have associated orders.`,
+      };
+    } else if (failedCount > 0 && deletedCount === 0) {
+      return {
+        success: false,
+        message:
+          "Selected products could not be deleted because they have existing customer orders. Unpublish them instead.",
+      };
+    }
+
+    return {
+      success: true,
+      message: `${deletedCount} product(s) successfully deleted.`,
+    };
+  } catch {
+    return { success: false, message: "Something went wrong while deleting products." };
+  }
+}
+
 export async function duplicateProductAction(productId: string): Promise<ProductActionResult> {
   try {
     await requirePermission("products:manage");

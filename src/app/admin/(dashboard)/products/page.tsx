@@ -70,7 +70,8 @@ async function ProductsContent({
         }))}
       />
 
-      {result.total > 0 && (
+      {/* Only show pagination controls when there are more than 10 products */}
+      {result.total > 10 && (
         <div className="mt-4 flex shrink-0 flex-col items-center justify-between gap-3 rounded-xl border border-slate-200/90 bg-white px-4 py-3 shadow-xs sm:flex-row">
           <span className="text-xs text-paper-dim">
             Showing{" "}
