@@ -346,37 +346,6 @@ export function HeroInteractive({
               </div>
             </div>
 
-            {/* Bottom-Right Active Kit Title + Minimal Circular Navigation Arrows */}
-            <div className="absolute right-0 bottom-0 z-20 flex items-end gap-4">
-              <div className="text-right hidden sm:block">
-                <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-950 leading-tight">
-                  {currentSlide.name || "2026 MATCHDAY KIT"}
-                </p>
-                <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500 leading-none mt-0.5">
-                  AUTHENTIC FIT · 2026
-                </p>
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={handlePrev}
-                  aria-label="Previous jersey"
-                  className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white/90 text-slate-800 shadow-xs hover:bg-slate-950 hover:text-white hover:border-slate-950 active:scale-95 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  aria-label="Next jersey"
-                  className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white/90 text-slate-800 shadow-xs hover:bg-slate-950 hover:text-white hover:border-slate-950 active:scale-95 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-
             {/* Slide Navigation Dots (Mobile friendly) */}
             <div className="absolute bottom-[-18px] left-1/2 -translate-x-1/2 flex items-center gap-2 sm:hidden z-20">
               {activeSlides.map((_, i) => (
@@ -393,6 +362,40 @@ export function HeroInteractive({
             </div>
           </div>
 
+        </div>
+
+        {/* =================================================================== */}
+        {/* BOTTOM-RIGHT: Active Kit Title + Minimalist Navigation Arrows       */}
+        {/* Anchored at the bottom-right corner of the banner (Image 5 style)   */}
+        {/* =================================================================== */}
+        <div className="absolute right-4 bottom-4 sm:right-6 sm:bottom-6 lg:right-8 lg:bottom-6 z-20 flex items-center gap-3.5 sm:gap-4.5 rounded-2xl bg-white/85 backdrop-blur-md px-4 py-2 sm:px-5 sm:py-2.5 border border-slate-200/90 shadow-md">
+          <div className="text-right">
+            <p className="text-[11px] sm:text-xs font-black uppercase tracking-widest text-slate-950 leading-tight">
+              {currentSlide.name || "2026 MATCHDAY KIT"}
+            </p>
+            <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 leading-none mt-0.5">
+              AUTHENTIC FIT · 2026
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handlePrev}
+              aria-label="Previous jersey"
+              className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white text-slate-900 shadow-xs hover:bg-slate-950 hover:text-white hover:border-slate-950 active:scale-95 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={handleNext}
+              aria-label="Next jersey"
+              className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white text-slate-900 shadow-xs hover:bg-slate-950 hover:text-white hover:border-slate-950 active:scale-95 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       </div>
     </section>
