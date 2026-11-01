@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,7 +19,6 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-export const dynamic = "force-dynamic";
 export const instant = false;
 
 export default async function AdminLoginPage({
@@ -26,6 +26,7 @@ export default async function AdminLoginPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  await connection();
   const session = await getAdminSession();
 
   // If already authenticated with a valid session, redirect directly to dashboard
