@@ -242,7 +242,15 @@ export function ImageUploader({
             className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700 active:scale-98"
           >
             <ImageIcon size={15} />
-            <span>Choose Photos from Gallery</span>
+            <span>Choose Multiple Photos</span>
+          </label>
+
+          <label
+            htmlFor="product-single-image-input"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 active:scale-98"
+          >
+            <ImageIcon size={15} className="text-emerald-600" />
+            <span>Single Photo (Safe Mode)</span>
           </label>
 
           <label
@@ -254,13 +262,28 @@ export function ImageUploader({
           </label>
         </div>
 
-        {/* Multi-file input (Pure image/* accept to prevent Android DocumentsUI crash) */}
+        {/* Multi-file input */}
         <input
           id="product-multi-image-input"
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,image/jpeg,image/png,image/webp"
           multiple
+          className="sr-only"
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              handleSelectFiles(e.target.files);
+            }
+            e.target.value = "";
+          }}
+        />
+
+        {/* Single-file safe input (bypasses Android DocumentsUI multi-file bug) */}
+        <input
+          id="product-single-image-input"
+          type="file"
+          accept="image/*,image/jpeg,image/png,image/webp"
           className="sr-only"
           onClick={(e) => e.stopPropagation()}
           onChange={(e) => {

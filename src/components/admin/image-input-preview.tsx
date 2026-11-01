@@ -59,7 +59,7 @@ export function ImageInputWithPreview({
           id={id}
           name={name}
           type="file"
-          accept="image/*,.jpg,.jpeg,.png,.webp,.avif,.jfif,.gif,.heic,.heif,.svg"
+          accept="image/*,image/jpeg,image/png,image/webp,image/avif"
           className="w-full text-xs text-paper-dim file:mr-2 file:border file:border-ink-border file:bg-ink-raised file:px-2 file:py-1 file:text-xs"
           onChange={(e) => {
             const file = e.target.files?.[0];

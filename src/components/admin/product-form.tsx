@@ -1149,7 +1149,7 @@ function ProductFormInner({
               ref={fileInputRef}
               type="file"
               name="productImages"
-              accept="image/*"
+              accept="image/*,image/jpeg,image/png,image/webp"
               multiple
               className="sr-only"
               onClick={(e) => e.stopPropagation()}
