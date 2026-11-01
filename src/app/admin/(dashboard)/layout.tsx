@@ -20,9 +20,9 @@ export default async function AdminDashboardLayout({
 
   return (
     <div className="admin-dashboard flex min-h-dvh flex-col bg-slate-50 text-slate-900 min-[1200px]:flex-row">
-      <AdminSidebar adminName={session.name} />
+      <AdminSidebar adminName={session.name} role={session.role} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <AdminHeader adminName={session.name} />
+        <AdminHeader adminName={session.name} role={session.role} email={session.email} />
         <main className="min-w-0 flex-1 px-4 pb-24 pt-5 sm:px-6 min-[1200px]:px-8 min-[1200px]:py-6">
           <Suspense fallback={<div className="h-96 animate-pulse rounded-xl border border-slate-200 bg-white" />}>
             {children}

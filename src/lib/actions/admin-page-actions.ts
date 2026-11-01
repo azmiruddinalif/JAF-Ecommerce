@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 import { imageStorage } from "@/lib/storage";
 import { validateImageFile } from "@/lib/storage/validate";
 import {
@@ -48,7 +48,7 @@ export async function updateCustomPageAction(
   formData: FormData
 ): Promise<CustomPageActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("settings:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
@@ -21,8 +21,9 @@ import {
   X,
   Store,
   ChevronDown,
+  Users,
 } from "lucide-react";
-import { SignOutButton } from "@clerk/nextjs";
+import { signOut } from "@/lib/auth/auth-client";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   PwaInstallGuideModal,
@@ -61,6 +62,7 @@ const navGroups: NavGroup[] = [
   {
     label: "SETTINGS",
     items: [
+      { href: "/admin/staff", label: "Staff & Roles", icon: Users },
       { href: "/admin/settings", label: "Store Settings", icon: Settings },
     ],
   },
@@ -209,32 +211,51 @@ function SidebarNav({
 
 function SidebarFooter({
   adminName,
+  role = "support",
 }: {
   adminName: string;
+  role?: string;
 }) {
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+    } catch {
+      // ignore
+    } finally {
+      router.push("/admin/login");
+      router.refresh();
+    }
+  }
+
+  const roleTitle = role === "owner" ? "Store Owner" : role.replace("_", " ");
+
   return (
     <div className="border-t border-slate-200/80 bg-slate-50/50 p-4">
       <div className="flex items-center justify-between">
         <div className="min-w-0 flex-1 pr-2">
           <p className="truncate text-xs font-semibold text-slate-900">{adminName}</p>
-          <p className="text-[10px] text-slate-500">Store Administrator</p>
+          <p className="text-[10px] text-slate-500 capitalize">{roleTitle}</p>
         </div>
-        <SignOutButton redirectUrl="/admin/login">
-          <button
-            type="button"
-            title="Log out"
-            aria-label="Log out"
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
-          >
-            <LogOut size={14} />
-          </button>
-        </SignOutButton>
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          title="Sign out"
+          aria-label="Sign out"
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+        >
+          <LogOut size={14} />
+        </button>
       </div>
     </div>
   );
 }
 
-export function AdminSidebar({ adminName }: { adminName: string }) {
+export function AdminSidebar({ adminName, role = "support" }: { adminName: string; role?: string }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
@@ -337,7 +358,7 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
           canInstall={canInstall}
           onInstall={triggerInstall}
         />
-        <SidebarFooter adminName={adminName} />
+        <SidebarFooter adminName={adminName} role={role} />
       </aside>
 
       {/* Mobile Bottom Tab Bar */}
@@ -405,7 +426,7 @@ export function AdminSidebar({ adminName }: { adminName: string }) {
             onInstall={triggerInstall}
             onNavigate={() => setMobileOpen(false)}
           />
-          <SidebarFooter adminName={adminName} />
+          <SidebarFooter adminName={adminName} role={role} />
         </SheetContent>
       </Sheet>
 

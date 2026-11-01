@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import type { ZodError } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 import { productSchema } from "@/lib/validation/schemas";
 import { slugify } from "@/lib/slug";
 import { unitsToCents } from "@/lib/money";
@@ -216,7 +216,7 @@ export async function createProductAction(
   formData: FormData
 ): Promise<ProductActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("products:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -413,7 +413,7 @@ export async function updateProductAction(
   formData: FormData
 ): Promise<ProductActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("products:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -580,7 +580,7 @@ export async function updateProductAction(
 
 export async function deleteProductAction(productId: string): Promise<ProductActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("products:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -605,7 +605,7 @@ export async function deleteProductAction(productId: string): Promise<ProductAct
 
 export async function duplicateProductAction(productId: string): Promise<ProductActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("products:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -675,7 +675,7 @@ export async function toggleProductFlagAction(
   flag: "featured" | "newArrival" | "published" | "showInHeroBanner"
 ): Promise<ProductActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("products:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -707,7 +707,7 @@ export async function updateProductSizeStocksAction(
   mode: "increment" | "set" = "increment"
 ): Promise<ProductActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("products:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }

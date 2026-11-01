@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 import { storeSettingsSchema } from "@/lib/validation/schemas";
 import { imageStorage } from "@/lib/storage";
 import { validateImageFile } from "@/lib/storage/validate";
@@ -127,7 +127,7 @@ export async function updateStoreSettingsAction(
   formData: FormData
 ): Promise<SettingsActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("settings:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }

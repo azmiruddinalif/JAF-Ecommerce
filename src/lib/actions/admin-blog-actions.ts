@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 import { blogPostSchema } from "@/lib/validation/schemas";
 import { imageStorage } from "@/lib/storage";
 import { validateImageFile } from "@/lib/storage/validate";
@@ -71,7 +71,7 @@ export async function createBlogPostAction(
   formData: FormData
 ): Promise<BlogPostActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("blog:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -131,7 +131,7 @@ export async function updateBlogPostAction(
   formData: FormData
 ): Promise<BlogPostActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("blog:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -204,7 +204,7 @@ export async function updateBlogPostAction(
 
 export async function deleteBlogPostAction(postId: string): Promise<BlogPostActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("blog:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -223,7 +223,7 @@ export async function deleteBlogPostAction(postId: string): Promise<BlogPostActi
 
 export async function toggleBlogPostPublishedAction(postId: string): Promise<BlogPostActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("blog:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }

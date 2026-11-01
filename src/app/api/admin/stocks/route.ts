@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth/session";
+import { hasPermission } from "@/lib/auth/permissions";
 import { getPaginatedProductStocks } from "@/lib/data/products";
 
 export async function GET(req: NextRequest) {
   const session = await getAdminSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!hasPermission(session.role, "inventory:update") && !hasPermission(session.role, "products:read")) {
+    return NextResponse.json({ error: "Forbidden: insufficient permissions" }, { status: 403 });
   }
 
   const { searchParams } = req.nextUrl;
@@ -35,4 +40,3 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json(data);
 }
-

@@ -12,10 +12,9 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "admin:provision": "tsx scripts/provision-admin.ts"
+    "admin:bootstrap": "tsx scripts/bootstrap-owner.ts"
   },
   "dependencies": {
-    "@clerk/nextjs": "^7.9.20",
     "@neon/config": "^1.10.0",
     "@neon/env": "^1.6.8",
     "@prisma/adapter-pg": "^7.10.1",
@@ -27,6 +26,7 @@
     "@radix-ui/react-select": "^2.4.1",
     "@radix-ui/react-slot": "^1.5.0",
     "@tailwindcss/postcss": "^4.3.3",
+    "better-auth": "^1.7.14",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.11.0",
     "clsx": "^2.1.1",

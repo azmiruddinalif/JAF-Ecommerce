@@ -1,18 +1,43 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { NextResponse, type NextRequest } from "next/server";
 
-// Populates Clerk's auth context (used by `auth()`/`currentUser()`)
-// The actual gate is resource-based: `admin/(dashboard)/layout.tsx` redirects
-// unauthenticated/non-admin visitors, and every admin server action independently
-// re-checks via `requireAdminSession()`.
-const middleware = clerkMiddleware();
+/**
+ * Next.js 16 Proxy (formerly middleware.ts)
+ * Scoped strictly to /admin and /api/admin to protect administrative routes.
+ * The storefront is never touched.
+ */
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-export const proxy = middleware;
-export default middleware;
+  // Auth endpoints and login page are always accessible
+  if (pathname.startsWith("/api/auth") || pathname.startsWith("/admin/login")) {
+    return NextResponse.next();
+  }
+
+  // Fast session cookie check for admin routes
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+    const hasSessionCookie =
+      request.cookies.has("better-auth.session_token") ||
+      request.cookies.has("__Secure-better-auth.session_token");
+
+    if (!hasSessionCookie) {
+      if (pathname.startsWith("/api/admin")) {
+        return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+      }
+
+      const loginUrl = new URL("/admin/login", request.url);
+      loginUrl.searchParams.set("returnUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  return NextResponse.next();
+}
+
+export default proxy;
 
 export const config = {
   matcher: [
-    // Standard Clerk matcher: intercepts app routes & auth handshakes while skipping static assets
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api|trpc)(.*)",
+    "/admin/:path*",
+    "/api/admin/:path*",
   ],
 };

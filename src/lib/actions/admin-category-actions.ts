@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 import { categorySchema } from "@/lib/validation/schemas";
 import { imageStorage } from "@/lib/storage";
 import { validateImageFile } from "@/lib/storage/validate";
@@ -50,7 +50,7 @@ export async function createCategoryAction(
   formData: FormData
 ): Promise<CategoryActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("categories:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -115,7 +115,7 @@ export async function updateCategoryAction(
   formData: FormData
 ): Promise<CategoryActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("categories:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -188,7 +188,7 @@ export async function updateCategoryAction(
 
 export async function deleteCategoryAction(categoryId: string): Promise<CategoryActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("categories:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -215,7 +215,7 @@ export async function deleteCategoryAction(categoryId: string): Promise<Category
 
 export async function toggleCategoryEnabledAction(categoryId: string): Promise<CategoryActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("categories:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -237,7 +237,7 @@ export async function toggleCategoryEnabledAction(categoryId: string): Promise<C
 
 export async function createQuickCategoryAction(rawName: string): Promise<CategoryActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("categories:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -292,7 +292,7 @@ export async function ensurePresetCategoriesAction(
   presets: { name: string; slug: string; description: string; displayOrder: number }[]
 ): Promise<CategoryActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("categories:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }

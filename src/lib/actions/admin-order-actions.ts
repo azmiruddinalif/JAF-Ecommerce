@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 
 export interface OrderActionResult {
   success: boolean;
@@ -16,7 +16,7 @@ export async function updateOrderStatusAction(
   options?: { restoreStock?: boolean }
 ): Promise<OrderActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("orders:update");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -115,7 +115,7 @@ export async function updatePaymentStatusAction(
   paymentStatus: PaymentStatus
 ): Promise<OrderActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("orders:update");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }

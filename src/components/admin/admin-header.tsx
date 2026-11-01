@@ -4,12 +4,16 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { ExternalLink, Plus, Search, Store } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
+import { AdminUserMenu } from "@/components/admin/admin-user-menu";
 
 export function AdminHeader({
   adminName,
+  role = "owner",
+  email,
 }: {
   adminName: string;
+  role?: string;
+  email?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -68,24 +72,9 @@ export function AdminHeader({
         {/* Separator */}
         <div className="h-6 w-px bg-slate-200" />
 
-        {/* Profile Card */}
-        <div className="flex items-center gap-2.5">
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: "h-8 w-8 rounded-full border border-slate-200 shadow-2xs",
-              },
-            }}
-          />
-          <div className="text-left">
-            <p className="text-xs font-semibold leading-tight text-slate-900 truncate max-w-32">
-              {adminName}
-            </p>
-            <p className="text-[10px] text-slate-500 leading-tight">Store Owner</p>
-          </div>
-        </div>
+        {/* Profile Card & User Dropdown */}
+        <AdminUserMenu adminName={adminName} role={role} email={email} />
       </div>
     </header>
   );
 }
-

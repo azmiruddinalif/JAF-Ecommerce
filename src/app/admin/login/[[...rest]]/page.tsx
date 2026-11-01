@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { SignIn } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
-import { ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import {
+  Boxes,
+  CheckCircle2,
+  ExternalLink,
+  Shield,
+  ShoppingBag,
+  Sparkles,
+  Users2,
+} from "lucide-react";
 import { Brand, BrandSlogan } from "@/components/layout/brand";
 import { getAdminSession } from "@/lib/auth/session";
-import { WrongAccountGuard } from "@/components/admin/wrong-account-guard";
+import { AdminSignInForm } from "@/components/admin/admin-sign-in-form";
 
 export const metadata: Metadata = {
-  title: "Admin Login",
+  title: "Admin & Staff Sign In | JAF",
   robots: { index: false },
 };
 
-// Clerk's <SignIn> reads the current path client-side for its own routing —
-// inherently dynamic, same as the rest of the session-gated admin area.
 export const instant = false;
 
 export default async function AdminLoginPage({
@@ -21,106 +26,133 @@ export default async function AdminLoginPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { userId } = await auth();
-  const session = userId ? await getAdminSession() : null;
+  const session = await getAdminSession();
 
-  // If already authenticated as the allowed admin, proceed directly to the dashboard
+  // If already authenticated with a valid session, redirect directly to dashboard
   if (session) {
-    redirect("/admin");
+    const params = await searchParams;
+    const returnUrl = typeof params.returnUrl === "string" ? params.returnUrl : "/admin";
+    redirect(returnUrl);
   }
 
-  const signedInWithWrongAccount = Boolean(userId) && !session;
-  const rejectedNonAdmin = (await searchParams).reason === "not-admin";
-
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
-      {/* Brand panel — hidden below lg, where the form alone fills the screen */}
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-ink-raised px-12 py-12 lg:flex">
-        <span
-          aria-hidden
-          className="font-display pointer-events-none absolute -left-10 top-1/2 -translate-y-1/2 text-[28rem] leading-none text-paper/5"
-        >
-          JAF
-        </span>
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col lg:grid lg:grid-cols-12">
+      {/* Brand Hero Panel — visible on desktop (5 cols) */}
+      <div className="relative hidden lg:col-span-5 lg:flex flex-col justify-between overflow-hidden border-r border-slate-200/80 bg-white p-10 xl:p-14">
+        {/* Subtle Decorative Ambient Background */}
+        <div className="pointer-events-none absolute -top-32 -left-32 size-96 rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -right-32 size-96 rounded-full bg-emerald-600/10 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-40" />
 
+        {/* Top Header: Brand & Slogan */}
         <div className="relative z-10">
-          <Brand size="lg" className="items-start [&_span]:text-paper [&_span]:hover:text-gold-bright" />
-          <BrandSlogan className="mt-3 text-gold-bright" />
+          <Brand size="lg" className="items-start" />
+          <BrandSlogan className="mt-2.5 text-xs font-serif italic text-emerald-700 font-semibold tracking-wider" />
         </div>
 
-        <div className="relative z-10 max-w-md space-y-4">
-          <div className="flex items-center gap-2 text-gold-bright">
-            <ShieldCheck size={18} strokeWidth={2} />
-            <p className="text-xs font-semibold uppercase tracking-widest">Restricted access</p>
+        {/* Center Feature Highlights */}
+        <div className="relative z-10 my-auto py-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 shadow-2xs">
+            <Sparkles size={13} className="text-emerald-600" />
+            <span>Store Operations Console</span>
           </div>
-          <p className="text-sm leading-relaxed text-paper-dim">
-            This panel is reserved for a single, dedicated JAF administrator account. Every sign-in
-            is verified and session-checked on every request.
+
+          <h2 className="mt-4 text-3xl xl:text-4xl font-extrabold tracking-tight text-slate-900 leading-[1.2]">
+            Command Center for Football Fashion
+          </h2>
+
+          <p className="mt-3 text-sm text-slate-600 leading-relaxed max-w-sm">
+            Administrative hub to fulfill matchday orders, update jersey inventories, inspect sales metrics, and manage multi-role staff access.
           </p>
+
+          {/* Feature Mini Cards */}
+          <div className="mt-8 space-y-3">
+            <div className="flex items-start gap-3.5 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 shadow-2xs">
+              <div className="rounded-lg bg-emerald-100 p-2 text-emerald-700 shrink-0">
+                <ShoppingBag size={17} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900">Order Fulfilment &amp; Invoices</h3>
+                <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                  Manage orders, print invoices, and safeguard 100% guest-only checkout privacy.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3.5 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 shadow-2xs">
+              <div className="rounded-lg bg-emerald-100 p-2 text-emerald-700 shrink-0">
+                <Boxes size={17} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900">Live Size &amp; Stock Matrix</h3>
+                <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                  Real-time stock controls for Club, Retro &amp; National jerseys across sizes S to 3XL.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3.5 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 shadow-2xs">
+              <div className="rounded-lg bg-emerald-100 p-2 text-emerald-700 shrink-0">
+                <Users2 size={17} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900">Multi-Role Staff RBAC</h3>
+                <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                  Owner, Order Manager, Product Manager &amp; Support roles with instant session revocation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Trust & Status */}
+        <div className="relative z-10 border-t border-slate-200/80 pt-4 flex items-center justify-between text-xs text-slate-500">
+          <div className="flex items-center gap-2">
+            <Shield size={15} className="text-emerald-600" />
+            <span className="font-semibold text-slate-700">Better Auth Engine</span>
+            <span className="text-slate-300">•</span>
+            <span className="text-[11px]">256-Bit SSL</span>
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Systems Online</span>
+          </div>
         </div>
       </div>
 
-      {/* Sign-in panel */}
-      <div className="flex items-center justify-center bg-ink px-4 py-16">
-        <div className="w-full max-w-sm">
-          <div className="mb-8 text-center lg:hidden">
-            <Brand className="mx-auto items-center" />
+      {/* Right Column: Sign-In Panel (7 cols desktop, full width on mobile) */}
+      <div className="relative flex-1 lg:col-span-7 flex flex-col justify-between p-6 sm:p-10 lg:p-12 min-h-screen">
+        {/* Top Bar Navigation */}
+        <div className="flex items-center justify-between w-full">
+          {/* Mobile Brand Header */}
+          <div className="lg:hidden">
+            <Brand size="sm" />
           </div>
-          <div className="mb-8 text-center lg:text-left">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gold">Admin Panel</p>
-            <h1 className="font-display mt-2 text-3xl text-paper">Sign in</h1>
-            <p className="mt-2 text-sm text-paper-dim">Enter your administrator credentials to continue.</p>
+
+          <div className="hidden lg:block">
+            <span className="text-xs font-medium text-slate-400">JAF Admin Console</span>
           </div>
-          {rejectedNonAdmin && !signedInWithWrongAccount && (
-            <p
-              role="alert"
-              className="mb-6 border border-red-400/40 bg-red-400/10 px-4 py-3 text-sm text-red-300"
-            >
-              That account isn&apos;t the JAF admin. Sign in with the administrator email and
-              password instead.
-            </p>
-          )}
-          {signedInWithWrongAccount ? (
-            <WrongAccountGuard />
-          ) : (
-            <SignIn
-              routing="path"
-              path="/admin/login"
-              fallbackRedirectUrl="/admin"
-              signUpUrl="/admin/login"
-              appearance={{
-                variables: {
-                  colorPrimary: "#4ade80",
-                  colorPrimaryForeground: "#0a0b09",
-                  colorBackground: "#0a0b09",
-                  colorForeground: "#eef2ea",
-                  colorMutedForeground: "#8d9589",
-                  colorInput: "#121410",
-                  colorInputForeground: "#eef2ea",
-                  colorBorder: "#262b22",
-                  colorDanger: "#f87171",
-                  borderRadius: "0px",
-                  fontFamily: "var(--font-sans)",
-                },
-                elements: {
-                  rootBox: "w-full",
-                  card: "w-full shadow-none border border-ink-border p-6 sm:p-8",
-                  header: "!hidden",
-                  // Single-admin, email + password only — no social sign-in.
-                  socialButtons: "!hidden",
-                  dividerRow: "!hidden",
-                  formFieldLabel: "text-xs font-semibold uppercase tracking-wider text-paper-dim",
-                  formFieldInput: "border border-ink-border focus:border-gold-bright focus:ring-gold-bright/20",
-                  formButtonPrimary:
-                    "bg-gold-bright hover:bg-gold-dim text-ink text-sm font-semibold uppercase tracking-wider normal-case",
-                  footerAction: "text-paper-dim",
-                  footer: "!hidden",
-                  identityPreviewText: "text-paper",
-                  identityPreviewEditButtonIcon: "text-gold-bright",
-                },
-              }}
-            />
-          )}
+
+          {/* Storefront Link */}
+          <Link
+            href="/"
+            target="_blank"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+          >
+            <span>Live Storefront</span>
+            <ExternalLink size={12} className="text-slate-400" />
+          </Link>
+        </div>
+
+        {/* Centered Form */}
+        <div className="my-auto flex flex-col items-center justify-center py-8">
+          <AdminSignInForm />
+        </div>
+
+        {/* Bottom Mobile/Desktop Footer */}
+        <div className="pt-6 text-center text-xs text-slate-400">
+          <p>© {new Date().getFullYear()} JAF Jersey. Store Operations &amp; Staff Gateway.</p>
         </div>
       </div>
     </div>

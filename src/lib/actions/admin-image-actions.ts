@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 import { imageStorage } from "@/lib/storage";
 import { validateImageFile } from "@/lib/storage/validate";
 
@@ -16,7 +16,7 @@ export async function uploadProductImageAction(
   formData: FormData
 ): Promise<ImageActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("products:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -77,7 +77,7 @@ export async function addProductImageUrlAction(
   rawUrl: string
 ): Promise<ImageActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("products:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -121,7 +121,7 @@ export async function addProductImageUrlAction(
 
 export async function deleteProductImageAction(imageId: string): Promise<ImageActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("products:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -162,7 +162,7 @@ export async function deleteProductImageAction(imageId: string): Promise<ImageAc
 
 export async function setPrimaryProductImageAction(imageId: string): Promise<ImageActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("products:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
@@ -201,7 +201,7 @@ export async function reorderProductImagesAction(
   orderedImageIds: string[]
 ): Promise<ImageActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("products:manage");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }

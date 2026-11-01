@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 import { generateAndDeliverInvoice } from "@/lib/invoice/deliver";
 
 export interface InvoiceActionResult {
@@ -11,7 +11,7 @@ export interface InvoiceActionResult {
 
 export async function regenerateInvoiceAction(orderId: string): Promise<InvoiceActionResult> {
   try {
-    await requireAdminSession();
+    await requirePermission("orders:read");
   } catch {
     return { success: false, message: "You must be signed in as an admin." };
   }
