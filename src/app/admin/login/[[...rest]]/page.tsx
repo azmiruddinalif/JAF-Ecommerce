@@ -167,10 +167,7 @@ export default async function AdminLoginPage({
 
         {/* Bottom Mobile/Desktop Footer */}
         <div className="pt-6 text-center text-xs text-slate-400">
-          <p>
-            © {new Date().getFullYear()} JAF Jersey. Store Operations &amp;
-            Staff Gateway.
-          </p>
+          <p>© 2026 JAF Jersey. Store Operations &amp; Staff Gateway.</p>
         </div>
       </div>
     </div>
