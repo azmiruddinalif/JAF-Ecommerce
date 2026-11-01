@@ -174,15 +174,38 @@ export function AddToCartForm({
                       : `Size ${variant.size} — Out of Stock`
                   }
                   onClick={() => handleSelectSize(variant)}
-                  className={`relative flex h-11 min-w-14 items-center justify-center rounded-lg border text-xs sm:text-sm font-bold uppercase transition-all cursor-pointer ${
+                  className={`relative flex h-11 min-w-14 items-center justify-center rounded-lg border text-xs sm:text-sm font-bold uppercase transition-all overflow-hidden ${
                     isSelected
-                      ? "border-slate-950 bg-slate-950 text-white shadow-xs"
+                      ? "border-slate-950 bg-slate-950 text-white shadow-xs cursor-pointer"
                       : isAvailable
-                        ? "border-slate-300 bg-white text-slate-800 hover:border-slate-950 hover:bg-slate-50"
-                        : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-300 line-through opacity-60"
+                        ? "border-slate-300 bg-white text-slate-800 hover:border-slate-950 hover:bg-slate-50 cursor-pointer"
+                        : "cursor-not-allowed border-amber-300/40 bg-amber-50/20 text-slate-400 opacity-70"
                   }`}
                 >
                   <span className="relative z-10">{variant.size}</span>
+
+                  {/* Unavailable Size Overlay: Corner-to-Corner Angle Line with Yellow Color Opacity */}
+                  {!isAvailable && (
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 48 48"
+                      preserveAspectRatio="none"
+                      className="pointer-events-none absolute inset-0 h-full w-full"
+                    >
+                      <polygon
+                        points="34,0 48,0 48,14"
+                        fill="rgba(245, 158, 11, 0.22)"
+                      />
+                      <line
+                        x1="0"
+                        y1="48"
+                        x2="48"
+                        y2="0"
+                        stroke="rgba(245, 158, 11, 0.65)"
+                        strokeWidth="1.5"
+                      />
+                    </svg>
+                  )}
                 </button>
               );
             })}

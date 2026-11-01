@@ -115,13 +115,30 @@ export function ProductCard({ product }: { product: ProductListItem }) {
                       ? `Size ${size} (${stock} in stock)`
                       : `Size ${size} — Unavailable`
                   }
-                  className={`flex h-5 min-w-5 items-center justify-center border px-1 text-[10px] font-medium transition-colors ${
+                  className={`relative flex h-5 min-w-5 items-center justify-center overflow-hidden border px-1 text-[10px] font-medium transition-colors ${
                     isAvailable
-                      ? "border-ink-border bg-ink-raised/60 text-paper-dim"
-                      : "border-ink-border/30 bg-ink/30 text-paper-dim/35 line-through opacity-45 cursor-not-allowed"
+                      ? "border-slate-300 bg-white text-slate-700"
+                      : "border-amber-300/40 bg-amber-50/20 text-slate-400 opacity-75 cursor-not-allowed"
                   }`}
                 >
-                  {size}
+                  <span className="relative z-10">{size}</span>
+                  {!isAvailable && (
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 20 20"
+                      preserveAspectRatio="none"
+                      className="pointer-events-none absolute inset-0 h-full w-full"
+                    >
+                      <line
+                        x1="0"
+                        y1="20"
+                        x2="20"
+                        y2="0"
+                        stroke="rgba(245, 158, 11, 0.7)"
+                        strokeWidth="1.2"
+                      />
+                    </svg>
+                  )}
                 </span>
               );
             })}

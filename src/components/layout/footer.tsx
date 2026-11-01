@@ -112,21 +112,21 @@ export async function Footer() {
   );
 
   return (
-    <footer className="relative overflow-hidden border-t border-ink-border bg-ink text-paper">
-      {/* Refined ambient radial lighting & architectural micro-grid */}
+    <footer className="relative overflow-hidden border-t border-amber-400/20 bg-ink text-paper">
+      {/* Refined ambient radial lighting & architectural micro-grid with yellow opacity */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
-            "radial-gradient(ellipse at 50% 0%, rgba(74, 222, 128, 0.3) 0%, transparent 60%), repeating-linear-gradient(115deg, var(--color-gold-bright) 0px, var(--color-gold-bright) 1px, transparent 1px, transparent 40px)",
+            "radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.15) 0%, transparent 60%), repeating-linear-gradient(115deg, rgba(245, 158, 11, 0.45) 0px, rgba(245, 158, 11, 0.45) 1px, transparent 1px, transparent 38px)",
         }}
       />
 
-      {/* Sleek top edge gradient line */}
+      {/* Sleek top edge gradient line with yellow color opacity */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-gold-bright/50 to-transparent"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-amber-400/60 to-transparent"
       />
 
       <div className="relative mx-auto max-w-7xl px-4 pt-16 pb-12 sm:px-6 lg:px-8">
@@ -136,12 +136,12 @@ export async function Footer() {
             tabIndex={0}
             role="region"
             aria-label="Flagship Showroom & Outlet Location"
-            className="group relative mb-14 w-full border border-ink-border bg-ink-raised/80 p-6 backdrop-blur-md transition-all duration-300 hover:border-gold-bright/40 hover:shadow-[0_0_36px_-8px_rgba(74,222,128,0.18)] focus:border-gold-bright focus:outline-none focus:ring-1 focus:ring-gold-bright select-text cursor-text sm:p-7"
+            className="group relative mb-14 w-full border border-slate-200/90 bg-white p-6 shadow-xs backdrop-blur-md transition-all duration-300 hover:border-amber-400/40 hover:shadow-[0_0_36px_-8px_rgba(245,158,11,0.18)] focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 select-text cursor-text sm:p-7"
           >
             {/* Header Strip with Glowing Badge */}
-            <div className="flex flex-col gap-3 border-b border-ink-border pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-b border-amber-400/20 pb-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-md border border-gold-bright/30 bg-gold-bright/10 text-gold-bright shadow-[0_0_12px_rgba(74,222,128,0.2)]">
+                <span className="flex h-7 w-7 items-center justify-center rounded-md border border-amber-400/30 bg-amber-400/10 text-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.2)]">
                   <MapPin size={14} />
                 </span>
                 <div>
@@ -192,20 +192,20 @@ export async function Footer() {
               </div>
 
               {/* Right Column: Direct Hotline Buttons & Concierge */}
-              <div className="flex flex-col justify-between gap-4 border-t border-ink-border pt-4 md:col-span-5 md:border-t-0 md:border-l md:border-ink-border md:pl-8 md:pt-0">
+              <div className="flex flex-col justify-between gap-4 border-t border-amber-400/20 pt-4 md:col-span-5 md:border-t-0 md:border-l md:border-amber-400/20 md:pl-8 md:pt-0">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-gold-bright">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">
                     Direct Contact &amp; Order Hotline:
                   </span>
                   <div className="mt-2 flex flex-wrap items-center gap-2.5">
                     {shopInfo.phone && (
                       <a
                         href={`tel:${shopInfo.phone.replace(/[^0-9+]/g, "")}`}
-                        className="group inline-flex items-center gap-2 border border-gold-bright/40 bg-gold-bright/10 px-3.5 py-1.5 font-mono text-xs font-bold text-gold-bright transition-all duration-200 hover:border-gold-bright hover:bg-gold-bright/20 hover:text-white hover:shadow-[0_0_16px_rgba(74,222,128,0.25)]"
+                        className="group inline-flex items-center gap-2 border border-amber-400/40 bg-amber-400/10 px-3.5 py-1.5 font-mono text-xs font-bold text-amber-600 transition-all duration-200 hover:border-amber-400 hover:bg-amber-400/20 hover:text-slate-950 hover:shadow-[0_0_16px_rgba(245,158,11,0.25)]"
                       >
                         <Phone
                           size={13}
-                          className="text-gold-bright transition-transform duration-200 group-hover:scale-110"
+                          className="text-amber-500 transition-transform duration-200 group-hover:scale-110"
                         />
                         <span>{shopInfo.phone}</span>
                       </a>
@@ -213,11 +213,11 @@ export async function Footer() {
                     {shopInfo.secondaryPhone && (
                       <a
                         href={`tel:${shopInfo.secondaryPhone.replace(/[^0-9+]/g, "")}`}
-                        className="group inline-flex items-center gap-2 border border-gold-bright/40 bg-gold-bright/10 px-3.5 py-1.5 font-mono text-xs font-bold text-gold-bright transition-all duration-200 hover:border-gold-bright hover:bg-gold-bright/20 hover:text-white hover:shadow-[0_0_16px_rgba(74,222,128,0.25)]"
+                        className="group inline-flex items-center gap-2 border border-amber-400/40 bg-amber-400/10 px-3.5 py-1.5 font-mono text-xs font-bold text-amber-600 transition-all duration-200 hover:border-amber-400 hover:bg-amber-400/20 hover:text-slate-950 hover:shadow-[0_0_16px_rgba(245,158,11,0.25)]"
                       >
                         <Phone
                           size={13}
-                          className="text-gold-bright transition-transform duration-200 group-hover:scale-110"
+                          className="text-amber-500 transition-transform duration-200 group-hover:scale-110"
                         />
                         <span>{shopInfo.secondaryPhone}</span>
                       </a>
@@ -307,8 +307,8 @@ export async function Footer() {
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-10 lg:col-span-7 lg:pt-2">
             {navigationColumns.map((col) => (
               <div key={col.title} className="flex flex-col gap-4">
-                <div className="flex items-center gap-2 border-b border-ink-border pb-2.5">
-                  <span className="font-display text-sm tracking-wider text-gold-bright">
+                <div className="flex items-center gap-2 border-b border-amber-400/20 pb-2.5">
+                  <span className="font-display text-sm tracking-wider text-amber-500">
                     {col.number}
                   </span>
                   <h3 className="text-xs font-bold uppercase tracking-widest text-paper">
@@ -320,7 +320,7 @@ export async function Footer() {
                     <li key={link.label}>
                       <Link
                         href={link.href}
-                        className="group inline-flex items-center gap-1 text-xs text-paper-dim transition-colors hover:text-gold-bright"
+                        className="group inline-flex items-center gap-1 text-xs text-paper-dim transition-colors hover:text-amber-500"
                       >
                         <span className="transition-transform group-hover:translate-x-1">
                           {link.label}
@@ -335,15 +335,15 @@ export async function Footer() {
         </div>
 
         {/* 3 Luxury Trust Pillars */}
-        <div className="mt-16 grid grid-cols-1 gap-4 border-t border-ink-border pt-10 sm:grid-cols-3 sm:gap-6">
+        <div className="mt-16 grid grid-cols-1 gap-4 border-t border-amber-400/20 pt-10 sm:grid-cols-3 sm:gap-6">
           {trustPillars.map((pillar) => {
             const Icon = pillar.icon;
             return (
               <div
                 key={pillar.title}
-                className="flex items-start gap-3.5 border border-ink-border bg-ink-raised/40 p-4 transition-colors hover:border-gold/40"
+                className="flex items-start gap-3.5 border border-slate-200/90 bg-white p-4 transition-colors hover:border-amber-400/40 hover:shadow-xs"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-gold-bright/30 bg-gold-bright/10 text-gold-bright">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-amber-400/30 bg-amber-400/10 text-amber-500">
                   <Icon size={18} />
                 </div>
                 <div>
@@ -360,7 +360,7 @@ export async function Footer() {
         </div>
 
         {/* Bottom Bar: Copyright, Trust Badges & Italic Signature */}
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-ink-border pt-6 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-amber-400/20 pt-6 sm:flex-row">
           <p className="text-xs text-paper-dim">
             © {currentYear} JAF™. All rights reserved. Crafted for Football
             Culture.
