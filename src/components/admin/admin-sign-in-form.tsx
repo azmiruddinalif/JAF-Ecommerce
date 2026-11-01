@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
-  KeyRound,
   Loader2,
   Lock,
   Mail,
@@ -39,7 +38,6 @@ export function AdminSignInForm() {
   const [otpCode, setOtpCode] = useState("");
   const [detectedIp, setDetectedIp] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
-  const [previewCode, setPreviewCode] = useState<string | undefined>(undefined);
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -73,7 +71,6 @@ export function AdminSignInForm() {
         // Different / new IP detected — prompt for 6-digit code
         setDetectedIp(preAuth.clientIp || "New Location");
         setMaskedEmail(preAuth.maskedEmail || trimmedEmail);
-        setPreviewCode(preAuth.previewCode);
         setStep("otp");
         setIsLoading(false);
         return;
@@ -322,22 +319,6 @@ export function AdminSignInForm() {
               </div>
             )}
 
-            {/* Dev Fallback Notice if Resend API Key is not set */}
-            {previewCode && (
-              <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50/90 p-3.5 text-xs text-emerald-900 animate-in fade-in-50 duration-200">
-                <div className="flex items-center gap-2 font-semibold">
-                  <KeyRound size={15} className="text-emerald-700 shrink-0" />
-                  <span>One-Time Passcode Generated:</span>
-                </div>
-                <p className="mt-1.5 text-emerald-800">
-                  (Resend email key not configured in .env). Use code:{" "}
-                  <strong className="font-mono text-sm tracking-widest text-emerald-950 font-bold bg-emerald-100/80 px-2 py-0.5 rounded border border-emerald-300/60">
-                    {previewCode}
-                  </strong>
-                </p>
-              </div>
-            )}
-
             {/* OTP Form */}
             <form onSubmit={handleOtpSubmit} className="space-y-4">
               <div>
@@ -358,7 +339,7 @@ export function AdminSignInForm() {
                   autoFocus
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="123456"
+                  placeholder="••••••"
                   disabled={isLoading}
                   className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50/60 text-center font-mono text-2xl font-bold tracking-[0.4em] text-slate-900 placeholder:text-slate-300 transition-all focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-60 shadow-2xs"
                 />
@@ -373,7 +354,7 @@ export function AdminSignInForm() {
                   {isLoading ? (
                     <>
                       <Loader2 className="size-4 animate-spin" />
-                      <span>Verifying Code &amp; Whitelisting IP...</span>
+                      <span>Verifying Code...</span>
                     </>
                   ) : (
                     <>

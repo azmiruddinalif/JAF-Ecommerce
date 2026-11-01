@@ -16,10 +16,21 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   baseURL:
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    (process.env.NODE_ENV === "production"
-      ? "https://jaf-ecommerce.vercel.app"
-      : "http://localhost:3000"),
+    process.env.NODE_ENV === "production"
+      ? process.env.BETTER_AUTH_URL ||
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        "https://jaf-ecommerce.vercel.app"
+      : process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "https://jaf-ecommerce.vercel.app",
+    ...(process.env.NEXT_PUBLIC_SITE_URL ? [process.env.NEXT_PUBLIC_SITE_URL] : []),
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
+  ],
   secret:
     process.env.BETTER_AUTH_SECRET ||
     "jaf-auth-secret-key-32-chars-minimum-prod-ready",

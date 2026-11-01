@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
 import { headers } from "next/headers";
@@ -17,10 +16,7 @@ async function getClientIp(): Promise<string> {
     const realIp = headerList.get("x-real-ip");
     const cfIp = headerList.get("cf-connecting-ip");
 
-    const rawIp =
-      cfIp ||
-      (forwardedFor ? forwardedFor.split(",")[0].trim() : realIp) ||
-      "127.0.0.1";
+    const rawIp = cfIp || (forwardedFor ? forwardedFor.split(",")[0].trim() : realIp) || "127.0.0.1";
     return rawIp.trim();
   } catch {
     return "127.0.0.1";
@@ -38,12 +34,12 @@ function maskEmail(email: string): string {
 }
 
 /**
- * Send 6-digit security code via Resend if configured, or log to server
+ * Send 6-digit security code via Resend if configured
  */
 async function sendSecurityCodeEmail(
   email: string,
   code: string,
-  clientIp: string,
+  clientIp: string
 ): Promise<{ sent: boolean; reason?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -52,13 +48,12 @@ async function sendSecurityCodeEmail(
     console.log(`[JAF ADMIN SECURITY CODE] Email: ${email}`);
     console.log(`[JAF ADMIN SECURITY CODE] 6-Digit OTP: ${code}`);
     console.log(`======================================================\n`);
-    return { sent: false, reason: "RESEND_API_KEY not configured" };
+    return { sent: false, reason: "RESEND_API_KEY not configured in .env" };
   }
 
   try {
     const resend = new Resend(apiKey);
-    const from =
-      process.env.RESEND_FROM_EMAIL || "JAF Security <onboarding@resend.dev>";
+    const from = process.env.RESEND_FROM_EMAIL || "JAF Security <onboarding@resend.dev>";
 
     await resend.emails.send({
       from,
@@ -97,10 +92,7 @@ async function sendSecurityCodeEmail(
 
     return { sent: true };
   } catch (error: any) {
-    console.error(
-      "[JAF Security] Failed to send security email:",
-      error.message || error,
-    );
+    console.error("[JAF Security] Failed to send security email:", error.message || error);
     return { sent: false, reason: error.message };
   }
 }
@@ -131,7 +123,7 @@ export async function preAuthenticateAdminAction(params: {
     const envPassword = process.env.ADMIN_PASSWORD?.trim();
 
     const isEnvAdminMatch = Boolean(
-      envEmail && envPassword && email === envEmail && password === envPassword,
+      envEmail && envPassword && email === envEmail && password === envPassword
     );
 
     if (isEnvAdminMatch) {
@@ -149,7 +141,7 @@ export async function preAuthenticateAdminAction(params: {
         });
 
         const credentialAccount = existingUser.accounts.find(
-          (a) => a.providerId === "credential",
+          (a) => a.providerId === "credential"
         );
         if (credentialAccount) {
           await prisma.account.update({
@@ -200,14 +192,11 @@ export async function preAuthenticateAdminAction(params: {
     if (user.banned) {
       return {
         success: false,
-        error:
-          "This staff account has been deactivated. Please contact the store owner.",
+        error: "This staff account has been deactivated. Please contact the store owner.",
       };
     }
 
-    const credentialAccount = user.accounts.find(
-      (a) => a.providerId === "credential",
-    );
+    const credentialAccount = user.accounts.find((a) => a.providerId === "credential");
     if (!credentialAccount || !credentialAccount.password) {
       return { success: false, error: "Invalid email or password." };
     }
@@ -242,6 +231,23 @@ export async function preAuthenticateAdminAction(params: {
     }
 
     // 5. New or different IP address detected:
+    // If no email service is configured in .env:
+    if (!process.env.RESEND_API_KEY) {
+      // If credentials match .env owner credentials, allow direct sign-in so owner is never blocked
+      if (isEnvAdminMatch) {
+        return {
+          success: true,
+          requiresOtp: false,
+          clientIp,
+        };
+      }
+      return {
+        success: false,
+        error:
+          "Email service not configured (RESEND_API_KEY missing in .env). Cannot dispatch security code.",
+      };
+    }
+
     // Generate a cryptographically secure 6-digit OTP code
     const otp = crypto.randomInt(100000, 999999).toString();
     const otpIdentifier = `admin_otp:${user.id}`;
@@ -258,22 +264,25 @@ export async function preAuthenticateAdminAction(params: {
       },
     });
 
-    // Send email or log to server
+    // Send email to inbox via Resend
     const emailResult = await sendSecurityCodeEmail(user.email, otp, clientIp);
+
+    if (!emailResult.sent) {
+      return {
+        success: false,
+        error: `Failed to deliver verification email: ${emailResult.reason || "Check email service."}`,
+      };
+    }
 
     return {
       success: true,
       requiresOtp: true,
       clientIp,
       maskedEmail: maskEmail(user.email),
-      // If Resend is not configured, supply the preview code so developer / owner is never locked out
-      previewCode: !emailResult.sent ? otp : undefined,
     };
   } catch (err: unknown) {
     const errorMsg =
-      err instanceof Error
-        ? err.message
-        : "Failed to authenticate administrator.";
+      err instanceof Error ? err.message : "Failed to authenticate administrator.";
     console.error("[preAuthenticateAdminAction Error]:", err);
     return { success: false, error: errorMsg };
   }
@@ -337,15 +346,11 @@ export async function verifyAdminOtpAction(params: {
     }
 
     // Clean up the single-use OTP
-    await prisma.verification.deleteMany({
-      where: { identifier: otpIdentifier },
-    });
+    await prisma.verification.deleteMany({ where: { identifier: otpIdentifier } });
 
     // Save this IP as trusted for 90 days
     const ipIdentifier = `trusted_ip:${user.id}:${clientIp || savedIp}`;
-    await prisma.verification.deleteMany({
-      where: { identifier: ipIdentifier },
-    });
+    await prisma.verification.deleteMany({ where: { identifier: ipIdentifier } });
     await prisma.verification.create({
       data: {
         identifier: ipIdentifier,
