@@ -365,25 +365,39 @@ export function HeroInteractive({
         </div>
 
         {/* =================================================================== */}
-        {/* BOTTOM-RIGHT: Active Kit Title + Minimalist Navigation Arrows       */}
-        {/* Anchored at the bottom-right corner of the banner (Image 5 style)   */}
+        {/* BOTTOM-RIGHT: Technical Bracket Kit Title + Circular Arrow Controls */}
+        {/* Exactly matching Image 5 (Real Madrid 2026 matchday reference)      */}
         {/* =================================================================== */}
-        <div className="absolute right-4 bottom-4 sm:right-6 sm:bottom-6 lg:right-8 lg:bottom-6 z-20 flex items-center gap-3.5 sm:gap-4.5 rounded-2xl bg-white/85 backdrop-blur-md px-4 py-2 sm:px-5 sm:py-2.5 border border-slate-200/90 shadow-md">
-          <div className="text-right">
-            <p className="text-[11px] sm:text-xs font-black uppercase tracking-widest text-slate-950 leading-tight">
-              {currentSlide.name || "2026 MATCHDAY KIT"}
-            </p>
-            <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 leading-none mt-0.5">
-              AUTHENTIC FIT · 2026
-            </p>
+        <div className="absolute right-4 bottom-5 sm:right-8 sm:bottom-7 lg:right-12 lg:bottom-9 z-30 flex flex-col items-end gap-3 sm:gap-4 select-none">
+          {/* Technical Bracket + Stacked Kit Title */}
+          <div className="flex items-stretch gap-2.5 text-left">
+            {/* Architectural bracket with top & bottom ticks */}
+            <div className="relative w-1.5 border-l-2 border-white/80 flex flex-col justify-between py-0.5">
+              <span className="h-[2px] w-1.5 bg-white/80 block" />
+              <span className="h-[2px] w-1.5 bg-white/80 block" />
+            </div>
+
+            {/* Stacked typography */}
+            <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.2em] leading-tight">
+              <p className="text-[11px] sm:text-xs font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                {currentSlide.name || "MATCHDAY KIT"}
+              </p>
+              <p className="text-[9px] sm:text-[10px] font-bold text-slate-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                AUTHENTIC FIT
+              </p>
+              <p className="text-[9px] sm:text-[10px] font-black text-amber-400 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                2026
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          {/* Circular Navigation Buttons (Dark Translucent Pills from Reference) */}
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handlePrev}
               aria-label="Previous jersey"
-              className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white text-slate-900 shadow-xs hover:bg-slate-950 hover:text-white hover:border-slate-950 active:scale-95 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+              className="size-9 sm:size-10 rounded-full border border-white/30 bg-black/50 text-white backdrop-blur-md shadow-lg hover:bg-black/80 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
             >
               <ChevronLeft size={16} />
             </button>
@@ -391,7 +405,7 @@ export function HeroInteractive({
               type="button"
               onClick={handleNext}
               aria-label="Next jersey"
-              className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white text-slate-900 shadow-xs hover:bg-slate-950 hover:text-white hover:border-slate-950 active:scale-95 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+              className="size-9 sm:size-10 rounded-full border border-white/30 bg-black/50 text-white backdrop-blur-md shadow-lg hover:bg-black/80 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
             >
               <ChevronRight size={16} />
             </button>
