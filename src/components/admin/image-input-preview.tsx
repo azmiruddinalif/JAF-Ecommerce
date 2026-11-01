@@ -43,7 +43,12 @@ export function ImageInputWithPreview({
             fill
             sizes="200px"
             className="object-cover"
-            unoptimized={!!preview}
+            unoptimized={
+              !!preview ||
+              (typeof displayUrl === "string" &&
+                !displayUrl.includes("res.cloudinary.com") &&
+                !displayUrl.startsWith("/"))
+            }
           />
         ) : (
           <div className="flex h-full items-center justify-center text-[10px] text-paper-dim">No image</div>

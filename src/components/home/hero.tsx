@@ -36,7 +36,7 @@ export async function Hero() {
     <HeroInteractive
       headline={settings.heroHeadline}
       subheadline={settings.heroSubheadline}
-      fallbackImageUrl={settings.heroImageUrl}
+      bannerImageUrl={settings.heroImageUrl}
       slides={slides}
       heroConfig={settings.heroConfig}
     />

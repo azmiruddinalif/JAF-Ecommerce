@@ -182,6 +182,32 @@ export async function updateStoreSettingsAction(
     const hasNewFile = file instanceof File && file.size > 0;
 
     if (!hasNewFile) {
+      if (slot.field === "heroImage") {
+        const isRemove = formData.get(`${slot.field}Remove`) === "on";
+        const directUrl = (formData.get("heroImageUrlDirect")?.toString() ?? "").trim();
+        const previousPublicId = existing?.[slot.publicIdColumn] ?? null;
+
+        if (isRemove) {
+          if (previousPublicId) {
+            await imageStorage.remove(previousPublicId).catch(() => {});
+          }
+          imageUpdates[slot.urlColumn] = null;
+          imageUpdates[slot.publicIdColumn] = null;
+          continue;
+        }
+
+        if (directUrl) {
+          if (directUrl !== existing?.[slot.urlColumn]) {
+            if (previousPublicId) {
+              await imageStorage.remove(previousPublicId).catch(() => {});
+            }
+            imageUpdates[slot.urlColumn] = directUrl;
+            imageUpdates[slot.publicIdColumn] = null;
+          }
+          continue;
+        }
+      }
+
       // No replacement chosen — honor an explicit "remove this image" request.
       if (formData.get(`${slot.field}Remove`) === "on") {
         const previousPublicId = existing?.[slot.publicIdColumn] ?? null;

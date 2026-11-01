@@ -84,35 +84,27 @@ function renderHeadline(
 export function HeroInteractive({
   headline,
   subheadline,
+  bannerImageUrl,
   fallbackImageUrl,
   slides,
   heroConfig,
 }: {
   headline: string;
   subheadline: string;
-  fallbackImageUrl: string | null;
+  bannerImageUrl?: string | null;
+  fallbackImageUrl?: string | null;
   slides: HeroSlide[];
   heroConfig: HeroCustomConfig;
 }) {
+  const activeBannerBg = bannerImageUrl || fallbackImageUrl || STADIUM_DAYLIGHT_BG;
+
   const activeSlides = useMemo(() => {
     if (slides.length > 0) {
       if (slides.length >= 3) return slides;
       return [...slides, ...DEFAULT_MATCHDAY_SHOWCASE.slice(slides.length)];
     }
-    if (fallbackImageUrl) {
-      return [
-        {
-          id: "custom-fallback",
-          slug: null,
-          imageUrl: fallbackImageUrl,
-          name: "JAF Matchday Edition",
-          priceCents: 120000,
-        },
-        ...DEFAULT_MATCHDAY_SHOWCASE.slice(1),
-      ];
-    }
     return DEFAULT_MATCHDAY_SHOWCASE;
-  }, [slides, fallbackImageUrl]);
+  }, [slides]);
 
   const count = activeSlides.length;
   const [active, setActive] = useState(0);
@@ -140,14 +132,15 @@ export function HeroInteractive({
     : "BDT 1,200";
 
   return (
-    <section className="relative w-full overflow-hidden bg-white text-slate-900 select-none">
+    <section className="relative w-full overflow-hidden bg-white text-slate-900 select-none" style={heroConfig?.bgColor ? { backgroundColor: heroConfig.bgColor } : undefined}>
       <div className="absolute inset-0 z-0">
         <Image
-          src={STADIUM_DAYLIGHT_BG}
-          alt="Daylight Football Stadium Matchday Arena"
+          src={activeBannerBg}
+          alt="Hero Matchday Banner Background"
           fill
           priority
           sizes="100vw"
+          unoptimized={!activeBannerBg.startsWith("/") && !activeBannerBg.includes("res.cloudinary.com")}
           className="object-cover object-center filter brightness-[1.16] contrast-[0.92] saturate-[0.55]"
         />
 

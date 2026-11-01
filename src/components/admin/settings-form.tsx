@@ -147,11 +147,13 @@ function ImageField({
   label,
   currentUrl,
   compact = false,
+  boxClassName,
 }: {
   name: string;
   label: string;
   currentUrl: string | null;
   compact?: boolean;
+  boxClassName?: string;
 }) {
   return (
     <div>
@@ -162,8 +164,8 @@ function ImageField({
         alt={label}
         currentUrl={currentUrl}
         removeName={`${name}Remove`}
-        wrapperClassName={compact ? "flex flex-col gap-2" : "flex items-center gap-4"}
-        boxClassName={compact ? "aspect-3/4 w-full" : "h-20 w-28"}
+        wrapperClassName={compact ? "flex flex-col gap-2" : "flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4"}
+        boxClassName={boxClassName ?? (compact ? "aspect-3/4 w-full" : "h-20 w-28")}
       />
     </div>
   );
@@ -557,6 +559,40 @@ export function SettingsForm({
           <FieldError message={state.fieldErrors?.heroSubheadline} />
         </div>
 
+        {/* Hero Banner Background Image */}
+        <div className="border border-ink-border bg-ink/40 p-4">
+          <div className="mb-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gold">
+              Hero Banner Background Image
+            </p>
+            <p className="text-[11px] text-paper-dim">
+              Upload a custom stadium, matchday arena, or lifestyle background for the storefront hero banner.
+              If no image is uploaded, the default Daylight Football Stadium matchday background is automatically displayed.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <ImageField
+              name="heroImage"
+              label="Upload Banner Image (JPG, PNG, WEBP, AVIF)"
+              currentUrl={settings.heroImageUrl}
+              boxClassName="aspect-video w-52 sm:w-64"
+            />
+            <div>
+              <Label htmlFor="heroImageUrlDirect">Or Paste Direct Image URL (optional)</Label>
+              <Input
+                id="heroImageUrlDirect"
+                name="heroImageUrlDirect"
+                defaultValue={settings.heroImageUrl?.startsWith('http') ? settings.heroImageUrl : ''}
+                placeholder="https://images.unsplash.com/... or https://res.cloudinary.com/..."
+              />
+              <p className="mt-1 text-[11px] text-paper-dim">
+                Optional: Enter a public image URL directly if you prefer not uploading a file. Uploaded files take priority.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Banner & Text Colors */}
         <div className="border border-ink-border bg-ink/40 p-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -733,13 +769,6 @@ export function SettingsForm({
             Used when Banner Layout Mode is set to &quot;Default Split Layout&quot;. Each slide can
             point at a product (or &quot;Auto&quot;) and/or use a custom uploaded image.
           </p>
-          <div className="mb-4">
-            <ImageField
-              name="heroImage"
-              label="Fallback Background Image"
-              currentUrl={settings.heroImageUrl}
-            />
-          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {[
               {
