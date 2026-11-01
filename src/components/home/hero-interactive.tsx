@@ -373,13 +373,13 @@ export function HeroInteractive({
 
           {/* Stacked typography */}
           <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.2em] leading-tight">
-            <p className="text-[11px] sm:text-xs font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+            <p className="text-[11px] sm:text-xs font-black text-white">
               {currentSlide.name || "MATCHDAY KIT"}
             </p>
-            <p className="text-[9px] sm:text-[10px] font-bold text-slate-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+            <p className="text-[9px] sm:text-[10px] font-bold text-slate-200">
               AUTHENTIC FIT
             </p>
-            <p className="text-[9px] sm:text-[10px] font-black text-amber-400 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+            <p className="text-[9px] sm:text-[10px] font-black text-amber-400">
               2026
             </p>
           </div>
@@ -391,7 +391,7 @@ export function HeroInteractive({
             type="button"
             onClick={handlePrev}
             aria-label="Previous jersey"
-            className="size-9 sm:size-10 rounded-full border border-white/30 bg-white/40 text-white backdrop-blur-md shadow-lg hover:bg-black/80 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+            className="size-9 sm:size-10 rounded-full border border-white/30 bg-white/40 text-white backdrop-blur-md shadow-lg hover:bg-white/10 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
           >
             <ChevronLeft size={16} color="black" />
           </button>
