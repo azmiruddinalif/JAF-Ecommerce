@@ -165,8 +165,8 @@ export function HeroInteractive({
         {/* Subtle white ground vignette strictly on left side */}
         <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-white/80 via-transparent to-transparent lg:w-3/5" />
 
-        {/* Bottom-Right Cinematic Stadium Shadow for crystal-clear readability (matching reference banner) */}
-        <div className="pointer-events-none absolute right-0 bottom-0 h-52 sm:h-68 w-80 sm:w-120 bg-radial-at-br from-slate-950/90 via-slate-950/50 to-transparent" />
+        {/* Soft atmospheric gradient in bottom-right (subtle and soft as like previous) */}
+        <div className="pointer-events-none absolute right-0 bottom-0 h-44 sm:h-56 w-72 sm:w-96 bg-radial-at-br from-slate-950/35 via-slate-950/10 to-transparent" />
 
         {/* Bottom Concrete Stadium Parapet / Railing Geometry */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 sm:h-14 bg-linear-to-t from-slate-900/10 via-slate-900/5 to-transparent border-t border-slate-300/40 backdrop-blur-[2px]" />
@@ -433,45 +433,45 @@ export function HeroInteractive({
       {/* Positioned outside max-w-7xl container, at the banner's outer edge   */}
       {/* ===================================================================== */}
       <div className="absolute right-5 bottom-5 sm:right-8 sm:bottom-7 lg:right-10 lg:bottom-8 xl:right-12 xl:bottom-9 z-30 flex flex-col items-end gap-3 sm:gap-4 select-none">
-        {/* Technical Bracket + Stacked Kit Title (Frosted dark pill for crystal-clear readability) */}
-        <div className="flex items-stretch gap-3 text-left rounded-xl bg-slate-950/70 px-3.5 py-2.5 backdrop-blur-md border border-white/15 shadow-2xl">
+        {/* Technical Bracket + Stacked Kit Title (Soft translucent backdrop matching previous lightness) */}
+        <div className="flex items-stretch gap-2.5 text-left rounded-lg bg-black/25 backdrop-blur-[3px] px-3 py-1.5 border border-white/10 shadow-sm">
           {/* Architectural bracket with top & bottom ticks */}
-          <div className="relative w-1.5 border-l-2 border-white flex flex-col justify-between py-0.5">
-            <span className="h-0.5 w-2 bg-white block shadow-xs" />
-            <span className="h-0.5 w-2 bg-white block shadow-xs" />
+          <div className="relative w-1.5 border-l-2 border-white/90 flex flex-col justify-between py-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+            <span className="h-0.5 w-1.5 bg-white/90 block" />
+            <span className="h-0.5 w-1.5 bg-white/90 block" />
           </div>
 
           {/* Stacked typography */}
           <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.2em] leading-tight">
-            <p className="text-[11px] sm:text-xs font-black text-white max-w-44 sm:max-w-56 leading-snug drop-shadow-sm">
+            <p className="text-[11px] sm:text-xs font-black text-white max-w-44 sm:max-w-56 leading-snug drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.95)]">
               {currentSlide.name || "MATCHDAY KIT"}
             </p>
-            <p className="text-[9px] sm:text-[10px] font-extrabold text-slate-300 drop-shadow-sm">
+            <p className="text-[9px] sm:text-[10px] font-extrabold text-white/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
               AUTHENTIC FIT
             </p>
-            <p className="text-[9px] sm:text-[10px] font-black text-amber-400 drop-shadow-sm">
+            <p className="text-[9px] sm:text-[10px] font-black text-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
               2026
             </p>
           </div>
         </div>
 
-        {/* Circular Navigation Buttons (Dark Translucent Pills from Reference) */}
+        {/* Circular Navigation Buttons (Soft Dark Translucent Pills from Reference) */}
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handlePrev}
             aria-label="Previous jersey"
-            className="size-9 sm:size-10 rounded-full border border-white/20 bg-slate-950/60 text-white backdrop-blur-md shadow-lg hover:bg-slate-950/80 hover:border-white/40 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+            className="size-9 sm:size-10 rounded-full border border-white/20 bg-black/35 text-white backdrop-blur-xs shadow-md hover:bg-black/55 hover:border-white/40 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
           >
-            <ChevronLeft size={16} className="text-white" />
+            <ChevronLeft size={16} className="text-white drop-shadow-xs" />
           </button>
           <button
             type="button"
             onClick={handleNext}
             aria-label="Next jersey"
-            className="size-9 sm:size-10 rounded-full border border-white/20 bg-slate-950/60 text-white backdrop-blur-md shadow-lg hover:bg-slate-950/80 hover:border-white/40 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+            className="size-9 sm:size-10 rounded-full border border-white/20 bg-black/35 text-white backdrop-blur-xs shadow-md hover:bg-black/55 hover:border-white/40 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
           >
-            <ChevronRight size={16} className="text-white" />
+            <ChevronRight size={16} className="text-white drop-shadow-xs" />
           </button>
         </div>
       </div>
