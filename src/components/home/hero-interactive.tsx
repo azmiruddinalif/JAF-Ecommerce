@@ -144,7 +144,7 @@ export function HeroInteractive({
   return (
     <section className="relative w-full overflow-hidden bg-white text-slate-900 select-none">
       {/* ===================================================================== */}
-      {/* 1. DAYLIGHT STADIUM BACKGROUND (Matchday Daylight Arena)              */}
+      {/* 1. DAYLIGHT STADIUM BACKGROUND WITH SOFT WHITE SHADE (Picture 2 style) */}
       {/* ===================================================================== */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -153,23 +153,39 @@ export function HeroInteractive({
           fill
           priority
           sizes="100vw"
-          className="object-cover object-center filter brightness-[1.03] contrast-[0.98]"
+          className="object-cover object-center filter brightness-[1.16] contrast-[0.92] saturate-[0.55]"
         />
 
+        {/* Global soft white wash over entire banner (silvery, bright daylight atmosphere) */}
+        <div className="pointer-events-none absolute inset-0 bg-white/35 backdrop-blur-[0.5px]" />
+
+        {/* Global soft white wash over entire banner (silvery, bright daylight atmosphere) */}
+        <div className="pointer-events-none absolute inset-0 bg-white/10 backdrop-blur-[0.5px]" />
+
         {/* Sunlight flare & ambient brightness in the upper sky */}
-        <div className="pointer-events-none absolute inset-0 bg-radial-at-t from-amber-100/35 via-sky-50/20 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-radial-at-t from-amber-100/40 via-sky-50/20 to-transparent" />
 
-        {/* Atmospheric White Gradient for text legibility on left (pure minimal white) */}
-        <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-white/95 via-white/85 to-white/20 sm:via-white/70 sm:to-transparent lg:w-3/5" />
+        {/* Left-to-right soft white gradient (pure minimal white for headlines) */}
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-white via-white/80 to-white/20 sm:via-white/70 sm:to-white/10" />
 
-        {/* Subtle white ground vignette strictly on left side */}
-        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-white/80 via-transparent to-transparent lg:w-3/5" />
+        {/* Top sky soft white wash */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-linear-to-b from-white/85 via-white/35 to-transparent" />
 
-        {/* Soft atmospheric gradient in bottom-right (subtle and soft as like previous) */}
-        <div className="pointer-events-none absolute right-0 bottom-0 h-44 sm:h-56 w-72 sm:w-96 bg-radial-at-br from-slate-950/35 via-slate-950/10 to-transparent" />
+        {/* Bottom soft white ground fade blending seamlessly into the page */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 sm:h-52 bg-linear-to-t from-white via-white/70 to-transparent" />
 
-        {/* Bottom Concrete Stadium Parapet / Railing Geometry */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 sm:h-14 bg-linear-to-t from-slate-900/10 via-slate-900/5 to-transparent border-t border-slate-300/40 backdrop-blur-[2px]" />
+        {/* Bottom subtle edge divider */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-slate-200/60" />
+      </div>
+
+      {/* Giant Faint 2026 Watermark in bottom-right (Picture 2 style) */}
+      <div className="pointer-events-none absolute right-4 sm:right-10 bottom-6 sm:bottom-10 z-10 select-none font-display text-8xl sm:text-9xl lg:text-[140px] xl:text-[160px] font-black tracking-tighter text-slate-900/[0.05] leading-none">
+        2026
+      </div>
+
+      {/* Giant Faint 2026 Watermark in bottom-right (Picture 2 style) */}
+      <div className="pointer-events-none absolute right-4 sm:right-10 bottom-6 sm:bottom-10 z-10 select-none font-display text-8xl sm:text-9xl lg:text-[140px] xl:text-[160px] font-black tracking-tighter text-slate-900/5 leading-none">
+        2026
       </div>
 
       {/* ===================================================================== */}
@@ -258,7 +274,8 @@ export function HeroInteractive({
                         }
                       >
                         <span>{btn.label}</span>
-                        {(btn.icon === "arrow-right" || (!btn.icon && isPrimary)) && (
+                        {(btn.icon === "arrow-right" ||
+                          (!btn.icon && isPrimary)) && (
                           <ArrowRight
                             size={16}
                             className="transition-transform duration-200 group-hover:translate-x-1"
@@ -433,45 +450,45 @@ export function HeroInteractive({
       {/* Positioned outside max-w-7xl container, at the banner's outer edge   */}
       {/* ===================================================================== */}
       <div className="absolute right-5 bottom-5 sm:right-8 sm:bottom-7 lg:right-10 lg:bottom-8 xl:right-12 xl:bottom-9 z-30 flex flex-col items-end gap-3 sm:gap-4 select-none">
-        {/* Technical Bracket + Stacked Kit Title (Soft translucent backdrop matching previous lightness) */}
-        <div className="flex items-stretch gap-2.5 text-left rounded-lg bg-black/25 backdrop-blur-[3px] px-3 py-1.5 border border-white/10 shadow-sm">
+        {/* Technical Bracket + Stacked Kit Title (Picture 2 clean minimal style) */}
+        <div className="flex items-stretch gap-2.5 text-left rounded-lg bg-white/80 backdrop-blur-md px-3 py-1.5 border border-slate-200/90 shadow-2xs">
           {/* Architectural bracket with top & bottom ticks */}
-          <div className="relative w-1.5 border-l-2 border-white/90 flex flex-col justify-between py-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-            <span className="h-0.5 w-1.5 bg-white/90 block" />
-            <span className="h-0.5 w-1.5 bg-white/90 block" />
+          <div className="relative w-1.5 border-l-2 border-slate-950 flex flex-col justify-between py-0.5">
+            <span className="h-0.5 w-1.5 bg-slate-950 block" />
+            <span className="h-0.5 w-1.5 bg-slate-950 block" />
           </div>
 
           {/* Stacked typography */}
           <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.2em] leading-tight">
-            <p className="text-[11px] sm:text-xs font-black text-white max-w-44 sm:max-w-56 leading-snug drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.95)]">
+            <p className="text-[11px] sm:text-xs font-black text-slate-950 max-w-44 sm:max-w-56 leading-snug">
               {currentSlide.name || "MATCHDAY KIT"}
             </p>
-            <p className="text-[9px] sm:text-[10px] font-extrabold text-white/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+            <p className="text-[9px] sm:text-[10px] font-extrabold text-slate-500">
               AUTHENTIC FIT
             </p>
-            <p className="text-[9px] sm:text-[10px] font-black text-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+            <p className="text-[9px] sm:text-[10px] font-black text-amber-500">
               2026
             </p>
           </div>
         </div>
 
-        {/* Circular Navigation Buttons (Soft Dark Translucent Pills from Reference) */}
+        {/* Circular Navigation Buttons (Picture 2 minimal white pills) */}
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handlePrev}
             aria-label="Previous jersey"
-            className="size-9 sm:size-10 rounded-full border border-white/20 bg-black/35 text-white backdrop-blur-xs shadow-md hover:bg-black/55 hover:border-white/40 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+            className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xs shadow-2xs hover:border-slate-950 hover:bg-white active:scale-95 flex items-center justify-center transition-all cursor-pointer"
           >
-            <ChevronLeft size={16} className="text-white drop-shadow-xs" />
+            <ChevronLeft size={15} />
           </button>
           <button
             type="button"
             onClick={handleNext}
             aria-label="Next jersey"
-            className="size-9 sm:size-10 rounded-full border border-white/20 bg-black/35 text-white backdrop-blur-xs shadow-md hover:bg-black/55 hover:border-white/40 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+            className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xs shadow-2xs hover:border-slate-950 hover:bg-white active:scale-95 flex items-center justify-center transition-all cursor-pointer"
           >
-            <ChevronRight size={16} className="text-white drop-shadow-xs" />
+            <ChevronRight size={15} />
           </button>
         </div>
       </div>
