@@ -1,19 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
+  ShieldCheck,
+  Sparkles,
+  Truck,
   Flame,
   ShoppingBag,
-  Sparkles,
   Tag,
   Zap,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { formatCentsBDT } from "@/lib/money";
 import type {
   HeroButtonConfig,
@@ -24,50 +25,44 @@ import type {
 
 export interface HeroSlide {
   id: string;
-  // null for a slide that has a custom image but no (or no resolved) linked
-  // product — it still shows, just without the name/price card or a link.
   slug: string | null;
   imageUrl: string;
   name: string | null;
   priceCents: number | null;
 }
 
-const AUTO_ADVANCE_MS = 5000;
-const SLIDE_SLOTS = 3;
+const AUTO_ADVANCE_MS = 6000;
 
-// Fades the hero image itself to transparent at the seam on desktop so it dissolves
-// into the ground behind it with no visible edge.
-const HERO_DESKTOP_MASK =
-  "lg:[mask-image:linear-gradient(to_right,rgba(0,0,0,0)_0%,rgba(0,0,0,0.05)_15%,rgba(0,0,0,0.16)_28%,rgba(0,0,0,0.34)_40%,rgba(0,0,0,0.56)_52%,rgba(0,0,0,0.76)_64%,rgba(0,0,0,0.9)_76%,rgba(0,0,0,0.98)_88%,rgba(0,0,0,1)_100%)] " +
-  "lg:[-webkit-mask-image:linear-gradient(to_right,rgba(0,0,0,0)_0%,rgba(0,0,0,0.05)_15%,rgba(0,0,0,0.16)_28%,rgba(0,0,0,0.34)_40%,rgba(0,0,0,0.56)_52%,rgba(0,0,0,0.76)_64%,rgba(0,0,0,0.9)_76%,rgba(0,0,0,0.98)_88%,rgba(0,0,0,1)_100%)]";
+// Curated matchday showcases matching Image 5 aesthetic
+const DEFAULT_MATCHDAY_SHOWCASE: HeroSlide[] = [
+  {
+    id: "showcase-madrid",
+    slug: "ac-milan-retro-2006",
+    imageUrl:
+      "https://res.cloudinary.com/dk0xywcum/image/upload/v1793466053/settings/hero-showcase/fql6gbbw3bczyvtx69rs.jpg",
+    name: "Madrid 25/26 Home Kit",
+    priceCents: 120000,
+  },
+  {
+    id: "showcase-arsenal",
+    slug: "ac-milan-retro-2006",
+    imageUrl:
+      "https://res.cloudinary.com/dk0xywcum/image/upload/v1793466054/settings/hero-showcase/bhfmrrwsfghmrfrb5n97.jpg",
+    name: "Arsenal 26/27 Away Jersey",
+    priceCents: 120000,
+  },
+  {
+    id: "showcase-brazil",
+    slug: "ac-milan-retro-2006",
+    imageUrl:
+      "https://res.cloudinary.com/dk0xywcum/image/upload/v1793464350/settings/hero-showcase/ry5244fpiykmykt9ubk6.jpg",
+    name: "Brazil 1998 Retro Classic",
+    priceCents: 185000,
+  },
+];
 
-function renderHeadline(
-  headline: string,
-  accentWord = "fashion",
-  accentColor?: string,
-) {
-  const targets = accentWord
-    .split(",")
-    .map((w) => w.trim().toLowerCase())
-    .filter(Boolean);
-  if (targets.length === 0) targets.push("fashion");
-
-  return headline.split(/(\s+)/).map((part, i) => {
-    const bare = part.replace(/[.,!?;:]+$/, "").toLowerCase();
-    if (targets.includes(bare)) {
-      return (
-        <span
-          key={i}
-          className="text-gold-bright"
-          style={accentColor ? { color: accentColor } : undefined}
-        >
-          {part}
-        </span>
-      );
-    }
-    return part;
-  });
-}
+const STADIUM_DAYLIGHT_BG =
+  "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=2000&q=85&auto=format";
 
 function ButtonIconGraphic({ icon }: { icon?: HeroButtonIcon }) {
   switch (icon) {
@@ -94,266 +89,6 @@ function ButtonIconGraphic({ icon }: { icon?: HeroButtonIcon }) {
   }
 }
 
-function HeroButtonsRow({
-  buttons,
-  className = "mt-9",
-}: {
-  buttons: HeroButtonConfig[];
-  className?: string;
-}) {
-  if (buttons.length === 0) return null;
-
-  return (
-    <div className={`flex flex-wrap items-center gap-3 ${className}`}>
-      {buttons.map((btn, idx) => {
-        const customStyle: React.CSSProperties = {};
-        if (btn.bgColor) {
-          customStyle.backgroundColor = btn.bgColor;
-          customStyle.borderColor = btn.bgColor;
-        }
-        if (btn.textColor) {
-          customStyle.color = btn.textColor;
-        }
-        const resolvedIcon: HeroButtonIcon =
-          btn.icon ?? (idx === 0 ? "arrow-right" : "none");
-        return (
-          <Link
-            key={btn.id || idx}
-            href={btn.href || "/shop"}
-            className="inline-block"
-          >
-            <Button
-              variant={btn.variant || "primary"}
-              size="lg"
-              className="group px-6 py-3.5 text-[16px] leading-none sm:px-8 sm:py-4"
-              style={
-                Object.keys(customStyle).length > 0 ? customStyle : undefined
-              }
-            >
-              <ButtonIconGraphic icon={resolvedIcon} />
-              {btn.label}
-            </Button>
-          </Link>
-        );
-      })}
-    </div>
-  );
-}
-
-function FullWidthBannerSlider({
-  promoSlides,
-  heroConfig,
-}: {
-  promoSlides: HeroPromoSlide[];
-  heroConfig: HeroCustomConfig;
-}) {
-  const count = promoSlides.length;
-  const [active, setActive] = useState(0);
-
-  useEffect(() => {
-    if (count < 2) return;
-    const id = setInterval(
-      () => setActive((i) => (i + 1) % count),
-      AUTO_ADVANCE_MS,
-    );
-    return () => clearInterval(id);
-  }, [count]);
-
-  const safeActive = active < count ? active : 0;
-
-  return (
-    <section
-      className="relative overflow-hidden bg-ink"
-      style={
-        heroConfig.bgColor ? { backgroundColor: heroConfig.bgColor } : undefined
-      }
-    >
-      <div className="relative h-125 w-full sm:h-140 lg:h-165">
-        {promoSlides.map((slide, i) => {
-          const isCurrent = i === safeActive;
-          const isImageOnly = slide.textAlign === "none";
-          const slideAccent = slide.accentColor || heroConfig.accentColor || "";
-          const slideText = slide.textColor || heroConfig.textColor || "";
-          const slideEyebrowColor =
-            slide.eyebrowColor ||
-            heroConfig.eyebrowColor ||
-            heroConfig.subtextColor ||
-            "";
-          const slideSubtextColor =
-            slide.subtextColor || heroConfig.subtextColor || "";
-          const activeButtons =
-            slide.buttons && slide.buttons.length > 0
-              ? slide.buttons
-              : heroConfig.buttons;
-
-          const imageNode = (
-            <Image
-              src={slide.imageUrl}
-              alt={slide.headline || `Banner slide ${i + 1}`}
-              fill
-              priority={i === 0}
-              sizes="100vw"
-              className="object-cover"
-            />
-          );
-
-          if (isImageOnly) {
-            return (
-              <Link
-                key={slide.id}
-                href={slide.linkHref || "/shop"}
-                aria-hidden={!isCurrent}
-                tabIndex={isCurrent ? undefined : -1}
-                className={`absolute inset-0 block transition-opacity duration-1000 ease-in-out ${
-                  isCurrent ? "opacity-100" : "pointer-events-none opacity-0"
-                }`}
-              >
-                {imageNode}
-              </Link>
-            );
-          }
-
-          const alignClasses =
-            slide.textAlign === "center"
-              ? "items-center text-center mx-auto"
-              : "items-start text-left";
-
-          return (
-            <div
-              key={slide.id}
-              aria-hidden={!isCurrent}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                isCurrent ? "opacity-100" : "pointer-events-none opacity-0"
-              }`}
-            >
-              {imageNode}
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  backgroundColor: `rgba(11, 11, 11, ${(slide.overlayOpacity ?? 45) / 100})`,
-                }}
-              />
-              <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/95 via-black/70 to-transparent lg:from-ink lg:via-transparent" />
-
-              <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-14 pt-20 sm:px-6 lg:justify-center lg:px-8 lg:py-16">
-                <div className={`flex max-w-2xl flex-col ${alignClasses}`}>
-                  {slide.eyebrow && (
-                    <p
-                      className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-paper-dim sm:mb-4"
-                      style={
-                        slideEyebrowColor
-                          ? { color: slideEyebrowColor }
-                          : undefined
-                      }
-                    >
-                      <span
-                        className="size-1.5 shrink-0 rounded-full bg-gold-bright"
-                        style={
-                          slideAccent
-                            ? { backgroundColor: slideAccent }
-                            : undefined
-                        }
-                      />
-                      {slide.eyebrow}
-                    </p>
-                  )}
-                  {slide.headline && (
-                    <h1
-                      className="font-display text-4xl uppercase leading-[0.95] text-paper sm:text-6xl lg:text-7xl"
-                      style={slideText ? { color: slideText } : undefined}
-                    >
-                      {renderHeadline(
-                        slide.headline,
-                        heroConfig.accentWord,
-                        slideAccent,
-                      )}
-                    </h1>
-                  )}
-                  {slide.subheadline && (
-                    <p
-                      className="mt-3 max-w-xl text-xs text-paper/85 sm:mt-5 sm:text-base"
-                      style={
-                        slideSubtextColor
-                          ? { color: slideSubtextColor }
-                          : undefined
-                      }
-                    >
-                      {slide.subheadline}
-                    </p>
-                  )}
-                  <HeroButtonsRow
-                    buttons={activeButtons}
-                    className="mt-5 sm:mt-8"
-                  />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-
-        {count > 1 && (
-          <>
-            <button
-              type="button"
-              onClick={() => setActive((safeActive - 1 + count) % count)}
-              aria-label="Previous banner"
-              className="absolute left-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-gold/30 bg-ink/70 text-paper backdrop-blur-sm transition-colors hover:border-gold-bright hover:text-gold-bright"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setActive((safeActive + 1) % count)}
-              aria-label="Next banner"
-              className="absolute right-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-gold/30 bg-ink/70 text-paper backdrop-blur-sm transition-colors hover:border-gold-bright hover:text-gold-bright"
-            >
-              <ChevronRight size={18} />
-            </button>
-
-            <div className="absolute inset-x-0 bottom-5 z-20 flex items-center justify-center gap-5">
-              {promoSlides.map((slide, i) => {
-                const isActive = i === safeActive;
-                return (
-                  <button
-                    key={slide.id}
-                    type="button"
-                    onClick={() => setActive(i)}
-                    aria-label={`Show banner slide ${i + 1}`}
-                    className="flex items-center gap-2 text-xs font-semibold tabular-nums"
-                  >
-                    <span
-                      className={
-                        isActive ? "text-gold-bright" : "text-paper-dim"
-                      }
-                      style={
-                        isActive && heroConfig.accentColor
-                          ? { color: heroConfig.accentColor }
-                          : undefined
-                      }
-                    >
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    {isActive && (
-                      <span
-                        className="h-px w-6 bg-gold-bright"
-                        style={
-                          heroConfig.accentColor
-                            ? { backgroundColor: heroConfig.accentColor }
-                            : undefined
-                        }
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </>
-        )}
-      </div>
-    </section>
-  );
-}
-
 export function HeroInteractive({
   headline,
   subheadline,
@@ -367,511 +102,297 @@ export function HeroInteractive({
   slides: HeroSlide[];
   heroConfig: HeroCustomConfig;
 }) {
-  const count = slides.length;
+  // Combine provided slides with default showcases so we always have 3 rich kits
+  const activeSlides = useMemo(() => {
+    if (slides.length > 0) {
+      if (slides.length >= 3) return slides;
+      return [
+        ...slides,
+        ...DEFAULT_MATCHDAY_SHOWCASE.slice(slides.length),
+      ];
+    }
+    if (fallbackImageUrl) {
+      return [
+        {
+          id: "custom-fallback",
+          slug: null,
+          imageUrl: fallbackImageUrl,
+          name: "JAF Matchday Edition",
+          priceCents: 120000,
+        },
+        ...DEFAULT_MATCHDAY_SHOWCASE.slice(1),
+      ];
+    }
+    return DEFAULT_MATCHDAY_SHOWCASE;
+  }, [slides, fallbackImageUrl]);
+
+  const count = activeSlides.length;
   const [active, setActive] = useState(0);
 
   useEffect(() => {
     if (count < 2) return;
-    const id = setInterval(
-      () => setActive((i) => (i + 1) % count),
-      AUTO_ADVANCE_MS,
-    );
-    return () => clearInterval(id);
+    const timer = setInterval(() => {
+      setActive((prev) => (prev + 1) % count);
+    }, AUTO_ADVANCE_MS);
+    return () => clearInterval(timer);
   }, [count]);
 
-  if (heroConfig.mode === "full-slider") {
-    const effectivePromoSlides: HeroPromoSlide[] =
-      heroConfig.promoSlides.length > 0
-        ? heroConfig.promoSlides
-        : slides.length > 0
-          ? slides.map((s) => ({
-              id: s.id,
-              imageUrl: s.imageUrl,
-              imagePublicId: null,
-              eyebrow: heroConfig.eyebrow,
-              headline,
-              subheadline,
-              linkHref: s.slug ? `/product/${s.slug}` : "/shop",
-              textAlign: "left",
-              overlayOpacity: 45,
-              eyebrowColor: heroConfig.eyebrowColor,
-              textColor: heroConfig.textColor,
-              subtextColor: heroConfig.subtextColor,
-              accentColor: heroConfig.accentColor,
-              buttons: heroConfig.buttons,
-            }))
-          : fallbackImageUrl
-            ? [
-                {
-                  id: "fallback-promo",
-                  imageUrl: fallbackImageUrl,
-                  imagePublicId: null,
-                  eyebrow: heroConfig.eyebrow,
-                  headline,
-                  subheadline,
-                  linkHref: "/shop",
-                  textAlign: "left",
-                  overlayOpacity: 45,
-                  eyebrowColor: heroConfig.eyebrowColor,
-                  textColor: heroConfig.textColor,
-                  subtextColor: heroConfig.subtextColor,
-                  accentColor: heroConfig.accentColor,
-                  buttons: heroConfig.buttons,
-                },
-              ]
-            : [];
+  const currentSlide = activeSlides[active] ?? activeSlides[0];
 
-    if (effectivePromoSlides.length > 0) {
-      return (
-        <FullWidthBannerSlider
-          promoSlides={effectivePromoSlides}
-          heroConfig={heroConfig}
-        />
-      );
-    }
+  function handlePrev() {
+    setActive((prev) => (prev - 1 + count) % count);
   }
 
-  const sectionBgStyle = heroConfig.bgColor
-    ? { backgroundColor: heroConfig.bgColor }
-    : undefined;
-  const rightBackdropStyle = heroConfig.imageGlowColor
-    ? {
-        backgroundImage: `radial-gradient(ellipse at 55% 45%, ${heroConfig.imageGlowColor} 0%, ${
-          heroConfig.bgColor || "#141414"
-        } 55%, ${heroConfig.bgColor || "#0b0b0b"} 100%)`,
-      }
-    : undefined;
+  function handleNext() {
+    setActive((prev) => (prev + 1) % count);
+  }
 
-  const activeSlide = count > 0 ? slides[active < count ? active : 0] : null;
+  // Format active price display (e.g. "BDT 1,200")
+  const formattedPrice = currentSlide.priceCents
+    ? formatCentsBDT(currentSlide.priceCents)
+    : "BDT 1,200";
 
   return (
-    <section className="relative overflow-hidden bg-ink" style={sectionBgStyle}>
-      {/* =================================================================== */}
-      {/* MOBILE & TABLET (< lg): Uncropped Full-Width Sliding Image +        */}
-      {/* Bottom Black Gradient Overlay with Text, Product Price & CTA        */}
-      {/* =================================================================== */}
-      <div
-        className="relative w-full overflow-hidden bg-[radial-gradient(ellipse_at_50%_30%,#2a2a2a_0%,#141414_60%,#0a0b09_100%)] lg:hidden"
-        style={rightBackdropStyle}
-      >
-        {/* Top Uncropped Image Stage (shows full jersey width & height with soft bottom dissolve) */}
-        <div className="relative aspect-square w-full mask-[linear-gradient(to_bottom,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_52%,rgba(0,0,0,0.78)_68%,rgba(0,0,0,0.38)_84%,rgba(0,0,0,0)_100%)] [-webkit-mask-image:linear-gradient(to_bottom,rgba(0,0,0,1)_0%,rgba(0,0,0,1)_52%,rgba(0,0,0,0.78)_68%,rgba(0,0,0,0.38)_84%,rgba(0,0,0,0)_100%)] sm:aspect-5/4">
-          {count > 0 ? (
-            slides.map((slide, i) => {
-              const isCurrent = i === active;
-              const img = (
-                <>
-                  <Image
-                    src={slide.imageUrl}
-                    alt=""
-                    fill
-                    aria-hidden="true"
-                    sizes="100vw"
-                    className="scale-110 object-cover opacity-35 blur-xl"
-                  />
-                  <Image
-                    src={slide.imageUrl}
-                    alt={slide.name ?? headline}
-                    fill
-                    priority={i === 0}
-                    sizes="100vw"
-                    className="object-contain object-top"
-                  />
-                </>
-              );
-              const cls = `absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                isCurrent ? "opacity-100" : "pointer-events-none opacity-0"
-              }`;
-              return slide.slug ? (
-                <Link
-                  key={slide.id}
-                  href={`/product/${slide.slug}`}
-                  aria-hidden={!isCurrent}
-                  tabIndex={isCurrent ? undefined : -1}
-                  className={cls}
-                >
-                  {img}
-                </Link>
-              ) : (
-                <div key={slide.id} aria-hidden={!isCurrent} className={cls}>
-                  {img}
-                </div>
-              );
-            })
-          ) : fallbackImageUrl ? (
-            <>
-              <Image
-                src={fallbackImageUrl}
-                alt=""
-                fill
-                aria-hidden="true"
-                sizes="100vw"
-                className="scale-110 object-cover opacity-35 blur-xl"
-              />
-              <Image
-                src={fallbackImageUrl}
-                alt={headline}
-                fill
-                priority
-                sizes="100vw"
-                className="object-contain object-top"
-              />
-            </>
-          ) : null}
+    <section className="relative w-full overflow-hidden bg-white text-slate-900 select-none">
+      {/* ===================================================================== */}
+      {/* 1. DAYLIGHT STADIUM BACKGROUND (Matchday Daylight Arena)              */}
+      {/* ===================================================================== */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src={STADIUM_DAYLIGHT_BG}
+          alt="Daylight Football Stadium Matchday Arena"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center filter brightness-[1.03] contrast-[0.98]"
+        />
 
-          {/* Multi-stop soft black shade on the lower image stage */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-[linear-gradient(to_top,#0a0b09_0%,rgba(10,11,9,0.92)_24%,rgba(10,11,9,0.68)_50%,rgba(10,11,9,0.28)_76%,rgba(10,11,9,0)_100%)]"
-          />
-        </div>
+        {/* Sunlight flare & ambient brightness in the upper sky */}
+        <div className="pointer-events-none absolute inset-0 bg-radial-at-t from-amber-100/35 via-sky-50/20 to-transparent" />
 
-        {/* Bottom Black Overlay Content overlapping the lower edge of the image */}
-        <div className="relative z-10 -mt-24 bg-[linear-gradient(to_top,#0a0b09_0%,#0a0b09_68%,rgba(10,11,9,0.82)_84%,rgba(10,11,9,0)_100%)] px-4 pb-6 pt-12 sm:-mt-28 sm:px-6 sm:pb-8">
-          <div className="mx-auto max-w-7xl">
-            <div className="flex flex-col gap-2.5">
-              {heroConfig.eyebrow && (
-                <p
-                  className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-paper/90 sm:text-xs"
-                  style={
-                    heroConfig.eyebrowColor || heroConfig.subtextColor
-                      ? {
-                          color:
-                            heroConfig.eyebrowColor || heroConfig.subtextColor,
-                        }
-                      : undefined
-                  }
-                >
-                  <span
-                    className="size-1.5 shrink-0 rounded-full bg-gold-bright"
-                    style={
-                      heroConfig.accentColor
-                        ? { backgroundColor: heroConfig.accentColor }
-                        : undefined
-                    }
-                  />
-                  {heroConfig.eyebrow}
-                </p>
-              )}
+        {/* Atmospheric White Gradient for text legibility on left (pure minimal white) */}
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-white/95 via-white/85 to-white/20 sm:via-white/70 sm:to-transparent lg:w-3/5" />
 
-              <h1
-                className="font-display text-4xl uppercase leading-[0.95] text-paper sm:text-6xl"
-                style={
-                  heroConfig.textColor
-                    ? { color: heroConfig.textColor }
-                    : undefined
-                }
-              >
-                {renderHeadline(
-                  headline,
-                  heroConfig.accentWord,
-                  heroConfig.accentColor,
-                )}
-              </h1>
+        {/* Multi-angle subtle vignette to frame the open stadium pitch */}
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-white/90 via-transparent to-transparent lg:from-white/40" />
 
-              <p
-                className="max-w-md text-xs leading-relaxed text-paper/80 sm:text-sm"
-                style={
-                  heroConfig.subtextColor
-                    ? { color: heroConfig.subtextColor }
-                    : undefined
-                }
-              >
-                {subheadline}
-              </p>
-
-              {/* Active Slide Product Title + Price Card inside the Bottom Overlay */}
-              {activeSlide &&
-                activeSlide.slug &&
-                activeSlide.name !== null &&
-                activeSlide.priceCents !== null && (
-                  <Link
-                    href={`/product/${activeSlide.slug}`}
-                    className="mt-1 flex items-center justify-between gap-3 rounded-xl border border-gold-bright/30 bg-black/65 px-3.5 py-2.5 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.25)] backdrop-blur-md transition-colors hover:border-gold-bright sm:max-w-sm"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-[10px] font-semibold uppercase tracking-widest text-paper/90 sm:text-xs">
-                        {activeSlide.name}
-                      </p>
-                      <span className="mt-1 block h-0.5 w-6 bg-gold-bright/70" />
-                    </div>
-                    <p
-                      className="shrink-0 font-display text-lg tracking-wide text-gold-bright sm:text-xl"
-                      style={
-                        heroConfig.accentColor
-                          ? { color: heroConfig.accentColor }
-                          : undefined
-                      }
-                    >
-                      {formatCentsBDT(activeSlide.priceCents)}
-                    </p>
-                  </Link>
-                )}
-
-              {/* Action Buttons + Slide Number Switcher */}
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
-                <HeroButtonsRow buttons={heroConfig.buttons} className="mt-0" />
-
-                {count > 0 && (
-                  <div className="flex items-center gap-4">
-                    {Array.from({ length: SLIDE_SLOTS }, (_, i) => {
-                      const enabled = i < count;
-                      const isActive = enabled && i === active;
-                      return (
-                        <button
-                          key={i}
-                          type="button"
-                          disabled={!enabled}
-                          onClick={() => enabled && setActive(i)}
-                          aria-label={`Show slide ${i + 1}`}
-                          className={`flex items-center gap-1.5 text-xs font-semibold tabular-nums ${
-                            enabled ? "" : "cursor-default opacity-40"
-                          }`}
-                        >
-                          <span
-                            className={
-                              isActive ? "text-gold-bright" : "text-paper/70"
-                            }
-                            style={
-                              isActive && heroConfig.accentColor
-                                ? { color: heroConfig.accentColor }
-                                : undefined
-                            }
-                          >
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          {isActive && (
-                            <span
-                              className="h-px w-4 bg-gold-bright"
-                              style={
-                                heroConfig.accentColor
-                                  ? { backgroundColor: heroConfig.accentColor }
-                                  : undefined
-                              }
-                            />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Bottom Concrete Stadium Parapet / Railing Geometry */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 sm:h-14 bg-linear-to-t from-slate-900/10 via-slate-900/5 to-transparent border-t border-slate-300/40 backdrop-blur-[2px]" />
       </div>
 
-      {/* =================================================================== */}
-      {/* DESKTOP (>= lg): Full-Width Right Stage + Left Text in Container     */}
-      {/* =================================================================== */}
-      <div className="relative hidden w-full overflow-hidden lg:block">
-        {/* Full-Bleed Right Image Stage (stretches across 50% to 100% of the screen) */}
-        <div
-          className={`absolute inset-y-0 right-0 w-1/2 overflow-hidden bg-[radial-gradient(ellipse_at_55%_45%,#2a2a2a_0%,#141414_55%,#0b0b0b_100%)] ${HERO_DESKTOP_MASK}`}
-          style={rightBackdropStyle}
-        >
-          {count > 0 ? (
-            <>
-              {slides.map((slide, i) => {
-                const image = (
-                  <Image
-                    src={slide.imageUrl}
-                    alt={slide.name ?? ""}
-                    fill
-                    priority={i === 0}
-                    sizes="50vw"
-                    className="object-cover"
-                  />
-                );
-                const className = `absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                  i === active ? "opacity-100" : "pointer-events-none opacity-0"
-                }`;
-                return slide.slug ? (
-                  <Link
-                    key={slide.id}
-                    href={`/product/${slide.slug}`}
-                    aria-hidden={i !== active}
-                    tabIndex={i === active ? undefined : -1}
-                    className={className}
-                  >
-                    {image}
-                  </Link>
-                ) : (
-                  <div
-                    key={slide.id}
-                    aria-hidden={i !== active}
-                    className={className}
-                  >
-                    {image}
-                  </div>
-                );
-              })}
+      {/* ===================================================================== */}
+      {/* 2. MAIN STAGE CONTENT (Left Headline + Right Floating Jersey)         */}
+      {/* ===================================================================== */}
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20 lg:px-8 lg:py-24">
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
+          
+          {/* ----------------------------------------------------------------- */}
+          {/* LEFT COLUMN (Grid 7 cols): Typography, Eyebrow, CTAs, Watermark   */}
+          {/* ----------------------------------------------------------------- */}
+          <div className="order-2 flex flex-col items-start lg:order-1 lg:col-span-6 xl:col-span-7">
+            {/* Tag / Eyebrow Row */}
+            <div className="mb-4 sm:mb-6 flex flex-wrap items-center gap-2.5">
+              <span className="text-xs sm:text-sm font-black uppercase tracking-[0.22em] text-slate-800">
+                2026 MATCHDAY COLLECTION
+              </span>
+              <span className="rounded-md bg-amber-400 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-950 shadow-xs">
+                NEW DROP
+              </span>
+            </div>
 
-              {slides.map((slide, i) => {
-                if (
-                  !slide.slug ||
-                  slide.name === null ||
-                  slide.priceCents === null
-                )
-                  return null;
-                return (
-                  <Link
-                    key={`info-${slide.id}`}
-                    href={`/product/${slide.slug}`}
-                    aria-hidden={i !== active}
-                    tabIndex={i === active ? undefined : -1}
-                    className={`absolute right-0 bottom-8 z-10 flex w-44 flex-col gap-2.5 overflow-hidden rounded-l-2xl rounded-r-none border border-r-0 border-gold-bright/25 bg-ink/65 px-4 py-4 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.35),inset_0_-10px_16px_-12px_rgba(255,255,255,0.15)] backdrop-blur-md backdrop-saturate-150 transition-opacity duration-1000 ease-in-out ${
-                      i === active
-                        ? "opacity-100"
-                        : "pointer-events-none opacity-0"
-                    }`}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 bg-linear-to-b from-white/25 via-white/0 to-transparent"
-                    />
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute -inset-x-2 -top-6 h-10 rotate-2 bg-white/20 blur-md"
-                    />
-                    <p className="relative text-[11px] font-semibold uppercase leading-normal tracking-widest text-paper">
-                      {slide.name}
-                    </p>
-                    <span className="relative h-px w-6 bg-gold-bright/50" />
-                    <p
-                      className="relative text-xl font-semibold text-gold-bright"
-                      style={
-                        heroConfig.accentColor
-                          ? { color: heroConfig.accentColor }
-                          : undefined
-                      }
-                    >
-                      {formatCentsBDT(slide.priceCents)}
-                    </p>
-                  </Link>
-                );
-              })}
-            </>
-          ) : fallbackImageUrl ? (
-            <Image
-              src={fallbackImageUrl}
-              alt=""
-              fill
-              priority
-              sizes="50vw"
-              className="object-cover"
-            />
-          ) : (
-            <div className="h-full w-full bg-ink-raised" />
-          )}
-        </div>
+            {/* Massive Condensed Headline — "WEAR THE PASSION." (Original JAF copy to avoid copyright) */}
+            <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl xl:text-[96px] uppercase leading-[0.88] tracking-tight text-slate-950 drop-shadow-xs">
+              WEAR <br />
+              <span className="text-slate-950">THE PASSION.</span>
+            </h1>
 
-        {/* Content Container (Center-aligned max-w-7xl) */}
-        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid min-h-160 lg:grid-cols-2 lg:items-center">
-            {/* Left Column (aligned inside the max-w-7xl container): Headline, eyebrow, buttons, pagination */}
-            <div className="flex flex-col justify-center py-16 pr-8 lg:py-24 xl:pr-12">
-              <div className="max-w-xl">
-                {heroConfig.eyebrow && (
-                  <p
-                    className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-paper-dim"
-                    style={
-                      heroConfig.eyebrowColor || heroConfig.subtextColor
-                        ? {
-                            color:
-                              heroConfig.eyebrowColor ||
-                              heroConfig.subtextColor,
-                          }
-                        : undefined
-                    }
-                  >
-                    <span
-                      className="size-1.5 shrink-0 rounded-full bg-gold-bright"
-                      style={
-                        heroConfig.accentColor
-                          ? { backgroundColor: heroConfig.accentColor }
-                          : undefined
-                      }
-                    />
-                    {heroConfig.eyebrow}
-                  </p>
-                )}
-                <h1
-                  className="font-display text-7xl uppercase leading-[0.95] text-paper"
-                  style={
-                    heroConfig.textColor
-                      ? { color: heroConfig.textColor }
-                      : undefined
-                  }
-                >
-                  {renderHeadline(
-                    headline,
-                    heroConfig.accentWord,
-                    heroConfig.accentColor,
-                  )}
-                </h1>
-                <p
-                  className="mt-6 text-base text-paper-dim"
-                  style={
-                    heroConfig.subtextColor
-                      ? { color: heroConfig.subtextColor }
-                      : undefined
-                  }
-                >
-                  {subheadline}
-                </p>
+            {/* Subheadline */}
+            <p className="mt-4 sm:mt-6 max-w-xl text-xs sm:text-base leading-relaxed text-slate-600 font-medium">
+              {subheadline ||
+                "Engineered with authentic matchday mesh, high-definition club crests, and moisture-wicking technology. Hand-inspected quality delivered across Bangladesh."}
+            </p>
 
-                <HeroButtonsRow buttons={heroConfig.buttons} />
+            {/* CTA Buttons Row (Image 5 style: warm amber pill + outline pill) */}
+            <div className="mt-7 sm:mt-9 flex flex-wrap items-center gap-3 sm:gap-4">
+              <Link
+                href="/shop"
+                className="group inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-950 shadow-md shadow-amber-400/25 hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <span>SHOP NEW KITS</span>
+                <ArrowRight
+                  size={16}
+                  className="transition-transform duration-200 group-hover:translate-x-1"
+                />
+              </Link>
 
-                {count > 0 && (
-                  <div className="mt-10 flex items-center gap-5">
-                    {Array.from({ length: SLIDE_SLOTS }, (_, i) => {
-                      const enabled = i < count;
-                      const isActive = enabled && i === active;
-                      return (
-                        <button
-                          key={i}
-                          type="button"
-                          disabled={!enabled}
-                          onClick={() => enabled && setActive(i)}
-                          aria-label={`Show slide ${i + 1}`}
-                          className={`flex items-center gap-2 text-xs font-semibold tabular-nums ${
-                            enabled ? "" : "cursor-default opacity-40"
-                          }`}
-                        >
-                          <span
-                            className={
-                              isActive ? "text-gold-bright" : "text-paper-dim"
-                            }
-                            style={
-                              isActive && heroConfig.accentColor
-                                ? { color: heroConfig.accentColor }
-                                : undefined
-                            }
-                          >
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          {isActive && (
-                            <span
-                              className="h-px w-5 bg-gold-bright"
-                              style={
-                                heroConfig.accentColor
-                                  ? { backgroundColor: heroConfig.accentColor }
-                                  : undefined
-                              }
-                            />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+              <Link
+                href="/category/club-jerseys"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <span>EXPLORE COLLECTION</span>
+              </Link>
+            </div>
+
+            {/* Micro Feature Badges Row */}
+            <div className="mt-8 sm:mt-10 flex flex-wrap items-center gap-3 sm:gap-5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-600">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck size={15} className="text-slate-900" />
+                <span>OFFICIAL GRADE</span>
+              </div>
+              <span className="text-slate-300">|</span>
+              <div className="flex items-center gap-1.5">
+                <Sparkles size={15} className="text-amber-500" />
+                <span>2026 DROP</span>
+              </div>
+              <span className="text-slate-300">|</span>
+              <div className="flex items-center gap-1.5">
+                <Truck size={15} className="text-slate-900" />
+                <span>CASH ON DELIVERY</span>
               </div>
             </div>
 
-            {/* Right Column: Empty spacer to let the right image bleed through full-width */}
-            <div className="pointer-events-none relative h-full min-h-160" />
+            {/* Bottom-Left Ethos Watermark (Image 5 style) */}
+            <div className="mt-10 sm:mt-14 flex items-center gap-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+              <span>MORE THAN A JERSEY</span>
+              <span className="inline-block h-0.5 w-5 bg-amber-400" />
+              <span className="text-slate-600">IT&apos;S A LIFESTYLE</span>
+            </div>
           </div>
+
+          {/* ----------------------------------------------------------------- */}
+          {/* RIGHT COLUMN (Grid 5 cols): Suspended Floating Jersey & Badges     */}
+          {/* ----------------------------------------------------------------- */}
+          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-5 min-h-[380px] sm:min-h-[460px] lg:min-h-[520px]">
+            
+            {/* Top-Right Official Kit Badge (Floating Pill) */}
+            <div className="absolute right-0 top-0 z-20 flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white/90 px-3.5 py-1.5 shadow-sm backdrop-blur-md">
+              <span className="text-base">🛡️</span>
+              <div className="text-left">
+                <div className="text-[10px] font-extrabold uppercase tracking-widest text-slate-950 leading-tight">
+                  OFFICIAL KIT
+                </div>
+                <div className="text-[9px] font-semibold text-slate-500 leading-none">
+                  2026 EDITION
+                </div>
+              </div>
+            </div>
+
+            {/* Top Center "NEW DROP" Badge hovering above jersey */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-1 z-20">
+              <span className="rounded-md bg-amber-400 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-slate-950 shadow-sm">
+                NEW DROP
+              </span>
+            </div>
+
+            {/* Floating Suspended Jersey Container */}
+            <div className="relative w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[460px] aspect-square flex items-center justify-center">
+              
+              {/* Soft Ground Shadow underneath floating jersey */}
+              <div className="absolute bottom-6 h-8 w-3/4 rounded-full bg-slate-950/15 blur-xl pointer-events-none" />
+
+              {/* Suspended Jersey with Float Keyframe Animation */}
+              <div className="relative w-full h-full animate-jersey-float flex items-center justify-center">
+                {activeSlides.map((slide, idx) => {
+                  const isCurrent = idx === active;
+                  return (
+                    <div
+                      key={slide.id}
+                      aria-hidden={!isCurrent}
+                      className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ease-in-out ${
+                        isCurrent
+                          ? "opacity-100 scale-100"
+                          : "opacity-0 scale-95 pointer-events-none"
+                      }`}
+                    >
+                      {slide.slug ? (
+                        <Link
+                          href={`/product/${slide.slug}`}
+                          className="relative w-full h-full flex items-center justify-center cursor-pointer group"
+                        >
+                          <Image
+                            src={slide.imageUrl}
+                            alt={slide.name || "Matchday Kit"}
+                            fill
+                            priority={idx === 0}
+                            sizes="(max-width: 768px) 85vw, 45vw"
+                            className="object-contain filter drop-shadow-[0_25px_35px_rgba(0,0,0,0.18)] transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </Link>
+                      ) : (
+                        <div className="relative w-full h-full flex items-center justify-center">
+                          <Image
+                            src={slide.imageUrl}
+                            alt={slide.name || "Matchday Kit"}
+                            fill
+                            priority={idx === 0}
+                            sizes="(max-width: 768px) 85vw, 45vw"
+                            className="object-contain filter drop-shadow-[0_25px_35px_rgba(0,0,0,0.18)]"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Horizontal Leader Line pointing to Price Callout Pill (Image 5 style) */}
+                <div className="pointer-events-none absolute right-[-10px] sm:right-2 top-1/2 -translate-y-1/2 z-30 flex items-center">
+                  <span className="hidden sm:inline-block w-10 sm:w-16 h-0.5 bg-amber-400" />
+                  <div className="rounded-full bg-white/95 px-4 py-1.5 shadow-lg border border-slate-200 backdrop-blur-md">
+                    <span className="text-xs sm:text-sm font-extrabold tracking-wide text-slate-950 font-sans">
+                      {formattedPrice}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom-Right Active Kit Title + Minimal Circular Navigation Arrows */}
+            <div className="absolute right-0 bottom-0 z-20 flex items-end gap-4">
+              <div className="text-right hidden sm:block">
+                <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-950 leading-tight">
+                  {currentSlide.name || "2026 MATCHDAY KIT"}
+                </p>
+                <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500 leading-none mt-0.5">
+                  AUTHENTIC FIT · 2026
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  aria-label="Previous jersey"
+                  className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white/90 text-slate-800 shadow-xs hover:bg-slate-950 hover:text-white hover:border-slate-950 active:scale-95 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  aria-label="Next jersey"
+                  className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white/90 text-slate-800 shadow-xs hover:bg-slate-950 hover:text-white hover:border-slate-950 active:scale-95 flex items-center justify-center transition-all cursor-pointer backdrop-blur-xs"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Slide Navigation Dots (Mobile friendly) */}
+            <div className="absolute bottom-[-18px] left-1/2 -translate-x-1/2 flex items-center gap-2 sm:hidden z-20">
+              {activeSlides.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setActive(i)}
+                  aria-label={`Jump to slide ${i + 1}`}
+                  className={`h-1.5 transition-all rounded-full ${
+                    i === active ? "w-6 bg-slate-950" : "w-1.5 bg-slate-300"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

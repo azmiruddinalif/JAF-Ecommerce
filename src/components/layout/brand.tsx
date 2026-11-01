@@ -17,7 +17,7 @@ export function Brand({ className, size = "md" }: { className?: string; size?: "
         width={1132}
         height={951}
         priority
-        className={cn("w-auto transition-opacity group-hover:opacity-80", sizeClasses)}
+        className={cn("w-auto transition-opacity group-hover:opacity-80 brightness-0", sizeClasses)}
       />
     </Link>
   );

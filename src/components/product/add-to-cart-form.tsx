@@ -155,8 +155,8 @@ export function AddToCartForm({
             </span>
           </div>
 
-          {/* Size Boxes */}
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Size Boxes (Football Line Co Minimal Style) */}
+          <div className="flex flex-wrap items-center gap-2.5">
             {sizes.map((variant) => {
               const isAvailable = variant.stock > 0;
               const isSelected = selectedSize === variant.size && isAvailable;
@@ -174,38 +174,15 @@ export function AddToCartForm({
                       : `Size ${variant.size} — Out of Stock`
                   }
                   onClick={() => handleSelectSize(variant)}
-                  className={`relative flex h-12 min-w-12 items-center justify-center overflow-hidden border px-3.5 text-sm font-bold uppercase transition-all ${
+                  className={`relative flex h-11 min-w-14 items-center justify-center rounded-lg border text-xs sm:text-sm font-bold uppercase transition-all cursor-pointer ${
                     isSelected
-                      ? "border-gold-bright bg-gold-bright text-ink shadow-[0_0_15px_rgba(74,222,128,0.25)]"
+                      ? "border-slate-950 bg-slate-950 text-white shadow-xs"
                       : isAvailable
-                        ? "border-ink-border bg-ink-raised text-paper hover:border-gold-bright hover:text-gold-bright"
-                        : "cursor-not-allowed border-gold-bright/30 bg-ink-raised/35 text-paper-dim/60 opacity-50"
+                        ? "border-slate-300 bg-white text-slate-800 hover:border-slate-950 hover:bg-slate-50"
+                        : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-300 line-through opacity-60"
                   }`}
                 >
                   <span className="relative z-10">{variant.size}</span>
-
-                  {/* Unavailable Size Overlay: Corner-to-Corner Angle Line with Green Opacity */}
-                  {!isAvailable && (
-                    <svg
-                      aria-hidden="true"
-                      viewBox="0 0 48 48"
-                      preserveAspectRatio="none"
-                      className="pointer-events-none absolute inset-0 h-full w-full"
-                    >
-                      <polygon
-                        points="34,0 48,0 48,14"
-                        fill="rgba(74, 222, 128, 0.18)"
-                      />
-                      <line
-                        x1="0"
-                        y1="48"
-                        x2="48"
-                        y2="0"
-                        stroke="rgba(74, 222, 128, 0.55)"
-                        strokeWidth="1.5"
-                      />
-                    </svg>
-                  )}
                 </button>
               );
             })}
@@ -214,32 +191,32 @@ export function AddToCartForm({
       )}
 
       <div className="flex items-center gap-4">
-        <span className="text-xs font-semibold uppercase tracking-wider text-paper-dim">
+        <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
           Quantity
         </span>
-        <div className="flex items-center border border-ink-border">
+        <div className="flex items-center rounded-lg border border-slate-300 bg-white shadow-2xs">
           <button
             type="button"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             aria-label="Decrease quantity"
-            className="p-3 hover:text-gold"
+            className="p-2.5 text-slate-600 hover:text-black transition-colors"
           >
             <Minus size={14} />
           </button>
-          <span className="min-w-10 text-center font-mono text-sm">{quantity}</span>
+          <span className="min-w-10 text-center font-mono text-sm font-bold text-slate-900">{quantity}</span>
           <button
             type="button"
             onClick={() =>
               setQuantity((q) => Math.min(Math.max(1, selectedStock), q + 1))
             }
             aria-label="Increase quantity"
-            className="p-3 hover:text-gold"
+            className="p-2.5 text-slate-600 hover:text-black transition-colors"
           >
             <Plus size={14} />
           </button>
         </div>
         {inStock && (
-          <span className="text-xs text-paper-dim">
+          <span className="text-xs text-slate-500 font-medium">
             Max {selectedStock} {selectedStock === 1 ? "unit" : "units"}
           </span>
         )}
@@ -248,25 +225,47 @@ export function AddToCartForm({
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button
           type="button"
-          variant="outline"
+          variant="primary"
           size="lg"
-          className="flex-1"
+          className="flex-1 rounded-xl py-4 font-extrabold uppercase tracking-wider bg-slate-950 hover:bg-black text-white shadow-md cursor-pointer"
           disabled={isPending || !inStock}
           onClick={() => handleAddToCart()}
         >
-          ADD TO CART
+          ADD TO BAG
         </Button>
         <Button
           type="button"
-          variant="primary"
+          variant="outline"
           size="lg"
-          className="flex-1"
+          className="flex-1 rounded-xl py-4 font-bold uppercase tracking-wider border-slate-300 hover:border-slate-950 hover:bg-slate-100 text-slate-900 cursor-pointer"
           disabled={isPending || !inStock}
           onClick={() => handleAddToCart({ redirectToCheckout: true })}
         >
           BUY NOW
         </Button>
         <WishlistButton productId={productId} />
+      </div>
+
+      {/* Football Line Co Style Trust Props */}
+      <div className="mt-2 space-y-3 border-t border-slate-200/80 pt-5 text-xs text-slate-600">
+        <div className="flex items-start gap-3">
+          <span className="text-base leading-none">🚚</span>
+          <div>
+            <p className="font-bold uppercase tracking-wider text-slate-900">Free Delivery &amp; Returns</p>
+            <p className="mt-0.5 text-slate-500 leading-relaxed">
+              Doorstep delivery across Bangladesh with open-box verification and Cash on Delivery.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-start gap-3">
+          <span className="text-base leading-none">🏪</span>
+          <div>
+            <p className="font-bold uppercase tracking-wider text-slate-900">Availability in Store</p>
+            <p className="mt-0.5 text-slate-500 leading-relaxed">
+              In stock for immediate dispatch or collection from our Dhaka flagship showroom.
+            </p>
+          </div>
+        </div>
       </div>
 
       {message && <p className="text-sm text-paper-dim">{message}</p>}

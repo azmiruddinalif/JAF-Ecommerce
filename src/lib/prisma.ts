@@ -47,16 +47,20 @@ function createPrismaClient(connectionString: string) {
 function getOrInitPrisma(): PrismaClient {
   // In Next.js dev server, globalThis.prisma persists across hot module reloads.
   // If the Prisma schema was updated (e.g. adding User/Session models), an old cached
-  // instance will lack `user` or `session`. Force instantiation if missing models.
-  if (
-    !globalForPrisma.prisma ||
+  // instance will lack `user` or `session`. Force re-instantiation if missing models.
+  const current = globalForPrisma.prisma;
+  const isMissingModel =
+    !current ||
     globalForPrisma.prismaUrl !== activeUrl ||
-    !("user" in (globalForPrisma.prisma as unknown as Record<string, unknown>))
-  ) {
-    globalForPrisma.prisma = createPrismaClient(activeUrl);
+    !(current as unknown as Record<string, unknown>)?.user;
+
+  if (isMissingModel) {
+    const client = createPrismaClient(activeUrl);
+    globalForPrisma.prisma = client;
     globalForPrisma.prismaUrl = activeUrl;
+    return client;
   }
-  return globalForPrisma.prisma;
+  return current;
 }
 
 // Export a proxy so any access to prisma properties (e.g. prisma.user, prisma.product, prisma.$queryRaw)

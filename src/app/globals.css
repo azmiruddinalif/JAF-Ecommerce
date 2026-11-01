@@ -2,43 +2,42 @@
 @import "tw-animate-css";
 
 :root {
-  --color-ink: #0a0b09;
-  --color-ink-raised: #121410;
-  --color-ink-border: #262b22;
-  --color-paper: #eef2ea;
-  --color-paper-dim: #8d9589;
-  --color-gold: #16a34a;
-  --color-gold-bright: #4ade80;
-  --color-gold-dim: #bbf7d0;
-  --color-danger: #f87171;
-  --color-success: #34d399;
+  --color-ink: #ffffff;
+  --color-ink-raised: #f8fafc;
+  --color-ink-border: #e2e8f0;
+  --color-paper: #09090b;
+  --color-paper-dim: #64748b;
+  --color-gold: #059669;
+  --color-gold-bright: #10b981;
+  --color-gold-dim: #ecfdf5;
+  --color-danger: #ef4444;
+  --color-success: #10b981;
 
   --font-display: var(--font-anton);
   --font-serif: var(--font-playfair);
   --font-sans: var(--font-inter);
 
   /* shadcn/ui bridge — aliases our brand tokens to the names shadcn components expect */
-  --radius: 0rem;
-  --background: var(--color-ink);
-  --foreground: var(--color-paper);
-  --card: var(--color-ink-raised);
-  --card-foreground: var(--color-paper);
-  --popover: var(--color-ink-raised);
-  --popover-foreground: var(--color-paper);
-  --primary: var(--color-gold-bright);
-  /* light-green primary surface needs dark (not light) text for contrast */
-  --primary-foreground: var(--color-ink);
-  --secondary: var(--color-ink-raised);
-  --secondary-foreground: var(--color-paper);
-  --muted: var(--color-ink-raised);
-  --muted-foreground: var(--color-paper-dim);
-  --accent: var(--color-ink-raised);
-  --accent-foreground: var(--color-paper);
-  --destructive: var(--color-danger);
-  --destructive-foreground: var(--color-ink);
-  --border: var(--color-ink-border);
-  --input: var(--color-ink-border);
-  --ring: var(--color-gold-bright);
+  --radius: 0.5rem;
+  --background: #ffffff;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #09090b;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #09090b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #09090b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #09090b;
 }
 
 @theme inline {
@@ -86,7 +85,7 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
@@ -123,8 +122,8 @@ button:not(:disabled),
 }
 
 ::selection {
-  background: var(--color-gold);
-  color: var(--color-paper);
+  background: #09090b;
+  color: #ffffff;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -316,5 +315,20 @@ body.admin-theme [data-slot="card"],
   border-radius: 0.75rem !important;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
 }
+
+/* Matchday suspended jersey floating animation */
+@keyframes jersey-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(0.8deg);
+  }
+}
+
+.animate-jersey-float {
+  animation: jersey-float 6s ease-in-out infinite;
+}
+
 
 

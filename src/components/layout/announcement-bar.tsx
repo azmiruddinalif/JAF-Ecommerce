@@ -5,7 +5,7 @@ export async function AnnouncementBar() {
   if (!settings.announcementEnabled || !settings.announcementText) return null;
 
   return (
-    <div className="bg-gold-bright px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-normal text-ink">
+    <div className="bg-slate-950 px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-100">
       {settings.announcementText}
     </div>
   );
