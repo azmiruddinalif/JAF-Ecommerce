@@ -145,3 +145,61 @@ button:not(:disabled),
 .animate-kenburns {
   animation: hero-kenburns 18s ease-out forwards;
 }
+
+/* =================================================================== */
+/* Modern Light Admin Dashboard Theme (Matching SaaS Reference)       */
+/* =================================================================== */
+.admin-dashboard {
+  color-scheme: light;
+  --color-ink: #f8fafc;
+  --color-ink-raised: #ffffff;
+  --color-ink-border: #e2e8f0;
+  --color-paper: #0f172a;
+  --color-paper-dim: #64748b;
+  --color-gold: #059669;
+  --color-gold-bright: #10b981;
+  --color-gold-dim: #d1fae5;
+  --color-danger: #ef4444;
+  --color-success: #10b981;
+
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #10b981;
+  --radius: 0.75rem;
+
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.admin-dashboard * {
+  border-color: #e2e8f0;
+}
+
+.admin-dashboard input,
+.admin-dashboard textarea,
+.admin-dashboard select {
+  color: #0f172a;
+  background-color: #ffffff;
+}
+
+.admin-dashboard input::placeholder,
+.admin-dashboard textarea::placeholder {
+  color: #94a3b8;
+}
+

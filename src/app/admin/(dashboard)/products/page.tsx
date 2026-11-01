@@ -71,7 +71,7 @@ async function ProductsContent({
       />
 
       {result.total > 0 && (
-        <div className="mt-3 flex shrink-0 flex-col items-center justify-between gap-3 border border-ink-border bg-ink-raised px-4 py-2.5 sm:flex-row">
+        <div className="mt-4 flex shrink-0 flex-col items-center justify-between gap-3 rounded-xl border border-slate-200/90 bg-white px-4 py-3 shadow-xs sm:flex-row">
           <span className="text-xs text-paper-dim">
             Showing{" "}
             <strong className="text-paper">

@@ -22,7 +22,7 @@ async function NewProductContent() {
 
 export default function NewProductPage() {
   return (
-    <div className="max-w-4xl">
+    <div className="w-full">
       <Link
         href="/admin/products"
         className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-paper-dim hover:text-gold"

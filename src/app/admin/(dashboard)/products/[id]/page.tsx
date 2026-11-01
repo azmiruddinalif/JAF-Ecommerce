@@ -24,7 +24,7 @@ async function EditProductContent({
   if (!product) notFound();
 
   return (
-    <div className="max-w-4xl">
+    <div className="w-full">
       <div className="mb-4 flex items-center justify-between">
         <Link
           href="/admin/products"
@@ -102,7 +102,7 @@ export default function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   return (
-    <Suspense fallback={<div className="h-96 max-w-4xl animate-pulse bg-ink-raised" />}>
+    <Suspense fallback={<div className="h-96 w-full animate-pulse rounded-2xl border border-slate-200 bg-white" />}>
       <EditProductContent params={params} />
     </Suspense>
   );

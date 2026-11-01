@@ -9,7 +9,7 @@ const IMAGE_EXTENSIONS = new Set([
 
 /** True for any image file — even when the OS reports an empty/odd MIME type. */
 export function isImageFile(file: File): boolean {
-  if (file.type.startsWith("image/")) return true;
+  if (file.type && file.type.startsWith("image/")) return true;
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
   return IMAGE_EXTENSIONS.has(ext);
 }
@@ -25,11 +25,9 @@ const COMPRESS_THRESHOLD_BYTES = 600 * 1024;
 const WEB_SAFE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 
 /**
- * Prepares any kind of image for upload: re-encodes big photos (max 1800px) and
- * odd formats (GIF, BMP, TIFF, JFIF, HEIC where the browser can decode it) to
- * WebP so several images fit inside the request-size limit of serverless hosting.
- * Falls back to the original file when the browser can't decode it — the server
- * (Cloudinary) accepts HEIC/GIF/BMP/TIFF natively.
+ * Downscales big photos (max 1800px, WebP) before upload so several images fit
+ * inside the request-size limit of server actions / serverless hosting.
+ * Falls back to the original file when anything goes wrong.
  */
 export async function compressImageForUpload(
   file: File,
@@ -62,9 +60,7 @@ export async function compressImageForUpload(
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, "image/webp", quality),
     );
-    if (!blob || blob.type !== "image/webp") return file;
-    // Keep the original only when it is already a web-safe type and not smaller after re-encoding.
-    if (!needsConversion && blob.size >= file.size) return file;
+    if (!blob || blob.size >= file.size) return file;
 
     return new File([blob], `${file.name.replace(/\.[^.]+$/, "")}.webp`, {
       type: "image/webp",

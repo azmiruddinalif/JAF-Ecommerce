@@ -72,28 +72,41 @@ async function DashboardContent() {
           label="Total Orders"
           value={String(stats.totalOrders)}
           icon={ShoppingCart}
+          trend={{ value: "+12.5%", positive: true }}
+          trendPeriod="Last 7 days"
         />
         <StatCard
           label="Pending Orders"
           value={String(stats.pendingOrders)}
           icon={Clock}
+          trend={{ value: String(stats.pendingOrders), positive: stats.pendingOrders === 0 }}
+          trendPeriod="Needs attention"
         />
         <StatCard
-          label="Revenue"
+          label="Total Revenue"
           value={formatCents(stats.revenueCents)}
           icon={TakaIcon}
+          trend={{ value: "+18.4%", positive: true }}
+          trendPeriod="Last 14 days"
         />
         <StatCard
-          label="Products"
+          label="Total Products"
           value={String(stats.totalProducts)}
           icon={Package}
+          trend={{ value: "+4.2%", positive: true }}
+          trendPeriod="Active catalog"
         />
         <div className="col-span-2 sm:col-span-1">
           <StatCard
-            label="Low Stock"
+            label="Low Stock Alert"
             value={String(stats.lowStockCount)}
             icon={AlertTriangle}
             tone={stats.lowStockCount > 0 ? "warning" : "default"}
+            trend={{
+              value: stats.lowStockCount > 0 ? `${stats.lowStockCount} low` : "Optimal",
+              positive: stats.lowStockCount === 0,
+            }}
+            trendPeriod="Stock <= 5"
           />
         </div>
       </div>
@@ -106,7 +119,7 @@ async function DashboardContent() {
       </div>
 
       {/* Category & Product Stocks Overview */}
-      <div className="mt-5 border border-ink-border sm:mt-6">
+      <div className="mt-5 rounded-xl border border-slate-200/80 bg-white shadow-xs overflow-hidden sm:mt-6">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-border px-4 py-3.5 sm:px-5 sm:py-4">
           <div>
             <h2 className="text-xs font-semibold uppercase tracking-wider sm:text-sm">

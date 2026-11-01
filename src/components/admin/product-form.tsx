@@ -1037,8 +1037,8 @@ function ProductFormInner({
       </div>
 
       {/* Visibility & Storefront Flags */}
-      <div className="border border-ink-border bg-ink-raised/40 p-4">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-paper-dim">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
           Visibility & Storefront Placement
         </p>
         <div className="flex flex-wrap gap-6">
@@ -1082,15 +1082,14 @@ function ProductFormInner({
 
       {/* Product Images Section during Creation (!product) */}
       {!product && (
-        <div className="border border-ink-border bg-ink-raised/40 p-5">
-          <div className="mb-3 flex items-center justify-between">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+          <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gold">
-                <ImagePlus size={15} /> Product Images
+              <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900">
+                <ImagePlus size={16} className="text-emerald-600" /> Product Images
               </h3>
-              <p className="mt-0.5 text-xs text-paper-dim">
-                Upload product photos from your device or paste direct image URLs. The first image
-                is used as the primary cover photo.
+              <p className="mt-0.5 text-xs text-slate-500">
+                Select multiple photos at once. You can swipe/reorder which image is first or last. Images upload automatically serial-by-serial.
               </p>
             </div>
           </div>
@@ -1107,17 +1106,19 @@ function ProductFormInner({
               addNewProductFiles(e.dataTransfer.files);
             }}
             onClick={() => fileInputRef.current?.click()}
-            className={`flex cursor-pointer flex-col items-center gap-2 border-2 border-dashed p-8 text-center transition-colors ${
+            className={`flex cursor-pointer flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
               isDraggingFiles
-                ? "border-gold bg-gold/10"
-                : "border-ink-border hover:border-gold/60"
+                ? "border-emerald-500 bg-emerald-50/50"
+                : "border-slate-300 bg-slate-50/50 hover:border-emerald-500 hover:bg-white"
             }`}
           >
-            <UploadCloud size={26} className="text-gold" />
-            <p className="text-sm text-paper">
-              Drag & drop multiple images here, or click to select many at once
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <UploadCloud size={24} />
+            </div>
+            <p className="text-sm font-semibold text-slate-900">
+              Drag & drop multiple images here, or click to select files
             </p>
-            <p className="text-xs text-paper-dim">
+            <p className="text-xs text-slate-500">
               Added in file-name order — reorder them below. Any image type (JPG, PNG, WEBP, AVIF, GIF, HEIC…); large photos are auto-resized.
             </p>
             <input

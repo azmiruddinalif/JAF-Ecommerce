@@ -130,7 +130,7 @@ export function ProductsTable({
               name="query"
               defaultValue={activeQuery}
               placeholder="Search by name or SKU..."
-              className="w-full border border-ink-border bg-ink-raised px-4 py-2.5 text-sm placeholder:text-paper-dim focus:border-gold focus:outline-none"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 placeholder:text-slate-400 shadow-2xs focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             />
           </form>
 
@@ -220,7 +220,7 @@ export function ProductsTable({
           return (
             <div
               key={product.id}
-              className="border border-ink-border bg-ink-raised/50 p-3.5"
+              className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs"
             >
               <div className="flex gap-3.5">
                 <Link
@@ -352,10 +352,10 @@ export function ProductsTable({
 
       {/* Desktop Table (Fixed Screen Height matching Sidebar) */}
       <div
-        className={`hidden overflow-auto border border-ink-border min-[1200px]:block min-[1200px]:min-h-0 min-[1200px]:flex-1 ${isPending ? "opacity-70" : ""}`}
+        className={`hidden overflow-auto rounded-2xl border border-slate-200/90 bg-white shadow-xs min-[1200px]:block min-[1200px]:min-h-0 min-[1200px]:flex-1 ${isPending ? "opacity-70" : ""}`}
       >
         <table className="w-full min-w-200 text-sm">
-          <thead className="sticky top-0 z-10 border-b border-ink-border bg-ink-raised text-left text-xs uppercase tracking-wider text-paper-dim shadow-xs">
+          <thead className="sticky top-0 z-10 border-b border-slate-200/90 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
             <tr>
               <th className="px-4 py-3">Product</th>
               <th className="px-4 py-3">Category</th>
@@ -392,11 +392,11 @@ export function ProductsTable({
               return (
                 <tr
                   key={product.id}
-                  className="border-b border-ink-border last:border-0"
+                  className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors"
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="relative h-12 w-10 shrink-0 overflow-hidden bg-ink-raised">
+                      <div className="relative h-12 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                         {product.imageUrl && (
                           <Image
                             src={product.imageUrl}
@@ -410,7 +410,7 @@ export function ProductsTable({
                       <div>
                         <Link
                           href={`/admin/products/${product.id}`}
-                          className="font-medium hover:text-gold"
+                          className="font-semibold text-slate-900 hover:text-emerald-600 transition-colors"
                         >
                           {product.name}
                         </Link>

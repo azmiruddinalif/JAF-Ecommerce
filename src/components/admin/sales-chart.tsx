@@ -19,15 +19,15 @@ export function SalesChart({ series, totalCents }: { series: SalesPoint[]; total
   const ticks = [niceMax, niceMax / 2, 0];
 
   return (
-    <div className="flex h-full flex-col border border-ink-border">
-      <div className="flex items-center justify-between border-b border-ink-border px-5 py-4">
+    <div className="flex h-full flex-col rounded-xl border border-slate-200/80 bg-white shadow-xs overflow-hidden">
+      <div className="flex items-center justify-between border-b border-slate-200/80 px-5 py-4">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wider">Sales</h2>
-          <p className="mt-0.5 text-xs text-paper-dim">Last {series.length} days</p>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-900">Sales</h2>
+          <p className="mt-0.5 text-xs text-slate-500">Last {series.length} days</p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] uppercase tracking-wider text-paper-dim">Total revenue</p>
-          <p className="font-display text-2xl text-paper">{formatCents(totalCents)}</p>
+          <p className="text-[11px] uppercase tracking-wider text-slate-400">Total revenue</p>
+          <p className="text-2xl font-bold tracking-tight text-slate-900">{formatCents(totalCents)}</p>
         </div>
       </div>
 
