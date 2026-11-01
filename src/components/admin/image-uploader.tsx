@@ -2,9 +2,11 @@
 
 import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import {
+  Camera,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  ImageIcon,
   Plus,
   Star,
   Trash2,
@@ -215,8 +217,7 @@ export function ImageUploader({
           setIsDragging(false);
           handleSelectFiles(e.dataTransfer.files);
         }}
-        onClick={() => inputRef.current?.click()}
-        className={`flex cursor-pointer flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed p-8 text-center transition-all duration-200 ${
+        className={`relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-6 sm:p-8 text-center transition-all duration-200 ${
           isDragging
             ? "border-emerald-500 bg-emerald-50/50 shadow-inner"
             : "border-slate-300 bg-white hover:border-emerald-500 hover:bg-slate-50/50"
@@ -227,20 +228,61 @@ export function ImageUploader({
         </div>
         <div>
           <p className="text-sm font-semibold text-slate-900">
-            Click to select multiple images, or drag &amp; drop files here
+            Select multiple images or drag &amp; drop photos here
           </p>
           <p className="mt-1 text-xs text-slate-500">
-            Choose as many photos as you want at a time (JPG, PNG, WEBP, AVIF, GIF, HEIC).
+            Choose photos at once from your gallery or take a live photo (JPG, PNG, WEBP, AVIF, GIF).
           </p>
         </div>
+
+        {/* Action Buttons for Mobile & Desktop (Direct Native User Gestures) */}
+        <div className="mt-1 flex flex-wrap items-center justify-center gap-2.5">
+          <label
+            htmlFor="product-multi-image-input"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700 active:scale-98"
+          >
+            <ImageIcon size={15} />
+            <span>Choose Photos from Gallery</span>
+          </label>
+
+          <label
+            htmlFor="product-camera-image-input"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 active:scale-98"
+          >
+            <Camera size={15} className="text-emerald-600" />
+            <span>Take Photo (Camera)</span>
+          </label>
+        </div>
+
+        {/* Multi-file input (Pure image/* accept to prevent Android DocumentsUI crash) */}
         <input
+          id="product-multi-image-input"
           ref={inputRef}
           type="file"
-          accept="image/*,.heic,.heif,.jfif,.avif"
+          accept="image/*"
           multiple
-          className="hidden"
+          className="sr-only"
+          onClick={(e) => e.stopPropagation()}
           onChange={(e) => {
-            if (e.target.files) handleSelectFiles(e.target.files);
+            if (e.target.files && e.target.files.length > 0) {
+              handleSelectFiles(e.target.files);
+            }
+            e.target.value = "";
+          }}
+        />
+
+        {/* Direct Camera capture input for mobile devices */}
+        <input
+          id="product-camera-image-input"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="sr-only"
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              handleSelectFiles(e.target.files);
+            }
             e.target.value = "";
           }}
         />

@@ -3,7 +3,7 @@
 import { useActionState, useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, ImagePlus, Plus, Trash2, UploadCloud, X } from "lucide-react";
+import { Camera, CheckCircle2, ImageIcon, ImagePlus, Plus, Trash2, UploadCloud, X } from "lucide-react";
 import { SortableImageGrid } from "@/components/admin/sortable-image-grid";
 import { compressImageForUpload, isImageFile, sortFilesNaturally } from "@/lib/image-client";
 import { uploadProductImageAction } from "@/lib/actions/admin-image-actions";
@@ -434,7 +434,10 @@ function ProductFormInner({
       Array.from(files).filter(isImageFile),
     );
     if (valid.length === 0) return;
-    const prepared = await Promise.all(valid.map((f) => compressImageForUpload(f)));
+    const prepared: File[] = [];
+    for (const f of valid) {
+      prepared.push(await compressImageForUpload(f));
+    }
     setSelectedFiles((prev) => [...prev, ...prepared]);
     const newUrls = prepared.map((f) => URL.createObjectURL(f));
     setFilePreviews((prev) => [...prev, ...newUrls]);
@@ -1105,8 +1108,7 @@ function ProductFormInner({
               setIsDraggingFiles(false);
               addNewProductFiles(e.dataTransfer.files);
             }}
-            onClick={() => fileInputRef.current?.click()}
-            className={`flex cursor-pointer flex-col items-center justify-center gap-2.5 rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
+            className={`relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-6 sm:p-8 text-center transition-all ${
               isDraggingFiles
                 ? "border-emerald-500 bg-emerald-50/50"
                 : "border-slate-300 bg-slate-50/50 hover:border-emerald-500 hover:bg-white"
@@ -1115,20 +1117,63 @@ function ProductFormInner({
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
               <UploadCloud size={24} />
             </div>
-            <p className="text-sm font-semibold text-slate-900">
-              Drag & drop multiple images here, or click to select files
-            </p>
-            <p className="text-xs text-slate-500">
-              Added in file-name order — reorder them below. Any image type (JPG, PNG, WEBP, AVIF, GIF, HEIC…); large photos are auto-resized.
-            </p>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">
+                Select multiple images or drag &amp; drop photos here
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Added in file-name order — reorder them below (JPG, PNG, WEBP, AVIF, GIF).
+              </p>
+            </div>
+
+            <div className="mt-1 flex flex-wrap items-center justify-center gap-2.5">
+              <label
+                htmlFor="create-product-multi-image-input"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-emerald-700 active:scale-98"
+              >
+                <ImageIcon size={15} />
+                <span>Choose Photos from Gallery</span>
+              </label>
+
+              <label
+                htmlFor="create-product-camera-image-input"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-slate-50 active:scale-98"
+              >
+                <Camera size={15} className="text-emerald-600" />
+                <span>Take Photo (Camera)</span>
+              </label>
+            </div>
+
             <input
+              id="create-product-multi-image-input"
               ref={fileInputRef}
               type="file"
               name="productImages"
-              accept="image/*,.heic,.heif,.jfif,.avif"
+              accept="image/*"
               multiple
-              className="hidden"
-              onChange={(e) => e.target.files && addNewProductFiles(e.target.files)}
+              className="sr-only"
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  addNewProductFiles(e.target.files);
+                }
+                e.target.value = "";
+              }}
+            />
+
+            <input
+              id="create-product-camera-image-input"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="sr-only"
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  addNewProductFiles(e.target.files);
+                }
+                e.target.value = "";
+              }}
             />
           </div>
 
