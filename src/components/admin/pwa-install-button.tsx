@@ -119,10 +119,10 @@ export function PwaInstallGuideModal({
             />
             <div>
               <h3 className="font-display text-lg leading-none text-paper">
-                DOWNLOAD JAF APP
+                DOWNLOAD JAF ADMIN APP
               </h3>
               <p className="mt-0.5 text-[11px] text-paper-dim">
-                Install as a standalone app on Phone or Desktop
+                Install the admin panel as a standalone app
               </p>
             </div>
           </div>
@@ -153,7 +153,7 @@ export function PwaInstallGuideModal({
               <li>
                 2. Select{" "}
                 <strong className="text-paper">
-                  &ldquo;Install JAF&rdquo;
+                  &ldquo;Install JAF Admin&rdquo;
                 </strong>{" "}
                 or{" "}
                 <strong className="text-paper">

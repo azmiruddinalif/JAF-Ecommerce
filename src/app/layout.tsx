@@ -38,7 +38,6 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/icon.jpg", sizes: "any" },
@@ -50,11 +49,6 @@ export const metadata: Metadata = {
       { url: "/icon.jpg", sizes: "any" },
     ],
     shortcut: "/icon.jpg",
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "JAF",
   },
   title: {
     default: "JAF — Authentic Football Jerseys, Club Kits & Retro Soccer Apparel",
