@@ -156,7 +156,7 @@ export function AddToCartForm({
           </div>
 
           {/* Size Boxes (Football Line Co Minimal Style) */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             {sizes.map((variant) => {
               const isAvailable = variant.stock > 0;
               const isSelected = selectedSize === variant.size && isAvailable;
@@ -174,7 +174,7 @@ export function AddToCartForm({
                       : `Size ${variant.size} — Out of Stock`
                   }
                   onClick={() => handleSelectSize(variant)}
-                  className={`relative flex h-11 min-w-14 items-center justify-center rounded-lg border text-xs sm:text-sm font-bold uppercase transition-all overflow-hidden ${
+                  className={`relative flex h-9 min-w-11 sm:h-9.5 sm:min-w-12 items-center justify-center rounded-none border px-2.5 text-xs font-bold uppercase transition-all overflow-hidden ${
                     isSelected
                       ? "border-slate-950 bg-slate-950 text-white shadow-xs cursor-pointer"
                       : isAvailable
