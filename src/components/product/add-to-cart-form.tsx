@@ -48,7 +48,6 @@ export function AddToCartForm({
       }
     }
 
-    // Always display all sizes (S, M, L, XL, XXL, 3XL, 4XL, 5XL)
     const orderedKeys = new Set<string>(
       ALL_DISPLAY_SIZES.map((s) => s.toUpperCase()),
     );
@@ -150,13 +149,9 @@ export function AddToCartForm({
                 </span>
               )}
             </div>
-            <span className="text-xs text-paper-dim">
-              Size guide: S · M · L · XL · XXL · 3XL · 4XL · 5XL
-            </span>
           </div>
 
-          {/* Size Boxes (Football Line Co Minimal Style) */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {sizes.map((variant) => {
               const isAvailable = variant.stock > 0;
               const isSelected = selectedSize === variant.size && isAvailable;
@@ -174,7 +169,8 @@ export function AddToCartForm({
                       : `Size ${variant.size} — Out of Stock`
                   }
                   onClick={() => handleSelectSize(variant)}
-                  className={`relative flex h-9 min-w-11 sm:h-9.5 sm:min-w-12 items-center justify-center rounded-none border px-2.5 text-xs font-bold uppercase transition-all overflow-hidden ${
+                  style={{ borderRadius: 0 }}
+                  className={`relative flex h-8 min-w-9 sm:h-8.5 sm:min-w-10 items-center justify-center rounded-none border px-2 text-[11px] sm:text-xs font-bold uppercase transition-all overflow-hidden ${
                     isSelected
                       ? "border-slate-950 bg-slate-950 text-white shadow-xs cursor-pointer"
                       : isAvailable
@@ -217,25 +213,30 @@ export function AddToCartForm({
         <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
           Quantity
         </span>
-        <div className="flex items-center rounded-lg border border-slate-300 bg-white shadow-2xs">
+        <div
+          style={{ borderRadius: 0 }}
+          className="flex h-8 items-center rounded-none border border-slate-300 bg-white shadow-2xs"
+        >
           <button
             type="button"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             aria-label="Decrease quantity"
-            className="p-2.5 text-slate-600 hover:text-black transition-colors"
+            className="flex h-full items-center justify-center px-2.5 text-slate-600 hover:text-black transition-colors"
           >
-            <Minus size={14} />
+            <Minus size={13} />
           </button>
-          <span className="min-w-10 text-center font-mono text-sm font-bold text-slate-900">{quantity}</span>
+          <span className="min-w-8 text-center font-mono text-xs font-bold text-slate-900">
+            {quantity}
+          </span>
           <button
             type="button"
             onClick={() =>
               setQuantity((q) => Math.min(Math.max(1, selectedStock), q + 1))
             }
             aria-label="Increase quantity"
-            className="p-2.5 text-slate-600 hover:text-black transition-colors"
+            className="flex h-full items-center justify-center px-2.5 text-slate-600 hover:text-black transition-colors"
           >
-            <Plus size={14} />
+            <Plus size={13} />
           </button>
         </div>
         {inStock && (
@@ -267,23 +268,28 @@ export function AddToCartForm({
         <WishlistButton productId={productId} />
       </div>
 
-      {/* Football Line Co Style Trust Props */}
       <div className="mt-2 space-y-3 border-t border-slate-200/80 pt-5 text-xs text-slate-600">
         <div className="flex items-start gap-3">
           <span className="text-base leading-none">🚚</span>
           <div>
-            <p className="font-bold uppercase tracking-wider text-slate-900">Free Delivery &amp; Returns</p>
+            <p className="font-bold uppercase tracking-wider text-slate-900">
+              Free Delivery &amp; Returns
+            </p>
             <p className="mt-0.5 text-slate-500 leading-relaxed">
-              Doorstep delivery across Bangladesh with open-box verification and Cash on Delivery.
+              Doorstep delivery across Bangladesh with open-box verification and
+              Cash on Delivery.
             </p>
           </div>
         </div>
         <div className="flex items-start gap-3">
           <span className="text-base leading-none">🏪</span>
           <div>
-            <p className="font-bold uppercase tracking-wider text-slate-900">Availability in Store</p>
+            <p className="font-bold uppercase tracking-wider text-slate-900">
+              Availability in Store
+            </p>
             <p className="mt-0.5 text-slate-500 leading-relaxed">
-              In stock for immediate dispatch or collection from our Dhaka flagship showroom.
+              In stock for immediate dispatch or collection from our Dhaka
+              flagship showroom.
             </p>
           </div>
         </div>

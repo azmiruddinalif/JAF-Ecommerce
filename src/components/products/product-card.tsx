@@ -27,8 +27,9 @@ export function ProductCard({ product }: { product: ProductListItem }) {
       )
     : 0;
 
-  // Check if product has sized variants (not 'ONE SIZE' / 'NO SIZE')
-  const hasSizedVariants = product.variants.some((v) => !isNoSizeVariant(v.size));
+  const hasSizedVariants = product.variants.some(
+    (v) => !isNoSizeVariant(v.size),
+  );
 
   const stockByUpperSize = new Map<string, number>();
   for (const v of product.variants) {
@@ -38,12 +39,14 @@ export function ProductCard({ product }: { product: ProductListItem }) {
     }
   }
 
-  // Display all standard sizes (S, M, L, XL, XXL, 3XL, 4XL, 5XL) plus extra custom sizes as per PDP
   const sizes = hasSizedVariants
     ? [
         ...AVAILABLE_SIZES,
         ...[...stockByUpperSize.keys()].filter(
-          (k) => !(AVAILABLE_SIZES as readonly string[]).map((s) => s.toUpperCase()).includes(k),
+          (k) =>
+            !(AVAILABLE_SIZES as readonly string[])
+              .map((s) => s.toUpperCase())
+              .includes(k),
         ),
       ]
     : [];
@@ -78,7 +81,9 @@ export function ProductCard({ product }: { product: ProductListItem }) {
 
         <div className="absolute left-2 top-2 flex flex-col gap-1.5">
           {hasDiscount && <Badge variant="gold">-{discountPercent}%</Badge>}
-          {!hasDiscount && product.featured && <Badge variant="neutral">Bestseller</Badge>}
+          {!hasDiscount && product.featured && (
+            <Badge variant="neutral">Bestseller</Badge>
+          )}
           {product.newArrival && <Badge variant="emerald">New</Badge>}
           {totalStock === 0 && <Badge variant="danger">Sold out</Badge>}
         </div>
@@ -115,7 +120,8 @@ export function ProductCard({ product }: { product: ProductListItem }) {
                       ? `Size ${size} (${stock} in stock)`
                       : `Size ${size} — Unavailable`
                   }
-                  className={`relative flex h-5 min-w-5 items-center justify-center overflow-hidden border px-1 text-[10px] font-medium transition-colors ${
+                  style={{ borderRadius: 0 }}
+                  className={`relative flex h-5 min-w-5 items-center justify-center rounded-none overflow-hidden border px-1 text-[10px] font-medium transition-colors ${
                     isAvailable
                       ? "border-slate-300 bg-white text-slate-700"
                       : "border-amber-300/40 bg-amber-50/20 text-slate-400 opacity-75 cursor-not-allowed"

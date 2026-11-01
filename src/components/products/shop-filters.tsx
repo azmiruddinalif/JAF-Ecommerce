@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -10,7 +11,13 @@ import {
   CLUB_TYPE_LABELS,
   isClubCategory,
 } from "@/lib/constants";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const ALL = "__all__";
 
@@ -33,7 +40,9 @@ export function ShopFilters({
   const searchParams = useSearchParams();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const activeCategory = lockCategory ? (lockedCategorySlug ?? "") : (searchParams.get("category") ?? "");
+  const activeCategory = lockCategory
+    ? (lockedCategorySlug ?? "")
+    : (searchParams.get("category") ?? "");
   const activeType = searchParams.get("type") ?? "";
   const activeSize = searchParams.get("size") ?? "";
   const activeSort = searchParams.get("sort") ?? "newest";
@@ -83,33 +92,43 @@ export function ShopFilters({
     const trimmedMin = nextMinBdt.trim();
     const trimmedMax = nextMaxBdt.trim();
     const minVal =
-      trimmedMin !== "" && !Number.isNaN(Number(trimmedMin)) && Number(trimmedMin) >= 0
+      trimmedMin !== "" &&
+      !Number.isNaN(Number(trimmedMin)) &&
+      Number(trimmedMin) >= 0
         ? String(Math.round(Number(trimmedMin) * 100))
         : null;
     const maxVal =
-      trimmedMax !== "" && !Number.isNaN(Number(trimmedMax)) && Number(trimmedMax) >= 0
+      trimmedMax !== "" &&
+      !Number.isNaN(Number(trimmedMax)) &&
+      Number(trimmedMax) >= 0
         ? String(Math.round(Number(trimmedMax) * 100))
         : null;
 
-    if ((minVal ?? "") === activeMinCents && (maxVal ?? "") === activeMaxCents) {
+    if (
+      (minVal ?? "") === activeMinCents &&
+      (maxVal ?? "") === activeMaxCents
+    ) {
       return;
     }
     updateParams({ minPrice: minVal, maxPrice: maxVal });
   }
 
-  const currentCategoryObj = categories.find((c) => c.slug === activeCategory) ?? {
+  const currentCategoryObj = categories.find(
+    (c) => c.slug === activeCategory,
+  ) ?? {
     slug: activeCategory,
     name: activeCategory,
   };
-  const showClubTypeSelect = !activeCategory || isClubCategory(currentCategoryObj);
+  const showClubTypeSelect =
+    !activeCategory || isClubCategory(currentCategoryObj);
 
   const hasActiveFilters = Boolean(
     (!lockCategory && activeCategory) ||
-      activeType ||
-      activeSize ||
-      activeAvailability ||
-      activeMinCents ||
-      activeMaxCents
+    activeType ||
+    activeSize ||
+    activeAvailability ||
+    activeMinCents ||
+    activeMaxCents,
   );
 
   const controls = (
@@ -119,7 +138,8 @@ export function ShopFilters({
           value={activeCategory || ALL}
           onValueChange={(value) => {
             const nextCat = value === ALL ? null : value;
-            const nextCatObj = categories.find((c) => c.slug === nextCat) ?? null;
+            const nextCatObj =
+              categories.find((c) => c.slug === nextCat) ?? null;
             updateParams({
               category: nextCat,
               ...(!nextCat || isClubCategory(nextCatObj) ? {} : { type: null }),
@@ -143,7 +163,9 @@ export function ShopFilters({
       {showClubTypeSelect && (
         <Select
           value={activeType || ALL}
-          onValueChange={(value) => updateParam("type", value === ALL ? null : value)}
+          onValueChange={(value) =>
+            updateParam("type", value === ALL ? null : value)
+          }
         >
           <SelectTrigger aria-label="Filter by club type" className="sm:w-44">
             <SelectValue placeholder="All Club Types" />
@@ -161,7 +183,9 @@ export function ShopFilters({
 
       <Select
         value={activeSize || ALL}
-        onValueChange={(value) => updateParam("size", value === ALL ? null : value)}
+        onValueChange={(value) =>
+          updateParam("size", value === ALL ? null : value)
+        }
       >
         <SelectTrigger aria-label="Filter by size" className="sm:w-32">
           <SelectValue placeholder="All Sizes" />
@@ -178,7 +202,9 @@ export function ShopFilters({
 
       <Select
         value={activeAvailability || ALL}
-        onValueChange={(value) => updateParam("availability", value === ALL ? null : value)}
+        onValueChange={(value) =>
+          updateParam("availability", value === ALL ? null : value)
+        }
       >
         <SelectTrigger aria-label="Filter by availability" className="sm:w-40">
           <SelectValue placeholder="All Availability" />
@@ -249,7 +275,10 @@ export function ShopFilters({
   );
 
   const sortSelect = (
-    <Select value={activeSort} onValueChange={(value) => updateParam("sort", value)}>
+    <Select
+      value={activeSort}
+      onValueChange={(value) => updateParam("sort", value)}
+    >
       <SelectTrigger aria-label="Sort products" className="w-44">
         <SelectValue />
       </SelectTrigger>
