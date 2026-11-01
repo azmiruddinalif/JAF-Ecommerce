@@ -163,7 +163,9 @@ async function attachInitialProductImages(
     .map((u) => u.trim())
     .filter((u) => u.startsWith("http://") || u.startsWith("https://") || u.startsWith("/"));
 
-  let orderIndex = 0;
+  // Continue after any images the product already has (e.g. adding a collection to an existing product).
+  const existingImageCount = await prisma.productImage.count({ where: { productId } });
+  let orderIndex = existingImageCount;
 
   for (const file of files) {
     const validationErr = validateImageFile(file);
@@ -181,7 +183,7 @@ async function attachInitialProductImages(
           secureUrl: uploaded.secureUrl,
           altText: productName,
           displayOrder: orderIndex,
-          isPrimary: orderIndex === 0,
+          isPrimary: orderIndex === 0, // first image overall = cover
         },
       });
       orderIndex++;
@@ -199,7 +201,7 @@ async function attachInitialProductImages(
           secureUrl: url,
           altText: productName,
           displayOrder: orderIndex,
-          isPrimary: orderIndex === 0,
+          isPrimary: orderIndex === 0, // first image overall = cover
         },
       });
       orderIndex++;

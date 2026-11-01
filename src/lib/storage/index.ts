@@ -15,6 +15,16 @@ function extForMime(contentType?: string): string {
       return "webp";
     case "image/avif":
       return "avif";
+    case "image/gif":
+      return "gif";
+    case "image/bmp":
+      return "bmp";
+    case "image/tiff":
+      return "tiff";
+    case "image/heic":
+      return "heic";
+    case "image/heif":
+      return "heif";
     case "application/pdf":
       return "pdf";
     case "image/jpeg":

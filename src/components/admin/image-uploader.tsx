@@ -5,7 +5,7 @@ import { Plus, Star, Trash2, UploadCloud } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SortableImageGrid } from "@/components/admin/sortable-image-grid";
-import { compressImageForUpload, sortFilesNaturally } from "@/lib/image-client";
+import { compressImageForUpload, isImageFile, sortFilesNaturally } from "@/lib/image-client";
 import {
   addProductImageUrlAction,
   deleteProductImageAction,
@@ -37,23 +37,27 @@ export function ImageUploader({ productId, images }: { productId: string; images
     setError(null);
     // Serial order: natural filename order (1, 2, 3 … 10), uploaded one after another.
     const fileArray = sortFilesNaturally(
-      Array.from(files).filter((f) => f.type.startsWith("image/")),
+      Array.from(files).filter(isImageFile),
     );
     if (fileArray.length === 0) return;
 
     startTransition(async () => {
       setProgress({ done: 0, total: fileArray.length });
+      const failures: string[] = [];
       for (let i = 0; i < fileArray.length; i++) {
-        const formData = new FormData();
-        formData.set("file", await compressImageForUpload(fileArray[i]));
-        const result = await uploadProductImageAction(productId, formData);
-        if (!result.success) {
-          setError(`${fileArray[i].name}: ${result.message}`);
-          break;
+        try {
+          const formData = new FormData();
+          formData.set("file", await compressImageForUpload(fileArray[i]));
+          const result = await uploadProductImageAction(productId, formData);
+          if (!result.success) failures.push(`${fileArray[i].name}: ${result.message}`);
+        } catch {
+          failures.push(`${fileArray[i].name}: upload failed (file too large or network error).`);
         }
         setProgress({ done: i + 1, total: fileArray.length });
       }
       setProgress(null);
+      // Keep going past a bad file; report every failure at the end.
+      if (failures.length > 0) setError(failures.join(" • "));
     });
   }
 
@@ -123,12 +127,12 @@ export function ImageUploader({ productId, images }: { productId: string; images
         <UploadCloud size={28} className="text-gold" />
         <p className="text-sm text-paper">Drag &amp; drop multiple images here, or click to select many at once</p>
         <p className="text-xs text-paper-dim">
-          They upload one after another in file-name order. JPEG, PNG, WEBP or AVIF — large photos are auto-resized.
+          They upload one after another in file-name order. Any image type (JPG, PNG, WEBP, AVIF, GIF, HEIC…) — large photos are auto-resized.
         </p>
         <input
           ref={inputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/avif"
+          accept="image/*,.heic,.heif,.jfif,.avif"
           multiple
           className="hidden"
           onChange={(e) => {

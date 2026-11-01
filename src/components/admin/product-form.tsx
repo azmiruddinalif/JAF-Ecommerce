@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, ImagePlus, Plus, Trash2, UploadCloud, X } from "lucide-react";
 import { SortableImageGrid } from "@/components/admin/sortable-image-grid";
-import { compressImageForUpload, sortFilesNaturally } from "@/lib/image-client";
+import { compressImageForUpload, isImageFile, sortFilesNaturally } from "@/lib/image-client";
+import { uploadProductImageAction } from "@/lib/actions/admin-image-actions";
 import { Input, Textarea, Label, FieldError } from "@/components/ui/input";
 import {
   Select,
@@ -120,6 +121,19 @@ function ProductFormInner({
   const [state, formAction, isActionPending] = useActionState(action, initialState);
   const [isSubmitTransition, startSubmitTransition] = useTransition();
   const isPending = isActionPending || isSubmitTransition;
+  const [imageUpload, setImageUpload] = useState<{
+    done: number;
+    total: number;
+    failures: string[];
+    finished: boolean;
+  } | null>(null);
+  // Files are uploaded one by one AFTER the product is created (reliable on serverless hosts).
+  const pendingFilesRef = useRef<File[]>([]);
+  const uploadStartedRef = useRef(false);
+  const isUploadingImages = Boolean(imageUpload && !imageUpload.finished);
+  const imageUploadBlocksRedirect = Boolean(
+    imageUpload && (!imageUpload.finished || imageUpload.failures.length > 0),
+  );
   const isRedirecting = Boolean(state.success && state.productId);
   const redirectedRef = useRef(false);
   const hasResetRef = useRef(false);
@@ -271,7 +285,35 @@ function ProductFormInner({
   // Redirect to /admin/products listing page, refresh immediately, and reset the form instance
   // so clicking "Add Product" again always shows a fresh Create Product form (even with Next.js cacheComponents).
   useEffect(() => {
+    if (product || !state.success || !state.productId) return;
+    const files = pendingFilesRef.current;
+    if (files.length === 0 || uploadStartedRef.current) return;
+    uploadStartedRef.current = true;
+    const productId = state.productId;
+
+    (async () => {
+      const failures: string[] = [];
+      setImageUpload({ done: 0, total: files.length, failures, finished: false });
+      for (let i = 0; i < files.length; i++) {
+        try {
+          const fd = new FormData();
+          fd.set("file", files[i]);
+          const result = await uploadProductImageAction(productId, fd);
+          if (!result.success) failures.push(`${files[i].name}: ${result.message}`);
+        } catch {
+          failures.push(`${files[i].name}: upload failed (file too large or network error).`);
+        }
+        setImageUpload({ done: i + 1, total: files.length, failures: [...failures], finished: false });
+      }
+      pendingFilesRef.current = [];
+      setImageUpload({ done: files.length, total: files.length, failures, finished: true });
+    })();
+  }, [product, state.success, state.productId]);
+
+  useEffect(() => {
     if (!state.success || !state.productId) return;
+    // Wait for the image uploads (and stay on the page if any of them failed).
+    if (!product && (pendingFilesRef.current.length > 0 || imageUploadBlocksRedirect)) return;
 
     const triggerResetOnce = () => {
       if (hasResetRef.current) return;
@@ -296,7 +338,7 @@ function ProductFormInner({
       clearTimeout(timer);
       triggerResetOnce();
     };
-  }, [state.success, state.productId, router, onResetForm]);
+  }, [state.success, state.productId, router, onResetForm, product, imageUploadBlocksRedirect]);
 
   function selectMainCategoryOption(categoryName: string) {
     setSelectedMainCategory(categoryName);
@@ -389,7 +431,7 @@ function ProductFormInner({
   async function addNewProductFiles(files: FileList | File[]) {
     // Serial order: natural filename order (1, 2, 3 … 10), appended after existing picks.
     const valid = sortFilesNaturally(
-      Array.from(files).filter((f) => f.type.startsWith("image/")),
+      Array.from(files).filter(isImageFile),
     );
     if (valid.length === 0) return;
     const prepared = await Promise.all(valid.map((f) => compressImageForUpload(f)));
@@ -428,10 +470,11 @@ function ProductFormInner({
       onSubmit={(e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
+        // Images are uploaded one by one right after the product is created.
         formData.delete("productImages");
-        for (const file of selectedFiles) {
-          formData.append("productImages", file);
-        }
+        pendingFilesRef.current = product ? [] : [...selectedFiles];
+        uploadStartedRef.current = false;
+        setImageUpload(null);
         startSubmitTransition(() => {
           formAction(formData);
         });
@@ -490,6 +533,46 @@ function ProductFormInner({
                 Edit Product
               </Link>
             </div>
+          )}
+        </div>
+      )}
+
+      {imageUpload && (
+        <div
+          className={`border px-4 py-3 text-sm ${
+            imageUpload.failures.length > 0
+              ? "border-danger/40 bg-danger/10 text-danger"
+              : "border-gold/40 bg-gold/10 text-gold"
+          }`}
+        >
+          {!imageUpload.finished ? (
+            <>
+              <p>
+                Uploading image {Math.min(imageUpload.done + 1, imageUpload.total)} of {imageUpload.total}…
+              </p>
+              <div className="mt-2 h-1 w-full bg-ink-border">
+                <div
+                  className="h-full bg-gold-bright transition-all"
+                  style={{ width: `${(imageUpload.done / imageUpload.total) * 100}%` }}
+                />
+              </div>
+            </>
+          ) : imageUpload.failures.length > 0 ? (
+            <>
+              <p className="font-semibold">
+                Product saved, but {imageUpload.failures.length} image(s) failed to upload:
+              </p>
+              <ul className="mt-1 list-disc pl-5 text-xs">
+                {imageUpload.failures.map((f) => (
+                  <li key={f}>{f}</li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs">
+                Open <strong>Edit Product</strong> above to add the missing images.
+              </p>
+            </>
+          ) : (
+            <p>All {imageUpload.total} images uploaded.</p>
           )}
         </div>
       )}
@@ -1035,13 +1118,13 @@ function ProductFormInner({
               Drag & drop multiple images here, or click to select many at once
             </p>
             <p className="text-xs text-paper-dim">
-              Added in file-name order — reorder them below. JPEG, PNG, WEBP or AVIF; large photos are auto-resized.
+              Added in file-name order — reorder them below. Any image type (JPG, PNG, WEBP, AVIF, GIF, HEIC…); large photos are auto-resized.
             </p>
             <input
               ref={fileInputRef}
               type="file"
               name="productImages"
-              accept="image/jpeg,image/png,image/webp,image/avif"
+              accept="image/*,.heic,.heif,.jfif,.avif"
               multiple
               className="hidden"
               onChange={(e) => e.target.files && addNewProductFiles(e.target.files)}
@@ -1119,9 +1202,13 @@ function ProductFormInner({
             ? product
               ? "SAVING CHANGES..."
               : "CREATING PRODUCT..."
-            : isRedirecting
-              ? "REDIRECTING TO PRODUCTS..."
-              : product
+            : isUploadingImages
+              ? "UPLOADING IMAGES..."
+              : isRedirecting
+                ? imageUploadBlocksRedirect
+                  ? "PRODUCT SAVED"
+                  : "REDIRECTING TO PRODUCTS..."
+                : product
                 ? "SAVE CHANGES"
                 : "CREATE PRODUCT"}
         </Button>
