@@ -18,7 +18,7 @@ export function DropdownMenuContent({
       <DropdownMenuPrimitive.Content
         sideOffset={sideOffset}
         className={cn(
-          "z-50 min-w-[10rem] overflow-hidden border border-ink-border bg-ink-raised p-2 shadow-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          "z-50 min-w-[10rem] overflow-hidden rounded-xl border border-ink-border bg-ink-raised p-1.5 shadow-xl shadow-black/10 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           className
         )}
         {...props}
@@ -34,7 +34,7 @@ export function DropdownMenuItem({
   return (
     <DropdownMenuPrimitive.Item
       className={cn(
-        "block cursor-pointer px-3 py-2 text-xs uppercase tracking-wide text-paper outline-none transition-colors hover:bg-ink hover:text-gold focus:bg-ink focus:text-gold data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "block cursor-pointer rounded-lg px-3 py-2 text-xs uppercase tracking-wide text-paper outline-none transition-colors hover:bg-ink hover:text-gold focus:bg-ink focus:text-gold data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className
       )}
       {...props}

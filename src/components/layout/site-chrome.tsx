@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 /**
  * The admin dashboard renders its own full-height chrome (sidebar, or the
@@ -21,6 +21,18 @@ export function SiteChrome({
 }) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin") ?? false;
+
+  useEffect(() => {
+    if (isAdmin) {
+      document.documentElement.classList.add("admin-theme");
+      document.body.classList.add("admin-theme");
+      document.documentElement.setAttribute("data-theme", "admin");
+    } else {
+      document.documentElement.classList.remove("admin-theme");
+      document.body.classList.remove("admin-theme");
+      document.documentElement.removeAttribute("data-theme");
+    }
+  }, [isAdmin]);
 
   if (isAdmin) {
     return <>{children}</>;
