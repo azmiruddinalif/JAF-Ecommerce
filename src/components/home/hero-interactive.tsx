@@ -106,10 +106,7 @@ export function HeroInteractive({
   const activeSlides = useMemo(() => {
     if (slides.length > 0) {
       if (slides.length >= 3) return slides;
-      return [
-        ...slides,
-        ...DEFAULT_MATCHDAY_SHOWCASE.slice(slides.length),
-      ];
+      return [...slides, ...DEFAULT_MATCHDAY_SHOWCASE.slice(slides.length)];
     }
     if (fallbackImageUrl) {
       return [
@@ -185,7 +182,6 @@ export function HeroInteractive({
       {/* ===================================================================== */}
       <div className="relative z-10 mx-auto max-w-7xl px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20 lg:px-8 lg:py-24">
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
-          
           {/* ----------------------------------------------------------------- */}
           {/* LEFT COLUMN (Grid 7 cols): Typography, Eyebrow, CTAs, Watermark   */}
           {/* ----------------------------------------------------------------- */}
@@ -263,7 +259,6 @@ export function HeroInteractive({
           {/* RIGHT COLUMN (Grid 5 cols): Suspended Floating Jersey & Badges     */}
           {/* ----------------------------------------------------------------- */}
           <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-5 min-h-[380px] sm:min-h-[460px] lg:min-h-[520px]">
-            
             {/* Top-Right Official Kit Badge (Floating Pill) */}
             <div className="absolute right-0 top-0 z-20 flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white/90 px-3.5 py-1.5 shadow-sm backdrop-blur-md">
               <span className="text-base">🛡️</span>
@@ -286,7 +281,6 @@ export function HeroInteractive({
 
             {/* Floating Suspended Jersey Container */}
             <div className="relative w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[460px] aspect-square flex items-center justify-center">
-              
               {/* Soft Ground Shadow underneath floating jersey */}
               <div className="absolute bottom-6 h-8 w-3/4 rounded-full bg-slate-950/15 blur-xl pointer-events-none" />
 
@@ -361,55 +355,54 @@ export function HeroInteractive({
               ))}
             </div>
           </div>
+        </div>
+      </div>
 
+      {/* ===================================================================== */}
+      {/* BOTTOM-RIGHT: Technical Bracket Kit Title + Circular Arrow Controls   */}
+      {/* Positioned outside max-w-7xl container, at the banner's outer edge   */}
+      {/* ===================================================================== */}
+      <div className="absolute right-5 bottom-5 sm:right-8 sm:bottom-7 lg:right-10 lg:bottom-8 xl:right-12 xl:bottom-9 z-30 flex flex-col items-end gap-3 sm:gap-4 select-none">
+        {/* Technical Bracket + Stacked Kit Title */}
+        <div className="flex items-stretch gap-2.5 text-left">
+          {/* Architectural bracket with top & bottom ticks */}
+          <div className="relative w-1.5 border-l-2 border-white/80 flex flex-col justify-between py-0.5">
+            <span className="h-[2px] w-1.5 bg-white/80 block" />
+            <span className="h-[2px] w-1.5 bg-white/80 block" />
+          </div>
+
+          {/* Stacked typography */}
+          <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.2em] leading-tight">
+            <p className="text-[11px] sm:text-xs font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+              {currentSlide.name || "MATCHDAY KIT"}
+            </p>
+            <p className="text-[9px] sm:text-[10px] font-bold text-slate-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+              AUTHENTIC FIT
+            </p>
+            <p className="text-[9px] sm:text-[10px] font-black text-amber-400 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+              2026
+            </p>
+          </div>
         </div>
 
-        {/* =================================================================== */}
-        {/* BOTTOM-RIGHT: Technical Bracket Kit Title + Circular Arrow Controls */}
-        {/* Exactly matching Image 5 (Real Madrid 2026 matchday reference)      */}
-        {/* =================================================================== */}
-        <div className="absolute right-4 bottom-5 sm:right-8 sm:bottom-7 lg:right-12 lg:bottom-9 z-30 flex flex-col items-end gap-3 sm:gap-4 select-none">
-          {/* Technical Bracket + Stacked Kit Title */}
-          <div className="flex items-stretch gap-2.5 text-left">
-            {/* Architectural bracket with top & bottom ticks */}
-            <div className="relative w-1.5 border-l-2 border-white/80 flex flex-col justify-between py-0.5">
-              <span className="h-[2px] w-1.5 bg-white/80 block" />
-              <span className="h-[2px] w-1.5 bg-white/80 block" />
-            </div>
-
-            {/* Stacked typography */}
-            <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.2em] leading-tight">
-              <p className="text-[11px] sm:text-xs font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                {currentSlide.name || "MATCHDAY KIT"}
-              </p>
-              <p className="text-[9px] sm:text-[10px] font-bold text-slate-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                AUTHENTIC FIT
-              </p>
-              <p className="text-[9px] sm:text-[10px] font-black text-amber-400 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                2026
-              </p>
-            </div>
-          </div>
-
-          {/* Circular Navigation Buttons (Dark Translucent Pills from Reference) */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handlePrev}
-              aria-label="Previous jersey"
-              className="size-9 sm:size-10 rounded-full border border-white/30 bg-black/50 text-white backdrop-blur-md shadow-lg hover:bg-black/80 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button
-              type="button"
-              onClick={handleNext}
-              aria-label="Next jersey"
-              className="size-9 sm:size-10 rounded-full border border-white/30 bg-black/50 text-white backdrop-blur-md shadow-lg hover:bg-black/80 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
+        {/* Circular Navigation Buttons (Dark Translucent Pills from Reference) */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handlePrev}
+            aria-label="Previous jersey"
+            className="size-9 sm:size-10 rounded-full border border-white/30 bg-white/50 text-white backdrop-blur-md shadow-lg hover:bg-black/80 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={handleNext}
+            aria-label="Next jersey"
+            className="size-9 sm:size-10 rounded-full border border-white/30 bg-black/50 text-white backdrop-blur-md shadow-lg hover:bg-black/80 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+          >
+            <ChevronRight size={16} />
+          </button>
         </div>
       </div>
     </section>
