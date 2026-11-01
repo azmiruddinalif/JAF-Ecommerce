@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
 import { headers } from "next/headers";
@@ -7,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
 
 /**
- * Extracts client IP address from standard proxy headers
+ * Extracts client IP address from standard proxy headers safely
  */
 async function getClientIp(): Promise<string> {
   try {
@@ -16,7 +17,10 @@ async function getClientIp(): Promise<string> {
     const realIp = headerList.get("x-real-ip");
     const cfIp = headerList.get("cf-connecting-ip");
 
-    const rawIp = cfIp || (forwardedFor ? forwardedFor.split(",")[0].trim() : realIp) || "127.0.0.1";
+    const rawIp =
+      cfIp ||
+      (forwardedFor ? forwardedFor.split(",")[0].trim() : realIp) ||
+      "127.0.0.1";
     return rawIp.trim();
   } catch {
     return "127.0.0.1";
@@ -39,7 +43,7 @@ function maskEmail(email: string): string {
 async function sendSecurityCodeEmail(
   email: string,
   code: string,
-  clientIp: string
+  clientIp: string,
 ): Promise<{ sent: boolean; reason?: string }> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -53,7 +57,8 @@ async function sendSecurityCodeEmail(
 
   try {
     const resend = new Resend(apiKey);
-    const from = process.env.RESEND_FROM_EMAIL || "JAF Security <onboarding@resend.dev>";
+    const from =
+      process.env.RESEND_FROM_EMAIL || "JAF Security <onboarding@resend.dev>";
 
     await resend.emails.send({
       from,
@@ -92,7 +97,10 @@ async function sendSecurityCodeEmail(
 
     return { sent: true };
   } catch (error: any) {
-    console.error("[JAF Security] Failed to send security email:", error.message || error);
+    console.error(
+      "[JAF Security] Failed to send security email:",
+      error.message || error,
+    );
     return { sent: false, reason: error.message };
   }
 }
@@ -104,152 +112,171 @@ export async function preAuthenticateAdminAction(params: {
   email: string;
   password: string;
 }) {
-  const email = params.email.trim().toLowerCase();
-  const password = params.password.trim();
+  try {
+    const email = params.email.trim().toLowerCase();
+    const password = params.password.trim();
 
-  if (!email || !password) {
-    return { success: false, error: "Please enter both your work email and password." };
-  }
+    if (!email || !password) {
+      return {
+        success: false,
+        error: "Please enter both your work email and password.",
+      };
+    }
 
-  const clientIp = await getClientIp();
+    const clientIp = await getClientIp();
 
-  // 1. Check if input matches .env credentials:
-  // If user changed ADMIN_EMAIL or ADMIN_PASSWORD in .env, auto-sync database so it always works directly!
-  const envEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const envPassword = process.env.ADMIN_PASSWORD?.trim();
+    // 1. Check if input matches .env credentials:
+    // If user changed ADMIN_EMAIL or ADMIN_PASSWORD in .env, auto-sync database so it always works directly!
+    const envEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+    const envPassword = process.env.ADMIN_PASSWORD?.trim();
 
-  const isEnvAdminMatch = Boolean(
-    envEmail && envPassword && email === envEmail && password === envPassword
-  );
+    const isEnvAdminMatch = Boolean(
+      envEmail && envPassword && email === envEmail && password === envPassword,
+    );
 
-  if (isEnvAdminMatch) {
-    // Ensure owner account exists and is synchronized with .env credentials
-    const hashedPassword = await hashPassword(password);
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-      include: { accounts: true },
-    });
-
-    if (existingUser) {
-      await prisma.user.update({
-        where: { id: existingUser.id },
-        data: { role: "owner", emailVerified: true, banned: false },
+    if (isEnvAdminMatch) {
+      // Ensure owner account exists and is synchronized with .env credentials
+      const hashedPassword = await hashPassword(password);
+      const existingUser = await prisma.user.findUnique({
+        where: { email },
+        include: { accounts: true },
       });
 
-      const credentialAccount = existingUser.accounts.find((a) => a.providerId === "credential");
-      if (credentialAccount) {
-        await prisma.account.update({
-          where: { id: credentialAccount.id },
-          data: { password: hashedPassword },
+      if (existingUser) {
+        await prisma.user.update({
+          where: { id: existingUser.id },
+          data: { role: "owner", emailVerified: true, banned: false },
         });
+
+        const credentialAccount = existingUser.accounts.find(
+          (a) => a.providerId === "credential",
+        );
+        if (credentialAccount) {
+          await prisma.account.update({
+            where: { id: credentialAccount.id },
+            data: { password: hashedPassword },
+          });
+        } else {
+          await prisma.account.create({
+            data: {
+              userId: existingUser.id,
+              accountId: existingUser.id,
+              providerId: "credential",
+              password: hashedPassword,
+            },
+          });
+        }
       } else {
+        const newUser = await prisma.user.create({
+          data: {
+            email,
+            name: "Store Owner",
+            role: "owner",
+            emailVerified: true,
+            banned: false,
+          },
+        });
         await prisma.account.create({
           data: {
-            userId: existingUser.id,
-            accountId: existingUser.id,
+            userId: newUser.id,
+            accountId: newUser.id,
             providerId: "credential",
             password: hashedPassword,
           },
         });
       }
-    } else {
-      const newUser = await prisma.user.create({
-        data: {
-          email,
-          name: "Store Owner",
-          role: "owner",
-          emailVerified: true,
-          banned: false,
-        },
-      });
-      await prisma.account.create({
-        data: {
-          userId: newUser.id,
-          accountId: newUser.id,
-          providerId: "credential",
-          password: hashedPassword,
-        },
-      });
     }
-  }
 
-  // 2. Fetch user from DB
-  const user = await prisma.user.findUnique({
-    where: { email },
-    include: { accounts: true },
-  });
+    // 2. Fetch user from DB
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { accounts: true },
+    });
 
-  if (!user) {
-    return { success: false, error: "Invalid email or password." };
-  }
+    if (!user) {
+      return { success: false, error: "Invalid email or password." };
+    }
 
-  if (user.banned) {
-    return {
-      success: false,
-      error: "This staff account has been deactivated. Please contact the store owner.",
-    };
-  }
+    if (user.banned) {
+      return {
+        success: false,
+        error:
+          "This staff account has been deactivated. Please contact the store owner.",
+      };
+    }
 
-  const credentialAccount = user.accounts.find((a) => a.providerId === "credential");
-  if (!credentialAccount || !credentialAccount.password) {
-    return { success: false, error: "Invalid email or password." };
-  }
+    const credentialAccount = user.accounts.find(
+      (a) => a.providerId === "credential",
+    );
+    if (!credentialAccount || !credentialAccount.password) {
+      return { success: false, error: "Invalid email or password." };
+    }
 
-  // 3. Verify password hash
-  const isValidPassword = await verifyPassword({
-    hash: credentialAccount.password,
-    password,
-  });
+    // 3. Verify password hash
+    const isValidPassword = await verifyPassword({
+      hash: credentialAccount.password,
+      password,
+    });
 
-  if (!isValidPassword) {
-    return { success: false, error: "Invalid email or password." };
-  }
+    if (!isValidPassword) {
+      return { success: false, error: "Invalid email or password." };
+    }
 
-  // 4. IP Check:
-  // Has this user ever verified this IP address?
-  const ipIdentifier = `trusted_ip:${user.id}:${clientIp}`;
-  const trustedIp = await prisma.verification.findFirst({
-    where: {
-      identifier: ipIdentifier,
-      expiresAt: { gt: new Date() },
-    },
-  });
+    // 4. IP Check:
+    // Has this user ever verified this IP address?
+    const ipIdentifier = `trusted_ip:${user.id}:${clientIp}`;
+    const trustedIp = await prisma.verification.findFirst({
+      where: {
+        identifier: ipIdentifier,
+        expiresAt: { gt: new Date() },
+      },
+    });
 
-  if (trustedIp) {
-    // Known, trusted IP address — allow immediate direct sign-in!
+    if (trustedIp) {
+      // Known, trusted IP address — allow immediate direct sign-in!
+      return {
+        success: true,
+        requiresOtp: false,
+        clientIp,
+      };
+    }
+
+    // 5. New or different IP address detected:
+    // Generate a cryptographically secure 6-digit OTP code
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const otpIdentifier = `admin_otp:${user.id}`;
+
+    // Store in verification table for 10 minutes
+    await prisma.verification.deleteMany({
+      where: { identifier: otpIdentifier },
+    });
+    await prisma.verification.create({
+      data: {
+        identifier: otpIdentifier,
+        value: `${otp}:${clientIp}`,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      },
+    });
+
+    // Send email or log to server
+    const emailResult = await sendSecurityCodeEmail(user.email, otp, clientIp);
+
     return {
       success: true,
-      requiresOtp: false,
+      requiresOtp: true,
       clientIp,
+      maskedEmail: maskEmail(user.email),
+      // If Resend is not configured, supply the preview code so developer / owner is never locked out
+      previewCode: !emailResult.sent ? otp : undefined,
     };
+  } catch (err: unknown) {
+    const errorMsg =
+      err instanceof Error
+        ? err.message
+        : "Failed to authenticate administrator.";
+    console.error("[preAuthenticateAdminAction Error]:", err);
+    return { success: false, error: errorMsg };
   }
-
-  // 5. New or different IP address detected:
-  // Generate a cryptographically secure 6-digit OTP code
-  const otp = crypto.randomInt(100000, 999999).toString();
-  const otpIdentifier = `admin_otp:${user.id}`;
-
-  // Store in verification table for 10 minutes
-  await prisma.verification.deleteMany({ where: { identifier: otpIdentifier } });
-  await prisma.verification.create({
-    data: {
-      identifier: otpIdentifier,
-      value: `${otp}:${clientIp}`,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
-    },
-  });
-
-  // Send email or log to server
-  const emailResult = await sendSecurityCodeEmail(user.email, otp, clientIp);
-
-  return {
-    success: true,
-    requiresOtp: true,
-    clientIp,
-    maskedEmail: maskEmail(user.email),
-    // If Resend is not configured, supply the preview code so developer / owner is never locked out
-    previewCode: !emailResult.sent ? otp : undefined,
-  };
 }
 
 /**
@@ -259,63 +286,82 @@ export async function verifyAdminOtpAction(params: {
   email: string;
   code: string;
 }) {
-  const email = params.email.trim().toLowerCase();
-  const code = params.code.trim();
+  try {
+    const email = params.email.trim().toLowerCase();
+    const code = params.code.trim();
 
-  if (!email || !code || code.length !== 6) {
-    return { success: false, error: "Please enter the valid 6-digit verification code." };
-  }
+    if (!email || !code || code.length !== 6) {
+      return {
+        success: false,
+        error: "Please enter the valid 6-digit verification code.",
+      };
+    }
 
-  const clientIp = await getClientIp();
+    const clientIp = await getClientIp();
 
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-  if (!user) {
-    return { success: false, error: "Invalid session or user account not found." };
-  }
+    if (!user) {
+      return {
+        success: false,
+        error: "Invalid session or user account not found.",
+      };
+    }
 
-  const otpIdentifier = `admin_otp:${user.id}`;
-  const verificationRecord = await prisma.verification.findFirst({
-    where: {
-      identifier: otpIdentifier,
-      expiresAt: { gt: new Date() },
-    },
-  });
+    const otpIdentifier = `admin_otp:${user.id}`;
+    const verificationRecord = await prisma.verification.findFirst({
+      where: {
+        identifier: otpIdentifier,
+        expiresAt: { gt: new Date() },
+      },
+    });
 
-  if (!verificationRecord) {
+    if (!verificationRecord) {
+      return {
+        success: false,
+        error:
+          "Verification code has expired or is invalid. Please sign in again to receive a new code.",
+      };
+    }
+
+    const [savedOtp, savedIp] = verificationRecord.value.split(":");
+
+    if (savedOtp !== code) {
+      return {
+        success: false,
+        error:
+          "Incorrect 6-digit verification code. Please check your email and try again.",
+      };
+    }
+
+    // Clean up the single-use OTP
+    await prisma.verification.deleteMany({
+      where: { identifier: otpIdentifier },
+    });
+
+    // Save this IP as trusted for 90 days
+    const ipIdentifier = `trusted_ip:${user.id}:${clientIp || savedIp}`;
+    await prisma.verification.deleteMany({
+      where: { identifier: ipIdentifier },
+    });
+    await prisma.verification.create({
+      data: {
+        identifier: ipIdentifier,
+        value: clientIp || savedIp,
+        expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days
+      },
+    });
+
     return {
-      success: false,
-      error: "Verification code has expired or is invalid. Please sign in again to receive a new code.",
+      success: true,
+      message: "IP address successfully verified.",
     };
+  } catch (err: unknown) {
+    const errorMsg =
+      err instanceof Error ? err.message : "Failed to verify security code.";
+    console.error("[verifyAdminOtpAction Error]:", err);
+    return { success: false, error: errorMsg };
   }
-
-  const [savedOtp, savedIp] = verificationRecord.value.split(":");
-
-  if (savedOtp !== code) {
-    return {
-      success: false,
-      error: "Incorrect 6-digit verification code. Please check your email and try again.",
-    };
-  }
-
-  // Clean up the single-use OTP
-  await prisma.verification.deleteMany({ where: { identifier: otpIdentifier } });
-
-  // Save this IP as trusted for 90 days
-  const ipIdentifier = `trusted_ip:${user.id}:${clientIp || savedIp}`;
-  await prisma.verification.deleteMany({ where: { identifier: ipIdentifier } });
-  await prisma.verification.create({
-    data: {
-      identifier: ipIdentifier,
-      value: clientIp || savedIp,
-      expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days
-    },
-  });
-
-  return {
-    success: true,
-    message: "IP address successfully verified.",
-  };
 }

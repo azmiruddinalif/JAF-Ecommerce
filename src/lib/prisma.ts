@@ -24,12 +24,6 @@ function resolveDatabaseUrl(): string {
   const isUsable = raw && !raw.includes(LEAKED_CREDENTIAL_MARKER);
 
   if (process.env.NODE_ENV === "production" && !isUsable) {
-    // Falling back to a localhost URL in production is silent data loss: that
-    // URL is unreachable from Vercel, so every query fails and pages quietly
-    // render as empty instead of surfacing a configuration error. Log loudly
-    // (rather than throw, which would 500 every page) so this is unmissable
-    // in the Vercel runtime logs until DATABASE_URL is fixed in the project
-    // settings.
     console.error(
       raw
         ? "[prisma] DATABASE_URL still contains the leaked db.prisma.io credential from commit a6c4f50 and is being rejected. Rotate the credential and set a fresh DATABASE_URL in the Vercel project settings. Falling back to an unreachable localhost database until this is fixed."
@@ -50,9 +44,30 @@ function createPrismaClient(connectionString: string) {
   });
 }
 
-if (!globalForPrisma.prisma || globalForPrisma.prismaUrl !== activeUrl) {
-  globalForPrisma.prisma = createPrismaClient(activeUrl);
-  globalForPrisma.prismaUrl = activeUrl;
+function getOrInitPrisma(): PrismaClient {
+  // In Next.js dev server, globalThis.prisma persists across hot module reloads.
+  // If the Prisma schema was updated (e.g. adding User/Session models), an old cached
+  // instance will lack `user` or `session`. Force instantiation if missing models.
+  if (
+    !globalForPrisma.prisma ||
+    globalForPrisma.prismaUrl !== activeUrl ||
+    !("user" in (globalForPrisma.prisma as unknown as Record<string, unknown>))
+  ) {
+    globalForPrisma.prisma = createPrismaClient(activeUrl);
+    globalForPrisma.prismaUrl = activeUrl;
+  }
+  return globalForPrisma.prisma;
 }
 
-export const prisma = globalForPrisma.prisma;
+// Export a proxy so any access to prisma properties (e.g. prisma.user, prisma.product, prisma.$queryRaw)
+// is always guaranteed to resolve to an active, up-to-date client with all models defined.
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = getOrInitPrisma();
+    const value = (client as unknown as Record<string, unknown>)[prop as string];
+    if (typeof value === "function") {
+      return value.bind(client);
+    }
+    return value;
+  },
+});
