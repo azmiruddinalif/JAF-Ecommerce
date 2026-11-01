@@ -40,6 +40,74 @@ const DAYS_OF_WEEK = [
   { value: 6, label: "Saturday" },
 ];
 
+const HOUR_OPTIONS = Array.from({ length: 12 }, (_, i) => String(i + 1));
+const MINUTE_OPTIONS = Array.from({ length: 12 }, (_, i) =>
+  String(i * 5).padStart(2, "0"),
+);
+
+/**
+ * 12-hour time picker (hour / minute / AM-PM). Takes and emits the 24-hour
+ * "HH:mm" string used by the schedule config, so storage is unchanged.
+ */
+function TimePicker12({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  onChange: (next24: string) => void;
+}) {
+  const [hRaw, mRaw] = (value || "10:00").split(":");
+  const h24 = Number.isFinite(parseInt(hRaw, 10)) ? parseInt(hRaw, 10) : 10;
+  const minute = (mRaw ?? "00").padStart(2, "0").slice(0, 2);
+  const period = h24 >= 12 ? "PM" : "AM";
+  const hour12 = h24 % 12 === 0 ? 12 : h24 % 12;
+
+  // Keep non-5-minute values (e.g. 10:07) selectable.
+  const minuteOptions = MINUTE_OPTIONS.includes(minute)
+    ? MINUTE_OPTIONS
+    : [...MINUTE_OPTIONS, minute].sort();
+
+  function emit(nextHour12: number, nextMinute: string, nextPeriod: string) {
+    const h = (nextHour12 % 12) + (nextPeriod === "PM" ? 12 : 0);
+    onChange(`${String(h).padStart(2, "0")}:${nextMinute}`);
+  }
+
+  return (
+    <div className="mt-1 grid w-full grid-cols-3 gap-2">
+      <Select
+        id={id}
+        value={String(hour12)}
+        onChange={(e) => emit(parseInt(e.target.value, 10), minute, period)}
+      >
+        {HOUR_OPTIONS.map((h) => (
+          <option key={h} value={h}>
+            {h}
+          </option>
+        ))}
+      </Select>
+      <Select
+        value={minute}
+        onChange={(e) => emit(hour12, e.target.value, period)}
+      >
+        {minuteOptions.map((m) => (
+          <option key={m} value={m}>
+            {m}
+          </option>
+        ))}
+      </Select>
+      <Select
+        value={period}
+        onChange={(e) => emit(hour12, minute, e.target.value)}
+      >
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </Select>
+    </div>
+  );
+}
+
 const initialState: SettingsActionResult = { success: false, message: "" };
 
 const BUTTON_ICON_OPTIONS: { value: HeroButtonIcon; label: string }[] = [
@@ -1452,33 +1520,29 @@ export function SettingsForm({
               </div>
 
               {/* Time Configuration Grid */}
-              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
+              <div className="mt-4 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="w-full">
                   <Label htmlFor="showroomOpenTime" className="text-xs">
-                    Opening Time (24h format HH:mm)
+                    Opening Time (12-hour)
                   </Label>
-                  <Input
+                  <TimePicker12
                     id="showroomOpenTime"
-                    type="time"
                     value={showroomSchedule.openTime}
-                    onChange={(e) => updateSchedule({ openTime: e.target.value })}
-                    className="mt-1 h-9 bg-ink font-mono text-xs"
+                    onChange={(next) => updateSchedule({ openTime: next })}
                   />
                   <p className="mt-1 text-[10px] text-paper-dim">
                     Displays as: <span className="font-mono text-gold-bright">{formatTime12Hour(showroomSchedule.openTime)}</span>
                   </p>
                 </div>
 
-                <div>
+                <div className="w-full">
                   <Label htmlFor="showroomCloseTime" className="text-xs">
-                    Closing Time (24h format HH:mm)
+                    Closing Time (12-hour)
                   </Label>
-                  <Input
+                  <TimePicker12
                     id="showroomCloseTime"
-                    type="time"
                     value={showroomSchedule.closeTime}
-                    onChange={(e) => updateSchedule({ closeTime: e.target.value })}
-                    className="mt-1 h-9 bg-ink font-mono text-xs"
+                    onChange={(next) => updateSchedule({ closeTime: next })}
                   />
                   <p className="mt-1 text-[10px] text-paper-dim">
                     Displays as: <span className="font-mono text-gold-bright">{formatTime12Hour(showroomSchedule.closeTime)}</span>

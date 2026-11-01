@@ -18,7 +18,7 @@ async function SettingsContent() {
 
 export default function AdminSettingsPage() {
   return (
-    <div className="max-w-3xl">
+    <div className="w-full">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-3xl">HOMEPAGE CONTENT</h1>
         <Link
