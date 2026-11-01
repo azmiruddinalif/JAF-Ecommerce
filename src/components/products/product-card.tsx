@@ -84,7 +84,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
         </div>
 
         {totalStock > 0 && (
-          <span className="absolute bottom-2 right-2 flex size-8 translate-y-1 items-center justify-center rounded-full bg-slate-900/90 text-white opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:bg-black group-hover:text-white shadow-md group-hover:opacity-100">
+          <span className="absolute bottom-2 right-2 flex size-8 translate-y-1 items-center justify-center rounded-full bg-slate-900/90 text-white opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:bg-amber-400 group-hover:text-slate-950 shadow-md group-hover:opacity-100">
             <ArrowUpRight size={15} />
           </span>
         )}

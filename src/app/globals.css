@@ -7,9 +7,9 @@
   --color-ink-border: #e2e8f0;
   --color-paper: #09090b;
   --color-paper-dim: #64748b;
-  --color-gold: #059669;
-  --color-gold-bright: #10b981;
-  --color-gold-dim: #ecfdf5;
+  --color-gold: #d97706;
+  --color-gold-bright: #f59e0b;
+  --color-gold-dim: #fef3c7;
   --color-danger: #ef4444;
   --color-success: #10b981;
 
@@ -314,6 +314,18 @@ body.admin-theme [data-slot="card"],
   border-color: #e2e8f0 !important;
   border-radius: 0.75rem !important;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Primary buttons in Admin stay professional emerald */
+body.admin-theme button[class*="bg-amber-400"],
+body.admin-theme a[class*="bg-amber-400"] {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+  border-color: #059669 !important;
+}
+body.admin-theme button[class*="bg-amber-400"]:hover,
+body.admin-theme a[class*="bg-amber-400"]:hover {
+  background-color: #047857 !important;
 }
 
 /* Matchday suspended jersey floating animation */

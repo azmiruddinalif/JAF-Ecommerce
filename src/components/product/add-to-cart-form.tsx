@@ -227,7 +227,7 @@ export function AddToCartForm({
           type="button"
           variant="primary"
           size="lg"
-          className="flex-1 rounded-xl py-4 font-extrabold uppercase tracking-wider bg-slate-950 hover:bg-black text-white shadow-md cursor-pointer"
+          className="flex-1 rounded-xl py-4 font-extrabold uppercase tracking-wider bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-md shadow-amber-400/25 border border-amber-500/30 cursor-pointer"
           disabled={isPending || !inStock}
           onClick={() => handleAddToCart()}
         >
@@ -237,7 +237,7 @@ export function AddToCartForm({
           type="button"
           variant="outline"
           size="lg"
-          className="flex-1 rounded-xl py-4 font-bold uppercase tracking-wider border-slate-300 hover:border-slate-950 hover:bg-slate-100 text-slate-900 cursor-pointer"
+          className="flex-1 rounded-xl py-4 font-bold uppercase tracking-wider border-slate-900 bg-white hover:bg-slate-950 hover:text-white text-slate-900 cursor-pointer"
           disabled={isPending || !inStock}
           onClick={() => handleAddToCart({ redirectToCheckout: true })}
         >
