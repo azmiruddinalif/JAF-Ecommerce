@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogOut, Settings, ShieldCheck, Users } from "lucide-react";
+import { Loader2, LogOut, Settings, ShieldCheck, Users } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/lib/auth/auth-client";
+import { adminSignOutAction } from "@/lib/actions/admin-auth-actions";
 import { ROLE_LABELS, type AdminRole } from "@/lib/auth/permissions";
 
 export function AdminUserMenu({
@@ -37,12 +38,11 @@ export function AdminUserMenu({
   async function handleSignOut() {
     setIsSigningOut(true);
     try {
-      await signOut();
+      await Promise.allSettled([signOut(), adminSignOutAction()]);
     } catch {
       // ignore
     } finally {
-      router.push("/admin/login");
-      router.refresh();
+      window.location.href = "/admin/login";
     }
   }
 
@@ -107,7 +107,11 @@ export function AdminUserMenu({
           disabled={isSigningOut}
           className="flex items-center gap-2 py-2 text-xs font-medium normal-case text-rose-600 hover:bg-rose-50 hover:text-rose-700 focus:bg-rose-50 focus:text-rose-700 cursor-pointer"
         >
-          <LogOut size={14} className="text-rose-500" />
+          {isSigningOut ? (
+            <Loader2 size={14} className="animate-spin text-rose-600" />
+          ) : (
+            <LogOut size={14} className="text-rose-500" />
+          )}
           <span>{isSigningOut ? "Signing out..." : "Sign Out"}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

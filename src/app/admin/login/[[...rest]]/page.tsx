@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
+export const dynamic = "force-dynamic";
 export const instant = false;
 
 export default async function AdminLoginPage({

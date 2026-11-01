@@ -89,8 +89,7 @@ export function AdminSignInForm() {
         return;
       }
 
-      router.push(returnUrl);
-      router.refresh();
+      window.location.href = returnUrl;
     } catch (err: unknown) {
       const msg =
         err instanceof Error
@@ -139,8 +138,7 @@ export function AdminSignInForm() {
         return;
       }
 
-      router.push(returnUrl);
-      router.refresh();
+      window.location.href = returnUrl;
     } catch (err: unknown) {
       const msg =
         err instanceof Error
@@ -277,7 +275,7 @@ export function AdminSignInForm() {
                   {isLoading ? (
                     <>
                       <Loader2 className="size-4 animate-spin" />
-                      <span>Verifying Credentials &amp; IP...</span>
+                      <span>Signing in...</span>
                     </>
                   ) : (
                     <>
@@ -354,7 +352,7 @@ export function AdminSignInForm() {
                   {isLoading ? (
                     <>
                       <Loader2 className="size-4 animate-spin" />
-                      <span>Verifying Code...</span>
+                      <span>Signing in...</span>
                     </>
                   ) : (
                     <>

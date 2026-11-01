@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import crypto from "crypto";
 import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth/better-auth";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
 
 /**
@@ -386,4 +387,33 @@ export async function verifyAdminOtpAction(params: {
     console.error("[verifyAdminOtpAction Error]:", err);
     return { success: false, error: errorMsg };
   }
+}
+
+/**
+ * Step 3: Server-side explicit admin logout to revoke session from PostgreSQL and purge cookies.
+ */
+export async function adminSignOutAction() {
+  try {
+    const headerList = await headers();
+    await auth.api.signOut({
+      headers: headerList,
+    });
+  } catch (err) {
+    console.error("[adminSignOutAction Error]:", err);
+  }
+
+  // Explicitly purge all session cookies on the response so Next.js never serves cached session state
+  try {
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll();
+    for (const cookie of allCookies) {
+      if (cookie.name.includes("better-auth")) {
+        cookieStore.delete(cookie.name);
+      }
+    }
+  } catch (err) {
+    console.error("[adminSignOutAction cookie purge error]:", err);
+  }
+
+  return { success: true };
 }

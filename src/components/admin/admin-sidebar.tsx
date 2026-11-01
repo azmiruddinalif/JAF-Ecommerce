@@ -13,6 +13,7 @@ import {
   FileText,
   Settings,
   LogOut,
+  Loader2,
   Menu,
   Plus,
   Download,
@@ -24,6 +25,7 @@ import {
   Users,
 } from "lucide-react";
 import { signOut } from "@/lib/auth/auth-client";
+import { adminSignOutAction } from "@/lib/actions/admin-auth-actions";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   PwaInstallGuideModal,
@@ -216,18 +218,16 @@ function SidebarFooter({
   adminName: string;
   role?: string;
 }) {
-  const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   async function handleLogout() {
     setIsLoggingOut(true);
     try {
-      await signOut();
+      await Promise.allSettled([signOut(), adminSignOutAction()]);
     } catch {
       // ignore
     } finally {
-      router.push("/admin/login");
-      router.refresh();
+      window.location.href = "/admin/login";
     }
   }
 
@@ -244,11 +244,15 @@ function SidebarFooter({
           type="button"
           onClick={handleLogout}
           disabled={isLoggingOut}
-          title="Sign out"
-          aria-label="Sign out"
+          title={isLoggingOut ? "Signing out..." : "Sign out"}
+          aria-label={isLoggingOut ? "Signing out..." : "Sign out"}
           className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
         >
-          <LogOut size={14} />
+          {isLoggingOut ? (
+            <Loader2 size={14} className="animate-spin text-rose-600" />
+          ) : (
+            <LogOut size={14} />
+          )}
         </button>
       </div>
     </div>
