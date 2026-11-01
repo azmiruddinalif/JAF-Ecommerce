@@ -391,17 +391,17 @@ export function HeroInteractive({
             type="button"
             onClick={handlePrev}
             aria-label="Previous jersey"
-            className="size-9 sm:size-10 rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md shadow-lg hover:bg-black/80 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+            className="size-9 sm:size-10 rounded-full border border-white/30 bg-white/40 text-white backdrop-blur-md shadow-lg hover:bg-black/80 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={16} color="black" />
           </button>
           <button
             type="button"
             onClick={handleNext}
             aria-label="Next jersey"
-            className="size-9 sm:size-10 rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md shadow-lg hover:bg-black/80 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+            className="size-9 sm:size-10 rounded-full border border-white/30 bg-white/40 text-white backdrop-blur-md shadow-lg hover:bg-white/10 hover:border-white/60 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={16} color="black" />
           </button>
         </div>
       </div>
