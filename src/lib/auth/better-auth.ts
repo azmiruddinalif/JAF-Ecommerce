@@ -22,7 +22,6 @@ export const auth = betterAuth({
       : "http://localhost:3000"),
   secret:
     process.env.BETTER_AUTH_SECRET ||
-    process.env.CLERK_SECRET_KEY ||
     "jaf-auth-secret-key-32-chars-minimum-prod-ready",
   emailAndPassword: {
     enabled: true,
@@ -67,3 +66,4 @@ export const auth = betterAuth({
 
 export type Session = typeof auth.$Infer.Session;
 export type User = typeof auth.$Infer.Session.user;
+

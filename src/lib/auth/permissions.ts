@@ -94,3 +94,4 @@ export function hasPermission(role: string | null | undefined, permission: Admin
 export function isValidAdminRole(role: string): role is AdminRole {
   return ADMIN_ROLES.includes(role as AdminRole);
 }
+

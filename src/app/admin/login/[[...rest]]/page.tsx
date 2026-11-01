@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   Boxes,
-  CheckCircle2,
   ExternalLink,
   Shield,
   ShoppingBag,
@@ -31,7 +30,8 @@ export default async function AdminLoginPage({
   // If already authenticated with a valid session, redirect directly to dashboard
   if (session) {
     const params = await searchParams;
-    const returnUrl = typeof params.returnUrl === "string" ? params.returnUrl : "/admin";
+    const returnUrl =
+      typeof params.returnUrl === "string" ? params.returnUrl : "/admin";
     redirect(returnUrl);
   }
 
@@ -42,7 +42,7 @@ export default async function AdminLoginPage({
         {/* Subtle Decorative Ambient Background */}
         <div className="pointer-events-none absolute -top-32 -left-32 size-96 rounded-full bg-emerald-500/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -right-32 size-96 rounded-full bg-emerald-600/10 blur-3xl" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-40" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] bg-size-[20px_20px] opacity-40" />
 
         {/* Top Header: Brand & Slogan */}
         <div className="relative z-10">
@@ -62,7 +62,9 @@ export default async function AdminLoginPage({
           </h2>
 
           <p className="mt-3 text-sm text-slate-600 leading-relaxed max-w-sm">
-            Administrative hub to fulfill matchday orders, update jersey inventories, inspect sales metrics, and manage multi-role staff access.
+            Administrative hub to fulfill matchday orders, update jersey
+            inventories, inspect sales metrics, and manage multi-role staff
+            access.
           </p>
 
           {/* Feature Mini Cards */}
@@ -72,9 +74,12 @@ export default async function AdminLoginPage({
                 <ShoppingBag size={17} />
               </div>
               <div>
-                <h3 className="text-xs font-bold text-slate-900">Order Fulfilment &amp; Invoices</h3>
+                <h3 className="text-xs font-bold text-slate-900">
+                  Order Fulfilment &amp; Invoices
+                </h3>
                 <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                  Manage orders, print invoices, and safeguard 100% guest-only checkout privacy.
+                  Manage orders, print invoices, and safeguard 100% guest-only
+                  checkout privacy.
                 </p>
               </div>
             </div>
@@ -84,9 +89,12 @@ export default async function AdminLoginPage({
                 <Boxes size={17} />
               </div>
               <div>
-                <h3 className="text-xs font-bold text-slate-900">Live Size &amp; Stock Matrix</h3>
+                <h3 className="text-xs font-bold text-slate-900">
+                  Live Size &amp; Stock Matrix
+                </h3>
                 <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                  Real-time stock controls for Club, Retro &amp; National jerseys across sizes S to 3XL.
+                  Real-time stock controls for Club, Retro &amp; National
+                  jerseys across sizes S to 3XL.
                 </p>
               </div>
             </div>
@@ -96,9 +104,12 @@ export default async function AdminLoginPage({
                 <Users2 size={17} />
               </div>
               <div>
-                <h3 className="text-xs font-bold text-slate-900">Multi-Role Staff RBAC</h3>
+                <h3 className="text-xs font-bold text-slate-900">
+                  Multi-Role Staff RBAC
+                </h3>
                 <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                  Owner, Order Manager, Product Manager &amp; Support roles with instant session revocation.
+                  Owner, Order Manager, Product Manager &amp; Support roles with
+                  instant session revocation.
                 </p>
               </div>
             </div>
@@ -109,7 +120,9 @@ export default async function AdminLoginPage({
         <div className="relative z-10 border-t border-slate-200/80 pt-4 flex items-center justify-between text-xs text-slate-500">
           <div className="flex items-center gap-2">
             <Shield size={15} className="text-emerald-600" />
-            <span className="font-semibold text-slate-700">Better Auth Engine</span>
+            <span className="font-semibold text-slate-700">
+              Better Auth Engine
+            </span>
             <span className="text-slate-300">•</span>
             <span className="text-[11px]">256-Bit SSL</span>
           </div>
@@ -131,7 +144,9 @@ export default async function AdminLoginPage({
           </div>
 
           <div className="hidden lg:block">
-            <span className="text-xs font-medium text-slate-400">JAF Admin Console</span>
+            <span className="text-xs font-medium text-slate-400">
+              JAF Admin Console
+            </span>
           </div>
 
           {/* Storefront Link */}
@@ -152,7 +167,10 @@ export default async function AdminLoginPage({
 
         {/* Bottom Mobile/Desktop Footer */}
         <div className="pt-6 text-center text-xs text-slate-400">
-          <p>© {new Date().getFullYear()} JAF Jersey. Store Operations &amp; Staff Gateway.</p>
+          <p>
+            © {new Date().getFullYear()} JAF Jersey. Store Operations &amp;
+            Staff Gateway.
+          </p>
         </div>
       </div>
     </div>

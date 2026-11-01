@@ -34,7 +34,7 @@ const categories = [
 ];
 
 async function main() {
-  // Admin identity is provisioned separately via Clerk — see `npm run admin:provision`.
+  // Admin identity is provisioned separately via Better Auth — see `npm run admin:bootstrap`.
 
   await prisma.storeSetting.upsert({
     where: { id: 1 },
