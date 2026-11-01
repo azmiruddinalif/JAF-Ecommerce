@@ -33,7 +33,7 @@ export function TrustStrip() {
                 key={card.title}
                 className="flex items-start gap-3.5 border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xs hover:border-amber-400/40 transition-colors"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-amber-400/30 bg-amber-400/10 text-amber-500">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-none border border-amber-400/30 bg-amber-400/10 text-amber-500">
                   <Icon size={20} strokeWidth={2} />
                 </div>
                 <div>

@@ -260,7 +260,7 @@ export function NavbarClient({
             >
               <ShoppingBag size={20} />
               {cart.itemCount > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-gold-bright text-[10px] font-bold text-ink">
+                <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-none bg-gold-bright text-[10px] font-bold text-ink">
                   {cart.itemCount}
                 </span>
               )}

@@ -138,7 +138,7 @@ export async function Footer() {
             {/* Header Strip with Glowing Badge */}
             <div className="flex flex-col gap-3 border-b border-amber-400/20 pb-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-md border border-amber-400/30 bg-amber-400/10 text-amber-500">
+                <span className="flex h-7 w-7 items-center justify-center rounded-none border border-amber-400/30 bg-amber-400/10 text-amber-500">
                   <MapPin size={14} />
                 </span>
                 <div>
@@ -176,8 +176,8 @@ export async function Footer() {
                           key={badge.id || badge.label}
                           className={
                             badge.highlight
-                              ? "inline-flex items-center gap-1.5 rounded-sm border border-amber-400/40 bg-amber-400/10 px-3.5 py-1.5 font-mono text-xs font-bold text-amber-500 transition-all duration-200 hover:border-amber-400 hover:bg-amber-400/20 hover:text-slate-950"
-                              : "inline-flex items-center gap-1.5 rounded-sm border border-ink-border bg-ink px-2.5 py-1 font-mono text-[10px] uppercase text-paper-dim"
+                              ? "inline-flex items-center gap-1.5 rounded-none border border-amber-400/40 bg-amber-400/10 px-3.5 py-1.5 font-mono text-xs font-bold text-amber-500 transition-all duration-200 hover:border-amber-400 hover:bg-amber-400/20 hover:text-slate-950"
+                              : "inline-flex items-center gap-1.5 rounded-none border border-ink-border bg-ink px-2.5 py-1 font-mono text-[10px] uppercase text-paper-dim"
                           }
                         >
                           {badge.label}
@@ -339,7 +339,7 @@ export async function Footer() {
                 key={pillar.title}
                 className="flex items-start gap-3.5 border border-slate-200/90 bg-white p-4 transition-colors hover:border-amber-400/40 hover:shadow-xs"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-amber-400/30 bg-amber-400/10 text-amber-500">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none border border-amber-400/30 bg-amber-400/10 text-amber-500">
                   <Icon size={18} />
                 </div>
                 <div>

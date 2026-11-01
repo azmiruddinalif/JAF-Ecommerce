@@ -13,7 +13,7 @@ export function Gallery({
   const [activeIndex, setActiveIndex] = useState(0);
 
   if (images.length === 0) {
-    return <div className="aspect-[3/4] w-full bg-ink-raised" />;
+    return <div className="aspect-3/4 w-full bg-ink-raised" />;
   }
 
   const active = images[activeIndex];
@@ -28,15 +28,23 @@ export function Gallery({
             onClick={() => setActiveIndex(index)}
             aria-label={`View image ${index + 1}`}
             className={`relative h-20 w-16 shrink-0 overflow-hidden border sm:w-full ${
-              index === activeIndex ? "border-gold" : "border-ink-border opacity-70 hover:opacity-100"
+              index === activeIndex
+                ? "border-gold"
+                : "border-ink-border opacity-70 hover:opacity-100"
             }`}
           >
-            <Image src={image.secureUrl} alt={image.altText ?? productName} fill sizes="80px" className="object-cover" />
+            <Image
+              src={image.secureUrl}
+              alt={image.altText ?? productName}
+              fill
+              sizes="80px"
+              className="object-cover"
+            />
           </button>
         ))}
       </div>
 
-      <div className="relative order-1 aspect-[3/4] w-full overflow-hidden bg-ink-raised sm:order-2">
+      <div className="relative order-1 aspect-3/4 w-full overflow-hidden bg-ink-raised sm:order-2">
         <Image
           key={active.id}
           src={active.secureUrl}

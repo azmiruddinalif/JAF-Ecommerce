@@ -176,7 +176,7 @@ export function HeroInteractive({
               >
                 {heroConfig?.eyebrow || "Authentic Football Jerseys"}
               </span>
-              <span className="rounded-md bg-amber-400 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-950 shadow-xs">
+              <span className="rounded-none bg-amber-400 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-950 shadow-xs">
                 NEW DROP
               </span>
             </div>
@@ -233,8 +233,8 @@ export function HeroInteractive({
                         }
                         className={
                           isPrimary
-                            ? "group inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 shadow-sm shadow-amber-400/25 hover:bg-amber-500 hover:shadow-md hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
-                            : "inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                            ? "group inline-flex items-center justify-center gap-2 rounded-none bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 shadow-sm shadow-amber-400/25 hover:bg-amber-500 hover:shadow-md hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
+                            : "inline-flex items-center justify-center gap-2 rounded-none border border-slate-300 bg-white/80 backdrop-blur-xs px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
                         }
                       >
                         <span>{btn.label}</span>
@@ -251,7 +251,7 @@ export function HeroInteractive({
                   {heroConfig.buttons.length === 1 && (
                     <Link
                       href="/category/club-jerseys"
-                      className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-5 py-2.5 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                      className="inline-flex items-center justify-center gap-2 rounded-none border border-slate-300 bg-white/80 backdrop-blur-xs px-5 py-2.5 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
                     >
                       <span>EXPLORE COLLECTION</span>
                     </Link>
@@ -261,7 +261,7 @@ export function HeroInteractive({
                 <>
                   <Link
                     href="/shop"
-                    className="group inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 shadow-sm shadow-amber-400/25 hover:bg-amber-500 hover:shadow-md hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
+                    className="group inline-flex items-center justify-center gap-2 rounded-none bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 shadow-sm shadow-amber-400/25 hover:bg-amber-500 hover:shadow-md hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <span>SHOP NEW KITS</span>
                     <ArrowRight
@@ -272,7 +272,7 @@ export function HeroInteractive({
 
                   <Link
                     href="/category/club-jerseys"
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                    className="inline-flex items-center justify-center gap-2 rounded-none border border-slate-300 bg-white/80 backdrop-blur-xs px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <span>EXPLORE COLLECTION</span>
                   </Link>
@@ -307,13 +307,13 @@ export function HeroInteractive({
 
           <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-6 min-h-115 sm:min-h-140 lg:min-h-160 xl:min-h-180">
             <div className="absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 z-20 max-w-[90%] flex items-center justify-center select-none">
-              <span className="truncate rounded-md bg-amber-400 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-slate-950 shadow-sm">
+              <span className="truncate rounded-none bg-amber-400 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-slate-950 shadow-sm">
                 {currentSlide.name || "MATCHDAY KIT"}
               </span>
             </div>
 
             <div className="relative w-full max-w-90 sm:max-w-115 md:max-w-130 lg:max-w-150 xl:max-w-170 h-100 sm:h-125 md:h-140 lg:h-160 xl:h-175 flex items-center justify-center">
-              <div className="absolute bottom-4 sm:bottom-6 h-8 sm:h-12 w-4/5 rounded-full bg-slate-950/15 blur-xl pointer-events-none" />
+              <div className="absolute bottom-4 sm:bottom-6 h-8 sm:h-12 w-4/5 rounded-none bg-slate-950/15 blur-xl pointer-events-none" />
 
               <div className="relative w-full h-full animate-jersey-float flex items-center justify-center">
                 {activeSlides.map((slide, idx) => {
@@ -360,7 +360,7 @@ export function HeroInteractive({
 
                 <div className="pointer-events-none absolute -right-2 sm:-right-4 lg:-right-6 top-1/2 -translate-y-1/2 z-30 flex items-center">
                   <span className="hidden sm:inline-block w-8 sm:w-14 h-0.5 bg-amber-400" />
-                  <div className="rounded-full bg-white/95 px-4 py-1.5 shadow-lg border border-slate-200 backdrop-blur-md">
+                  <div className="rounded-none bg-white/95 px-4 py-1.5 shadow-lg border border-slate-200 backdrop-blur-md">
                     <span className="text-xs sm:text-sm font-extrabold tracking-wide text-slate-950 font-sans">
                       {formattedPrice}
                     </span>
@@ -393,7 +393,7 @@ export function HeroInteractive({
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span
-                className={`h-0.5 sm:h-1 transition-all duration-300 rounded-full ${
+                className={`h-0.5 sm:h-1 transition-all duration-300 rounded-none ${
                   isActive
                     ? "w-7 sm:w-10 bg-amber-400 shadow-xs"
                     : "w-3 sm:w-4 bg-slate-300 group-hover:bg-slate-400 group-hover:w-5"
@@ -409,7 +409,7 @@ export function HeroInteractive({
           type="button"
           onClick={handlePrev}
           aria-label="Previous jersey"
-          className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xs shadow-2xs hover:border-slate-950 hover:bg-white active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+          className="size-8 sm:size-9 rounded-none border border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xs shadow-2xs hover:border-slate-950 hover:bg-white active:scale-95 flex items-center justify-center transition-all cursor-pointer"
         >
           <ChevronLeft size={15} />
         </button>
@@ -417,7 +417,7 @@ export function HeroInteractive({
           type="button"
           onClick={handleNext}
           aria-label="Next jersey"
-          className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xs shadow-2xs hover:border-slate-950 hover:bg-white active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+          className="size-8 sm:size-9 rounded-none border border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xs shadow-2xs hover:border-slate-950 hover:bg-white active:scale-95 flex items-center justify-center transition-all cursor-pointer"
         >
           <ChevronRight size={15} />
         </button>

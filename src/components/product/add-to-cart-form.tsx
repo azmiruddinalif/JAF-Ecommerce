@@ -170,7 +170,7 @@ export function AddToCartForm({
                   }
                   onClick={() => handleSelectSize(variant)}
                   style={{ borderRadius: 0 }}
-                  className={`relative flex h-8 min-w-9 sm:h-8.5 sm:min-w-10 items-center justify-center rounded-none border px-2 text-[11px] sm:text-xs font-bold uppercase transition-all overflow-hidden ${
+                  className={`relative flex h-8 min-w-8 items-center justify-center rounded-none border px-2 text-[11px] sm:text-xs font-bold uppercase transition-all overflow-hidden ${
                     isSelected
                       ? "border-slate-950 bg-slate-950 text-white shadow-xs cursor-pointer"
                       : isAvailable
@@ -250,7 +250,8 @@ export function AddToCartForm({
         <Button
           type="button"
           variant="primary"
-          className="flex-1 rounded-xl py-2.5 sm:py-3 text-xs sm:text-[13px] font-bold uppercase tracking-wider bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-xs shadow-amber-400/25 border border-amber-500/30 cursor-pointer"
+          style={{ borderRadius: 0 }}
+          className="flex-1 !rounded-none rounded-none py-2.5 sm:py-3 text-xs sm:text-[13px] font-bold uppercase tracking-wider bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-xs shadow-amber-400/25 border border-amber-500/30 cursor-pointer"
           disabled={isPending || !inStock}
           onClick={() => handleAddToCart()}
         >
@@ -259,7 +260,8 @@ export function AddToCartForm({
         <Button
           type="button"
           variant="outline"
-          className="flex-1 rounded-xl py-2.5 sm:py-3 text-xs sm:text-[13px] font-bold uppercase tracking-wider border-slate-900 bg-white hover:bg-slate-950 hover:text-white text-slate-900 cursor-pointer"
+          style={{ borderRadius: 0 }}
+          className="flex-1 !rounded-none rounded-none py-2.5 sm:py-3 text-xs sm:text-[13px] font-bold uppercase tracking-wider border-slate-900 bg-white hover:bg-slate-950 hover:text-white text-slate-900 cursor-pointer"
           disabled={isPending || !inStock}
           onClick={() => handleAddToCart({ redirectToCheckout: true })}
         >
