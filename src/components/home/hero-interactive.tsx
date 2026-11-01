@@ -367,12 +367,12 @@ export function HeroInteractive({
         <div className="flex items-stretch gap-2.5 text-left">
           {/* Architectural bracket with top & bottom ticks */}
           <div className="relative w-1.5 border-l-2 border-white/80 flex flex-col justify-between py-0.5">
-            <span className="h-[2px] w-1.5 bg-white/80 block" />
-            <span className="h-[2px] w-1.5 bg-white/80 block" />
+            <span className="h-0.5 w-1.5 bg-white/80 block" />
+            <span className="h-0.5 w-1.5 bg-white/80 block" />
           </div>
 
           {/* Stacked typography */}
-          {/* <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.2em] leading-tight">
+          <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.2em] leading-tight">
             <p className="text-[11px] sm:text-xs font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
               {currentSlide.name || "MATCHDAY KIT"}
             </p>
@@ -383,7 +383,7 @@ export function HeroInteractive({
               2026
             </p>
           </div>
-        </div> */}
+        </div>
 
         {/* Circular Navigation Buttons (Dark Translucent Pills from Reference) */}
         <div className="flex items-center gap-2">
