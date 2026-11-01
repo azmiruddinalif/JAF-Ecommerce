@@ -10,18 +10,9 @@ import {
   ShieldCheck,
   Sparkles,
   Truck,
-  Flame,
-  ShoppingBag,
-  Tag,
-  Zap,
 } from "lucide-react";
 import { formatCentsBDT } from "@/lib/money";
-import type {
-  HeroButtonConfig,
-  HeroButtonIcon,
-  HeroCustomConfig,
-  HeroPromoSlide,
-} from "@/lib/data/settings";
+import type { HeroCustomConfig } from "@/lib/data/settings";
 
 export interface HeroSlide {
   id: string;
@@ -61,40 +52,12 @@ const DEFAULT_MATCHDAY_SHOWCASE: HeroSlide[] = [
   },
 ];
 
-const STADIUM_DAYLIGHT_BG =
-  "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=2000&q=85&auto=format";
-
-function ButtonIconGraphic({ icon }: { icon?: HeroButtonIcon }) {
-  switch (icon) {
-    case "none":
-      return null;
-    case "shopping-bag":
-      return <ShoppingBag size={16} />;
-    case "tag":
-      return <Tag size={16} />;
-    case "sparkles":
-      return <Sparkles size={16} />;
-    case "flame":
-      return <Flame size={16} />;
-    case "zap":
-      return <Zap size={16} />;
-    case "arrow-right":
-    default:
-      return (
-        <ArrowRight
-          size={16}
-          className="transition-transform duration-200 group-hover:translate-x-1"
-        />
-      );
-  }
-}
+const STADIUM_DAYLIGHT_BG = "/images/hero-stadium-daylight.jpg";
 
 export function HeroInteractive({
-  headline,
   subheadline,
   fallbackImageUrl,
   slides,
-  heroConfig,
 }: {
   headline: string;
   subheadline: string;
@@ -144,7 +107,6 @@ export function HeroInteractive({
     setActive((prev) => (prev + 1) % count);
   }
 
-  // Format active price display (e.g. "BDT 1,200")
   const formattedPrice = currentSlide.priceCents
     ? formatCentsBDT(currentSlide.priceCents)
     : "BDT 1,200";
@@ -258,7 +220,7 @@ export function HeroInteractive({
           {/* ----------------------------------------------------------------- */}
           {/* RIGHT COLUMN (Grid 5 cols): Suspended Floating Jersey & Badges     */}
           {/* ----------------------------------------------------------------- */}
-          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-5 min-h-[380px] sm:min-h-[460px] lg:min-h-[520px]">
+          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-5 min-h-95 sm:min-h-115 lg:min-h-130">
             {/* Top-Right Official Kit Badge (Floating Pill) */}
             <div className="absolute right-0 top-0 z-20 flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white/90 px-3.5 py-1.5 shadow-sm backdrop-blur-md">
               <span className="text-base">🛡️</span>
@@ -280,7 +242,7 @@ export function HeroInteractive({
             </div>
 
             {/* Floating Suspended Jersey Container */}
-            <div className="relative w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[460px] aspect-square flex items-center justify-center">
+            <div className="relative w-full max-w-85 sm:max-w-105 lg:max-w-115 aspect-square flex items-center justify-center">
               {/* Soft Ground Shadow underneath floating jersey */}
               <div className="absolute bottom-6 h-8 w-3/4 rounded-full bg-slate-950/15 blur-xl pointer-events-none" />
 
@@ -329,7 +291,7 @@ export function HeroInteractive({
                 })}
 
                 {/* Horizontal Leader Line pointing to Price Callout Pill (Image 5 style) */}
-                <div className="pointer-events-none absolute right-[-10px] sm:right-2 top-1/2 -translate-y-1/2 z-30 flex items-center">
+                <div className="pointer-events-none absolute -right-2.5 sm:right-2 top-1/2 -translate-y-1/2 z-30 flex items-center">
                   <span className="hidden sm:inline-block w-10 sm:w-16 h-0.5 bg-amber-400" />
                   <div className="rounded-full bg-white/95 px-4 py-1.5 shadow-lg border border-slate-200 backdrop-blur-md">
                     <span className="text-xs sm:text-sm font-extrabold tracking-wide text-slate-950 font-sans">
@@ -341,7 +303,7 @@ export function HeroInteractive({
             </div>
 
             {/* Slide Navigation Dots (Mobile friendly) */}
-            <div className="absolute bottom-[-18px] left-1/2 -translate-x-1/2 flex items-center gap-2 sm:hidden z-20">
+            <div className="absolute -bottom-4.5 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:hidden z-20">
               {activeSlides.map((_, i) => (
                 <button
                   key={i}
