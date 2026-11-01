@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   AlertCircle,
@@ -29,7 +29,6 @@ import {
 type AuthStep = "credentials" | "otp" | "forgot_request" | "forgot_verify";
 
 export function AdminSignInForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl") || "/admin";
 
@@ -100,7 +99,9 @@ export function AdminSignInForm() {
       });
 
       if (res?.error) {
-        setErrorMessage(res.error.message || "Failed to establish admin session.");
+        setErrorMessage(
+          res.error.message || "Failed to establish admin session.",
+        );
         setIsLoading(false);
         return;
       }
@@ -174,7 +175,9 @@ export function AdminSignInForm() {
 
     const targetEmail = resetEmail.trim().toLowerCase();
     if (!targetEmail) {
-      setErrorMessage("Please enter your registered administrator email address.");
+      setErrorMessage(
+        "Please enter your registered administrator email address.",
+      );
       return;
     }
 
@@ -195,7 +198,9 @@ export function AdminSignInForm() {
       setStep("forgot_verify");
     } catch (err: unknown) {
       setErrorMessage(
-        err instanceof Error ? err.message : "Failed to send reset code. Please try again."
+        err instanceof Error
+          ? err.message
+          : "Failed to send reset code. Please try again.",
       );
     } finally {
       setIsLoading(false);
@@ -243,12 +248,14 @@ export function AdminSignInForm() {
       setEmail(resetEmail.trim().toLowerCase());
       setPassword("");
       setSuccessMessage(
-        "Password updated successfully! You can now sign in with your new password."
+        "Password updated successfully! You can now sign in with your new password.",
       );
       setStep("credentials");
     } catch (err: unknown) {
       setErrorMessage(
-        err instanceof Error ? err.message : "Failed to reset password. Please try again."
+        err instanceof Error
+          ? err.message
+          : "Failed to reset password. Please try again.",
       );
     } finally {
       setIsLoading(false);
@@ -256,7 +263,7 @@ export function AdminSignInForm() {
   }
 
   return (
-    <div className="w-full max-w-[440px]">
+    <div className="w-full max-w-110">
       {/* SaaS Card Container */}
       <div className="rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white p-7 sm:p-9 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06),0_2px_6px_0_rgba(0,0,0,0.03)] transition-all">
         {step === "credentials" && (
@@ -271,7 +278,8 @@ export function AdminSignInForm() {
                 Sign In
               </h1>
               <p className="mt-1.5 text-xs sm:text-sm text-slate-500 leading-relaxed">
-                Enter your authorized administrator credentials to access your store workspace.
+                Enter your authorized administrator credentials to access your
+                store workspace.
               </p>
             </div>
 
@@ -282,7 +290,9 @@ export function AdminSignInForm() {
                 className="mb-5 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-3.5 text-xs text-emerald-900 animate-in fade-in-50 duration-200"
               >
                 <CheckCircle2 className="size-4 shrink-0 text-emerald-600 mt-0.5" />
-                <div className="flex-1 font-medium leading-relaxed">{successMessage}</div>
+                <div className="flex-1 font-medium leading-relaxed">
+                  {successMessage}
+                </div>
               </div>
             )}
 
@@ -293,7 +303,9 @@ export function AdminSignInForm() {
                 className="mb-5 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-3.5 text-xs text-rose-800 animate-in fade-in-50 duration-200"
               >
                 <AlertCircle className="size-4 shrink-0 text-rose-600 mt-0.5" />
-                <div className="flex-1 font-medium leading-relaxed">{errorMessage}</div>
+                <div className="flex-1 font-medium leading-relaxed">
+                  {errorMessage}
+                </div>
               </div>
             )}
 
@@ -369,7 +381,9 @@ export function AdminSignInForm() {
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
                     className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
@@ -428,7 +442,10 @@ export function AdminSignInForm() {
                 Security Code
               </h1>
               <p className="mt-1.5 text-xs sm:text-sm text-slate-500 leading-relaxed">
-                A sign-in request from IP <strong className="font-mono text-slate-700">{detectedIp}</strong>{" "}
+                A sign-in request from IP{" "}
+                <strong className="font-mono text-slate-700">
+                  {detectedIp}
+                </strong>{" "}
                 requires verification. Enter the 6-digit code sent to{" "}
                 <strong className="text-slate-800">{maskedEmail}</strong>.
               </p>
@@ -441,7 +458,9 @@ export function AdminSignInForm() {
                 className="mb-5 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-3.5 text-xs text-rose-800 animate-in fade-in-50 duration-200"
               >
                 <AlertCircle className="size-4 shrink-0 text-rose-600 mt-0.5" />
-                <div className="flex-1 font-medium leading-relaxed">{errorMessage}</div>
+                <div className="flex-1 font-medium leading-relaxed">
+                  {errorMessage}
+                </div>
               </div>
             )}
 
@@ -464,7 +483,9 @@ export function AdminSignInForm() {
                   required
                   autoFocus
                   value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onChange={(e) =>
+                    setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
                   placeholder="••••••"
                   disabled={isLoading}
                   className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50/60 text-center font-mono text-2xl font-bold tracking-[0.4em] text-slate-900 placeholder:text-slate-300 transition-all focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-60 shadow-2xs"
@@ -519,7 +540,8 @@ export function AdminSignInForm() {
                 Forgot Password?
               </h1>
               <p className="mt-1.5 text-xs sm:text-sm text-slate-500 leading-relaxed">
-                Enter your registered administrator email address to receive a secure 6-digit verification code.
+                Enter your registered administrator email address to receive a
+                secure 6-digit verification code.
               </p>
             </div>
 
@@ -530,7 +552,9 @@ export function AdminSignInForm() {
                 className="mb-5 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-3.5 text-xs text-rose-800 animate-in fade-in-50 duration-200"
               >
                 <AlertCircle className="size-4 shrink-0 text-rose-600 mt-0.5" />
-                <div className="flex-1 font-medium leading-relaxed">{errorMessage}</div>
+                <div className="flex-1 font-medium leading-relaxed">
+                  {errorMessage}
+                </div>
               </div>
             )}
 
@@ -608,7 +632,9 @@ export function AdminSignInForm() {
                 Choose New Password
               </h1>
               <p className="mt-1.5 text-xs sm:text-sm text-slate-500 leading-relaxed">
-                Enter the 6-digit verification code sent to <strong className="text-slate-900">{maskedEmail}</strong> and your new password.
+                Enter the 6-digit verification code sent to{" "}
+                <strong className="text-slate-900">{maskedEmail}</strong> and
+                your new password.
               </p>
             </div>
 
@@ -619,7 +645,9 @@ export function AdminSignInForm() {
                 className="mb-5 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-3.5 text-xs text-rose-800 animate-in fade-in-50 duration-200"
               >
                 <AlertCircle className="size-4 shrink-0 text-rose-600 mt-0.5" />
-                <div className="flex-1 font-medium leading-relaxed">{errorMessage}</div>
+                <div className="flex-1 font-medium leading-relaxed">
+                  {errorMessage}
+                </div>
               </div>
             )}
 
@@ -642,7 +670,9 @@ export function AdminSignInForm() {
                   required
                   autoFocus
                   value={resetCode}
-                  onChange={(e) => setResetCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onChange={(e) =>
+                    setResetCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
                   placeholder="••••••"
                   disabled={isLoading}
                   className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50/60 text-center font-mono text-2xl font-bold tracking-[0.4em] text-slate-900 placeholder:text-slate-300 transition-all focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-60 shadow-2xs"
@@ -677,7 +707,9 @@ export function AdminSignInForm() {
                     type="button"
                     onClick={() => setShowNewPassword((prev) => !prev)}
                     className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                    aria-label={showNewPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showNewPassword ? "Hide password" : "Show password"
+                    }
                   >
                     {showNewPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
@@ -712,9 +744,15 @@ export function AdminSignInForm() {
                     type="button"
                     onClick={() => setShowConfirmPassword((prev) => !prev)}
                     className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showConfirmPassword ? "Hide password" : "Show password"
+                    }
                   >
-                    {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                    {showConfirmPassword ? (
+                      <EyeOff size={17} />
+                    ) : (
+                      <Eye size={17} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -722,7 +760,11 @@ export function AdminSignInForm() {
               <div className="pt-2 space-y-2.5">
                 <button
                   type="submit"
-                  disabled={isLoading || resetCode.length !== 6 || newPassword.length < 8}
+                  disabled={
+                    isLoading ||
+                    resetCode.length !== 6 ||
+                    newPassword.length < 8
+                  }
                   className="flex h-10 sm:h-10.5 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-xs sm:text-[13px] font-semibold text-white shadow-xs hover:bg-emerald-700 active:scale-[0.99] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isLoading ? (
@@ -763,7 +805,9 @@ export function AdminSignInForm() {
 
           <div className="flex items-center justify-center gap-1.5 text-center text-[11px] text-slate-400">
             <CheckCircle2 size={12} className="text-emerald-500 shrink-0" />
-            <span>Storefront customers checkout as guests without accounts</span>
+            <span>
+              Storefront customers checkout as guests without accounts
+            </span>
           </div>
         </div>
       </div>
@@ -777,7 +821,9 @@ export function AdminSignInForm() {
           <Store size={13} />
           <span>Back to JAF Storefront</span>
         </Link>
-        <span className="text-slate-400 font-mono text-[11px]">IP-Gated Protection</span>
+        <span className="text-slate-400 font-mono text-[11px]">
+          IP-Gated Protection
+        </span>
       </div>
     </div>
   );

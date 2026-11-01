@@ -182,7 +182,7 @@ export function HeroInteractive({
             </div>
 
             <h1
-              className="font-display text-4xl sm:text-6xl lg:text-7xl xl:text-8xl uppercase leading-[0.92] tracking-tight text-slate-950 drop-shadow-xs"
+              className="font-display text-4xl sm:text-6xl lg:text-7xl uppercase leading-[0.92] tracking-tight text-slate-950 drop-shadow-xs"
               style={
                 heroConfig?.textColor
                   ? { color: heroConfig.textColor }
@@ -233,7 +233,7 @@ export function HeroInteractive({
                         }
                         className={
                           isPrimary
-                            ? "group inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 shadow-sm shadow-amber-400/25 hover:bg-amber-500 hover:shadow-md hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
+                            ? "group inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 shadow-sm shadow-amber-400/25 hover:bg-amber-500 hover:shadow-md hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
                             : "inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
                         }
                       >
@@ -251,7 +251,7 @@ export function HeroInteractive({
                   {heroConfig.buttons.length === 1 && (
                     <Link
                       href="/category/club-jerseys"
-                      className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                      className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-5 py-2.5 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
                     >
                       <span>EXPLORE COLLECTION</span>
                     </Link>
@@ -306,23 +306,6 @@ export function HeroInteractive({
           </div>
 
           <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-6 min-h-115 sm:min-h-140 lg:min-h-160 xl:min-h-180">
-            <div className="absolute right-0 sm:-right-2 -top-2 sm:-top-3 z-20 flex items-stretch gap-2.5 text-left rounded-xl bg-white/95 backdrop-blur-md px-3.5 sm:px-4 py-2 sm:py-2.5 border border-slate-200/90 shadow-sm select-none transition-all duration-300">
-              <div className="relative w-1.5 border-l-2 border-slate-950 flex flex-col justify-between py-0.5">
-                <span className="h-0.5 w-1.5 bg-slate-950 block" />
-                <span className="h-0.5 w-1.5 bg-slate-950 block" />
-              </div>
-
-              <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.18em] leading-tight">
-                <p className="text-[11px] sm:text-xs font-black text-slate-950 max-w-44 sm:max-w-64 leading-snug">
-                  {currentSlide.name || "MATCHDAY KIT"}
-                </p>
-                <div className="flex items-center gap-1.5 mt-0.5 text-[9px] sm:text-[10px] font-extrabold">
-                  <span className="text-slate-500">AUTHENTIC FIT</span>
-                  <span className="text-amber-500 font-black">• 2026</span>
-                </div>
-              </div>
-            </div>
-
             <div className="absolute left-1/2 -translate-x-1/2 top-1 z-20">
               <span className="rounded-md bg-amber-400 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-slate-950 shadow-sm">
                 NEW DROP
