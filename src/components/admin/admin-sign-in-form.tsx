@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  KeyRound,
   Loader2,
   Lock,
   Mail,
@@ -21,30 +22,45 @@ import { signIn } from "@/lib/auth/auth-client";
 import {
   preAuthenticateAdminAction,
   verifyAdminOtpAction,
+  requestAdminPasswordResetAction,
+  resetAdminPasswordAction,
 } from "@/lib/actions/admin-auth-actions";
+
+type AuthStep = "credentials" | "otp" | "forgot_request" | "forgot_verify";
 
 export function AdminSignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl") || "/admin";
 
-  const [step, setStep] = useState<"credentials" | "otp">("credentials");
+  const [step, setStep] = useState<AuthStep>("credentials");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
-  // OTP state
+  // OTP state (for new IP verification)
   const [otpCode, setOtpCode] = useState("");
   const [detectedIp, setDetectedIp] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
 
+  // Forgot password state
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // 1. Regular Credentials Submit
   async function handleCredentialsSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMessage(null);
+    setSuccessMessage(null);
 
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail || !password) {
@@ -55,7 +71,7 @@ export function AdminSignInForm() {
     setIsLoading(true);
 
     try {
-      // Step 1: Pre-authenticate, sync with .env if needed, and check IP trust
+      // Step 1: Pre-authenticate against database and check IP trust
       const preAuth = await preAuthenticateAdminAction({
         email: trimmedEmail,
         password,
@@ -100,6 +116,7 @@ export function AdminSignInForm() {
     }
   }
 
+  // 2. IP Verification OTP Submit
   async function handleOtpSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMessage(null);
@@ -149,11 +166,100 @@ export function AdminSignInForm() {
     }
   }
 
+  // 3. Forgot Password — Request Reset Code
+  async function handleForgotRequestSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    const targetEmail = resetEmail.trim().toLowerCase();
+    if (!targetEmail) {
+      setErrorMessage("Please enter your registered administrator email address.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const res = await requestAdminPasswordResetAction({ email: targetEmail });
+      if (!res.success) {
+        setErrorMessage(res.error || "Failed to initiate password reset.");
+        setIsLoading(false);
+        return;
+      }
+
+      setMaskedEmail(res.maskedEmail || targetEmail);
+      setResetCode("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setStep("forgot_verify");
+    } catch (err: unknown) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "Failed to send reset code. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  // 4. Forgot Password — Verify Code & Set New Password
+  async function handleForgotResetSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    const cleanCode = resetCode.trim();
+    if (!cleanCode || cleanCode.length !== 6) {
+      setErrorMessage("Please enter the complete 6-digit verification code.");
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 8) {
+      setErrorMessage("New password must be at least 8 characters long.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setErrorMessage("Passwords do not match. Please verify both fields.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const res = await resetAdminPasswordAction({
+        email: resetEmail.trim().toLowerCase(),
+        code: cleanCode,
+        newPassword,
+      });
+
+      if (!res.success) {
+        setErrorMessage(res.error || "Failed to reset password.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Success: return to sign-in form with pre-filled email and green banner
+      setEmail(resetEmail.trim().toLowerCase());
+      setPassword("");
+      setSuccessMessage(
+        "Password updated successfully! You can now sign in with your new password."
+      );
+      setStep("credentials");
+    } catch (err: unknown) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "Failed to reset password. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <div className="w-full max-w-[440px]">
       {/* SaaS Card Container */}
       <div className="rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white p-7 sm:p-9 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.06),0_2px_6px_0_rgba(0,0,0,0.03)] transition-all">
-        {step === "credentials" ? (
+        {step === "credentials" && (
           <>
             {/* Card Header */}
             <div className="mb-6 text-center sm:text-left">
@@ -168,6 +274,17 @@ export function AdminSignInForm() {
                 Enter your authorized administrator credentials to access your store workspace.
               </p>
             </div>
+
+            {/* Success Alert */}
+            {successMessage && (
+              <div
+                role="status"
+                className="mb-5 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-3.5 text-xs text-emerald-900 animate-in fade-in-50 duration-200"
+              >
+                <CheckCircle2 className="size-4 shrink-0 text-emerald-600 mt-0.5" />
+                <div className="flex-1 font-medium leading-relaxed">{successMessage}</div>
+              </div>
+            )}
 
             {/* Error Alert */}
             {errorMessage && (
@@ -219,9 +336,18 @@ export function AdminSignInForm() {
                   >
                     Password
                   </label>
-                  <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
-                    Encrypted
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetEmail(email.trim());
+                      setErrorMessage(null);
+                      setSuccessMessage(null);
+                      setStep("forgot_request");
+                    }}
+                    className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
+                  >
+                    Forgot password?
+                  </button>
                 </div>
                 <div className="relative group">
                   <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 group-focus-within:text-emerald-600 transition-colors">
@@ -287,8 +413,10 @@ export function AdminSignInForm() {
               </div>
             </form>
           </>
-        ) : (
-          /* Step 2: 6-Digit OTP Verification */
+        )}
+
+        {/* Step 2: 6-Digit OTP Verification for New IP */}
+        {step === "otp" && (
           <>
             {/* OTP Card Header */}
             <div className="mb-6 text-center sm:text-left">
@@ -373,6 +501,253 @@ export function AdminSignInForm() {
                 >
                   <ArrowLeft size={13} />
                   <span>Change Email or Password</span>
+                </button>
+              </div>
+            </form>
+          </>
+        )}
+
+        {/* Step 3: Forgot Password — Request Verification Code */}
+        {step === "forgot_request" && (
+          <>
+            <div className="mb-6 text-center sm:text-left">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-800 shadow-2xs">
+                <KeyRound size={12} className="text-emerald-600" />
+                <span>Password Recovery</span>
+              </div>
+              <h1 className="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+                Forgot Password?
+              </h1>
+              <p className="mt-1.5 text-xs sm:text-sm text-slate-500 leading-relaxed">
+                Enter your registered administrator email address to receive a secure 6-digit verification code.
+              </p>
+            </div>
+
+            {/* Error Alert */}
+            {errorMessage && (
+              <div
+                role="alert"
+                className="mb-5 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-3.5 text-xs text-rose-800 animate-in fade-in-50 duration-200"
+              >
+                <AlertCircle className="size-4 shrink-0 text-rose-600 mt-0.5" />
+                <div className="flex-1 font-medium leading-relaxed">{errorMessage}</div>
+              </div>
+            )}
+
+            <form onSubmit={handleForgotRequestSubmit} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="forgot-email-input"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-700"
+                >
+                  Administrator Email Address
+                </label>
+                <div className="relative group">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 group-focus-within:text-emerald-600 transition-colors">
+                    <Mail size={17} />
+                  </span>
+                  <input
+                    id="forgot-email-input"
+                    name="resetEmail"
+                    type="email"
+                    required
+                    autoFocus
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    placeholder="admin@jafjersey.com"
+                    disabled={isLoading}
+                    className="h-11 sm:h-12 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-10 pr-3.5 text-base sm:text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-60 shadow-2xs"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 space-y-2.5">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="flex h-11 sm:h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 hover:shadow-emerald-600/30 active:scale-[0.99] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      <span>Sending Verification Code...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Send Verification Code</span>
+                      <ArrowRight size={16} />
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("credentials");
+                    setErrorMessage(null);
+                  }}
+                  className="flex h-10 w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                >
+                  <ArrowLeft size={13} />
+                  <span>Back to Sign In</span>
+                </button>
+              </div>
+            </form>
+          </>
+        )}
+
+        {/* Step 4: Forgot Password — Enter Code & Choose New Password */}
+        {step === "forgot_verify" && (
+          <>
+            <div className="mb-6 text-center sm:text-left">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-800 shadow-2xs">
+                <ShieldCheck size={12} className="text-emerald-600" />
+                <span>Identity Verification</span>
+              </div>
+              <h1 className="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+                Choose New Password
+              </h1>
+              <p className="mt-1.5 text-xs sm:text-sm text-slate-500 leading-relaxed">
+                Enter the 6-digit verification code sent to <strong className="text-slate-900">{maskedEmail}</strong> and your new password.
+              </p>
+            </div>
+
+            {/* Error Alert */}
+            {errorMessage && (
+              <div
+                role="alert"
+                className="mb-5 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-3.5 text-xs text-rose-800 animate-in fade-in-50 duration-200"
+              >
+                <AlertCircle className="size-4 shrink-0 text-rose-600 mt-0.5" />
+                <div className="flex-1 font-medium leading-relaxed">{errorMessage}</div>
+              </div>
+            )}
+
+            <form onSubmit={handleForgotResetSubmit} className="space-y-4">
+              {/* 6-Digit Code */}
+              <div>
+                <label
+                  htmlFor="reset-code-input"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-700"
+                >
+                  6-Digit Verification Code
+                </label>
+                <input
+                  id="reset-code-input"
+                  name="code"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  required
+                  autoFocus
+                  value={resetCode}
+                  onChange={(e) => setResetCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="••••••"
+                  disabled={isLoading}
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50/60 text-center font-mono text-2xl font-bold tracking-[0.4em] text-slate-900 placeholder:text-slate-300 transition-all focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-60 shadow-2xs"
+                />
+              </div>
+
+              {/* New Password */}
+              <div>
+                <label
+                  htmlFor="new-password-input"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-700"
+                >
+                  New Password
+                </label>
+                <div className="relative group">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 group-focus-within:text-emerald-600 transition-colors">
+                    <Lock size={17} />
+                  </span>
+                  <input
+                    id="new-password-input"
+                    name="newPassword"
+                    type={showNewPassword ? "text" : "password"}
+                    required
+                    minLength={8}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="At least 8 characters"
+                    disabled={isLoading}
+                    className="h-11 sm:h-12 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-10 pr-11 text-base sm:text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-60 shadow-2xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                    aria-label={showNewPassword ? "Hide password" : "Show password"}
+                  >
+                    {showNewPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm New Password */}
+              <div>
+                <label
+                  htmlFor="confirm-password-input"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-700"
+                >
+                  Confirm New Password
+                </label>
+                <div className="relative group">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 group-focus-within:text-emerald-600 transition-colors">
+                    <Lock size={17} />
+                  </span>
+                  <input
+                    id="confirm-password-input"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    minLength={8}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter new password"
+                    disabled={isLoading}
+                    className="h-11 sm:h-12 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-10 pr-11 text-base sm:text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-60 shadow-2xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-2 space-y-2.5">
+                <button
+                  type="submit"
+                  disabled={isLoading || resetCode.length !== 6 || newPassword.length < 8}
+                  className="flex h-11 sm:h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 hover:shadow-emerald-600/30 active:scale-[0.99] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      <span>Updating Password...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Update Password &amp; Sign In</span>
+                      <ArrowRight size={16} />
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("forgot_request");
+                    setErrorMessage(null);
+                  }}
+                  className="flex h-10 w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                >
+                  <ArrowLeft size={13} />
+                  <span>Change Email</span>
                 </button>
               </div>
             </form>

@@ -107,7 +107,75 @@ async function sendSecurityCodeEmail(
 }
 
 /**
- * Step 1: Pre-authenticate admin credentials, sync with .env if needed, and check client IP.
+ * Send 6-digit password reset code via Resend if configured
+ */
+async function sendPasswordResetEmail(
+  email: string,
+  code: string,
+): Promise<{ sent: boolean; reason?: string }> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.log(`\n======================================================`);
+    console.log(`[JAF ADMIN PASSWORD RESET CODE]`);
+    console.log(`Target Email: ${email}`);
+    console.log(`6-Digit Verification Code: ${code}`);
+    console.log(`(Configure RESEND_API_KEY in .env to dispatch real emails)`);
+    console.log(`======================================================\n`);
+    return { sent: false, reason: "RESEND_API_KEY not configured in .env" };
+  }
+
+  try {
+    const resend = new Resend(apiKey);
+    const from =
+      process.env.RESEND_FROM_EMAIL || "JAF Security <onboarding@resend.dev>";
+
+    await resend.emails.send({
+      from,
+      to: email,
+      subject: `Your JAF Admin Password Reset Code: ${code}`,
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; color: #0f172a; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;">
+          <div style="margin-bottom: 20px;">
+            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #059669; background-color: #ecfdf5; padding: 4px 10px; border-radius: 9999px;">
+              JAF Store Operations
+            </span>
+          </div>
+          <h2 style="font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px;">
+            Password Reset Request
+          </h2>
+          <p style="font-size: 14px; line-height: 1.5; color: #64748b; margin: 0 0 24px;">
+            A password reset was requested for your store administrator account (<strong style="color: #0f172a;">${email}</strong>).
+          </p>
+
+          <div style="background-color: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 24px;">
+            <span style="display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 6px;">
+              Your 6-Digit Password Reset Code
+            </span>
+            <span style="font-family: monospace; font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #059669;">
+              ${code}
+            </span>
+          </div>
+
+          <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0;">
+            This security code will expire in 10 minutes. If you did not request a password reset, you can safely ignore this email.
+          </p>
+        </div>
+      `,
+    });
+
+    return { sent: true };
+  } catch (error: any) {
+    console.error(
+      "[JAF Security] Failed to send password reset email:",
+      error.message || error,
+    );
+    return { sent: false, reason: error.message };
+  }
+}
+
+/**
+ * Step 1: Pre-authenticate admin credentials against PostgreSQL database, and check client IP.
+ * Password strictly lives in the database and does not depend on or get overwritten by .env.
  */
 export async function preAuthenticateAdminAction(params: {
   email: string;
@@ -126,73 +194,42 @@ export async function preAuthenticateAdminAction(params: {
 
     const clientIp = await getClientIp();
 
-    // 1. Check if input matches .env credentials:
-    // If user changed ADMIN_EMAIL or ADMIN_PASSWORD in .env, auto-sync database so it always works directly!
-    const envEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-    const envPassword = process.env.ADMIN_PASSWORD?.trim();
-
-    const isEnvAdminMatch = Boolean(
-      envEmail && envPassword && email === envEmail && password === envPassword,
-    );
-
-    if (isEnvAdminMatch) {
-      // Ensure owner account exists and is synchronized with .env credentials
-      const hashedPassword = await hashPassword(password);
-      const existingUser = await prisma.user.findUnique({
-        where: { email },
-        include: { accounts: true },
-      });
-
-      if (existingUser) {
-        await prisma.user.update({
-          where: { id: existingUser.id },
-          data: { role: "owner", emailVerified: true, banned: false },
-        });
-
-        const credentialAccount = existingUser.accounts.find(
-          (a) => a.providerId === "credential",
-        );
-        if (credentialAccount) {
-          await prisma.account.update({
-            where: { id: credentialAccount.id },
-            data: { password: hashedPassword },
-          });
-        } else {
-          await prisma.account.create({
-            data: {
-              userId: existingUser.id,
-              accountId: existingUser.id,
-              providerId: "credential",
-              password: hashedPassword,
-            },
-          });
-        }
-      } else {
-        const newUser = await prisma.user.create({
-          data: {
-            email,
-            name: "Store Owner",
-            role: "owner",
-            emailVerified: true,
-            banned: false,
-          },
-        });
-        await prisma.account.create({
-          data: {
-            userId: newUser.id,
-            accountId: newUser.id,
-            providerId: "credential",
-            password: hashedPassword,
-          },
-        });
-      }
-    }
-
-    // 2. Fetch user from DB
-    const user = await prisma.user.findUnique({
+    // 1. Fetch user from DB
+    let user = await prisma.user.findUnique({
       where: { email },
       include: { accounts: true },
     });
+
+    // If no user exists yet in DB, check if this is the initial owner bootstrap matching .env
+    const envEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+    const envPassword = process.env.ADMIN_PASSWORD?.trim();
+
+    if (!user && envEmail && envPassword && email === envEmail) {
+      const hashedPassword = await hashPassword(envPassword);
+      user = await prisma.user.create({
+        data: {
+          email: envEmail,
+          name: "Store Owner",
+          role: "owner",
+          emailVerified: true,
+          banned: false,
+        },
+        include: { accounts: true },
+      });
+      await prisma.account.create({
+        data: {
+          userId: user.id,
+          accountId: user.id,
+          providerId: "credential",
+          password: hashedPassword,
+        },
+      });
+      // Re-fetch user with account
+      user = await prisma.user.findUnique({
+        where: { email },
+        include: { accounts: true },
+      });
+    }
 
     if (!user) {
       return { success: false, error: "Invalid email or password." };
@@ -213,7 +250,8 @@ export async function preAuthenticateAdminAction(params: {
       return { success: false, error: "Invalid email or password." };
     }
 
-    // 3. Verify password hash
+    // 2. Strictly verify password against hashed password in PostgreSQL:
+    // (Never overwritten or forced by .env so passwords have NO dependency on .env!)
     const isValidPassword = await verifyPassword({
       hash: credentialAccount.password,
       password,
@@ -223,7 +261,7 @@ export async function preAuthenticateAdminAction(params: {
       return { success: false, error: "Invalid email or password." };
     }
 
-    // 4. IP Check:
+    // 3. IP Check:
     // Has this user ever verified this IP address?
     const ipIdentifier = `trusted_ip:${user.id}:${clientIp}`;
     const trustedIp = await prisma.verification.findFirst({
@@ -242,21 +280,21 @@ export async function preAuthenticateAdminAction(params: {
       };
     }
 
-    // 5. New or different IP address detected:
+    // 4. New or different IP address detected:
     // If no email service is configured in .env:
     if (!process.env.RESEND_API_KEY) {
-      // If credentials match .env owner credentials, allow direct sign-in so owner is never blocked
-      if (isEnvAdminMatch) {
-        return {
-          success: true,
-          requiresOtp: false,
-          clientIp,
-        };
-      }
+      // Automatically trust this IP so admin/developer is never locked out in dev environments
+      await prisma.verification.create({
+        data: {
+          identifier: ipIdentifier,
+          value: clientIp,
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+        },
+      });
       return {
-        success: false,
-        error:
-          "Email service not configured (RESEND_API_KEY missing in .env). Cannot dispatch security code.",
+        success: true,
+        requiresOtp: false,
+        clientIp,
       };
     }
 
@@ -301,6 +339,8 @@ export async function preAuthenticateAdminAction(params: {
     return { success: false, error: errorMsg };
   }
 }
+
+
 
 /**
  * Step 2: Verify the 6-digit OTP code and mark the new IP address as trusted.
@@ -416,4 +456,195 @@ export async function adminSignOutAction() {
   }
 
   return { success: true };
+}
+
+/**
+ * Step 4: Request 6-digit password reset OTP sent to the admin email
+ */
+export async function requestAdminPasswordResetAction(params: {
+  email?: string;
+}) {
+  try {
+    const rawEmail = params.email?.trim().toLowerCase();
+    const envEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+    const targetEmail = rawEmail || envEmail;
+
+    if (!targetEmail) {
+      return {
+        success: false,
+        error: "Please enter your registered administrator email address.",
+      };
+    }
+
+    let user = await prisma.user.findUnique({
+      where: { email: targetEmail },
+    });
+
+    // Auto-bootstrap owner if target matches ADMIN_EMAIL and user doesn't exist yet
+    if (!user && envEmail && targetEmail === envEmail) {
+      user = await prisma.user.create({
+        data: {
+          email: targetEmail,
+          name: "Store Owner",
+          role: "owner",
+          emailVerified: true,
+          banned: false,
+        },
+      });
+    }
+
+    if (!user) {
+      return {
+        success: false,
+        error: "No administrator account found with that email address.",
+      };
+    }
+
+    if (user.banned) {
+      return {
+        success: false,
+        error: "This staff account has been deactivated. Please contact the store owner.",
+      };
+    }
+
+    // Generate 6-digit secure code
+    const resetCode = crypto.randomInt(100000, 999999).toString();
+    const resetIdentifier = `admin_reset_otp:${user.id}`;
+
+    // Store in verification table for 10 minutes
+    await prisma.verification.deleteMany({
+      where: { identifier: resetIdentifier },
+    });
+    await prisma.verification.create({
+      data: {
+        identifier: resetIdentifier,
+        value: resetCode,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      },
+    });
+
+    // Send email via Resend
+    const emailResult = await sendPasswordResetEmail(user.email, resetCode);
+
+    return {
+      success: true,
+      email: user.email,
+      maskedEmail: maskEmail(user.email),
+      emailSent: emailResult.sent,
+    };
+  } catch (err: unknown) {
+    const errorMsg =
+      err instanceof Error ? err.message : "Failed to initiate password reset.";
+    console.error("[requestAdminPasswordResetAction Error]:", err);
+    return { success: false, error: errorMsg };
+  }
+}
+
+/**
+ * Step 5: Verify the 6-digit reset code and update password in PostgreSQL
+ */
+export async function resetAdminPasswordAction(params: {
+  email: string;
+  code: string;
+  newPassword: string;
+}) {
+  try {
+    const email = params.email.trim().toLowerCase();
+    const code = params.code.trim();
+    const newPassword = params.newPassword.trim();
+
+    if (!email || !code || code.length !== 6) {
+      return {
+        success: false,
+        error: "Please enter the valid 6-digit verification code.",
+      };
+    }
+
+    if (!newPassword || newPassword.length < 8) {
+      return {
+        success: false,
+        error: "New password must be at least 8 characters long.",
+      };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { accounts: true },
+    });
+
+    if (!user) {
+      return { success: false, error: "Invalid password reset request." };
+    }
+
+    const resetIdentifier = `admin_reset_otp:${user.id}`;
+    const storedVerification = await prisma.verification.findFirst({
+      where: {
+        identifier: resetIdentifier,
+        value: code,
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    if (!storedVerification) {
+      return {
+        success: false,
+        error: "Invalid or expired verification code. Please request a new one.",
+      };
+    }
+
+    // Hash the new password using Better Auth's standard hasher
+    const hashedPassword = await hashPassword(newPassword);
+
+    // Update credential account in PostgreSQL
+    const credentialAccount = user.accounts.find(
+      (a) => a.providerId === "credential",
+    );
+
+    if (credentialAccount) {
+      await prisma.account.update({
+        where: { id: credentialAccount.id },
+        data: { password: hashedPassword },
+      });
+    } else {
+      await prisma.account.create({
+        data: {
+          userId: user.id,
+          accountId: user.id,
+          providerId: "credential",
+          password: hashedPassword,
+        },
+      });
+    }
+
+    // Delete used verification record
+    await prisma.verification.deleteMany({
+      where: { identifier: resetIdentifier },
+    });
+
+    // Whitelist the client's current IP address so they won't be challenged on next login
+    const clientIp = await getClientIp();
+    const ipIdentifier = `trusted_ip:${user.id}:${clientIp}`;
+    await prisma.verification.deleteMany({
+      where: { identifier: ipIdentifier },
+    });
+    await prisma.verification.create({
+      data: {
+        identifier: ipIdentifier,
+        value: clientIp,
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+      },
+    });
+
+    // Revoke any existing active sessions for security
+    await prisma.session.deleteMany({
+      where: { userId: user.id },
+    });
+
+    return { success: true };
+  } catch (err: unknown) {
+    const errorMsg =
+      err instanceof Error ? err.message : "Failed to reset password.";
+    console.error("[resetAdminPasswordAction Error]:", err);
+    return { success: false, error: errorMsg };
+  }
 }
