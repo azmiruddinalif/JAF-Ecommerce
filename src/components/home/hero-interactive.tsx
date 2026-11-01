@@ -167,7 +167,7 @@ export function HeroInteractive({
           <div className="order-2 flex flex-col items-start lg:order-1 lg:col-span-6 xl:col-span-6">
             <div className="mb-4 sm:mb-6 flex flex-wrap items-center gap-2.5">
               <span
-                className="text-xs sm:text-sm font-black uppercase tracking-[0.22em] text-slate-800"
+                className="text-xs sm:text-sm font-semibold uppercase tracking-[0.22em] text-slate-800"
                 style={
                   heroConfig?.eyebrowColor
                     ? { color: heroConfig.eyebrowColor }
@@ -182,7 +182,7 @@ export function HeroInteractive({
             </div>
 
             <h1
-              className="font-display text-4xl sm:text-6xl lg:text-7xl uppercase leading-[0.92] tracking-tight text-slate-950 drop-shadow-xs"
+              className="font-display text-4xl sm:text-6xl lg:text-7xl uppercase tracking-tight text-slate-950 drop-shadow-xs"
               style={
                 heroConfig?.textColor
                   ? { color: heroConfig.textColor }
@@ -306,9 +306,9 @@ export function HeroInteractive({
           </div>
 
           <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-6 min-h-115 sm:min-h-140 lg:min-h-160 xl:min-h-180">
-            <div className="absolute left-1/2 -translate-x-1/2 top-1 z-20">
-              <span className="rounded-md bg-amber-400 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-slate-950 shadow-sm">
-                NEW DROP
+            <div className="absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 z-20 max-w-[90%] flex items-center justify-center select-none">
+              <span className="truncate rounded-md bg-amber-400 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-slate-950 shadow-sm">
+                {currentSlide.name || "MATCHDAY KIT"}
               </span>
             </div>
 
