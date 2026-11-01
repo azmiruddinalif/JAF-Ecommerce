@@ -24,7 +24,6 @@ export interface HeroSlide {
 
 const AUTO_ADVANCE_MS = 6000;
 
-// Curated matchday showcases matching Image 5 aesthetic
 const DEFAULT_MATCHDAY_SHOWCASE: HeroSlide[] = [
   {
     id: "showcase-madrid",
@@ -95,7 +94,6 @@ export function HeroInteractive({
   slides: HeroSlide[];
   heroConfig: HeroCustomConfig;
 }) {
-  // Combine provided slides with default showcases so we always have 3 rich kits
   const activeSlides = useMemo(() => {
     if (slides.length > 0) {
       if (slides.length >= 3) return slides;
@@ -143,9 +141,6 @@ export function HeroInteractive({
 
   return (
     <section className="relative w-full overflow-hidden bg-white text-slate-900 select-none">
-      {/* ===================================================================== */}
-      {/* 1. DAYLIGHT STADIUM BACKGROUND WITH SOFT WHITE SHADE (Picture 2 style) */}
-      {/* ===================================================================== */}
       <div className="absolute inset-0 z-0">
         <Image
           src={STADIUM_DAYLIGHT_BG}
@@ -156,37 +151,20 @@ export function HeroInteractive({
           className="object-cover object-center filter brightness-[1.16] contrast-[0.92] saturate-[0.55]"
         />
 
-        {/* Global soft white wash over entire banner (silvery, bright daylight atmosphere) */}
         <div className="pointer-events-none absolute inset-0 bg-white/20 backdrop-blur-[0.5px]" />
-
-        {/* Sunlight flare & ambient brightness in the upper sky */}
         <div className="pointer-events-none absolute inset-0 bg-radial-at-t from-amber-100/40 via-sky-50/20 to-transparent" />
-
-        {/* Left-to-right soft white gradient (pure minimal white for headlines) */}
         <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-white via-white/80 to-white/20 sm:via-white/70 sm:to-white/10" />
-
-        {/* Top sky soft white wash */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-linear-to-b from-white/10 via-white/35 to-transparent" />
-
-        {/* Bottom soft white ground fade blending seamlessly into the page */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 sm:h-52 bg-linear-to-t from-white via-white/70 to-transparent" />
       </div>
 
-      {/* Giant Faint 2026 Watermark in bottom-right (Picture 2 style) */}
       <div className="pointer-events-none absolute right-4 sm:right-10 bottom-6 sm:bottom-10 z-10 select-none font-display text-8xl sm:text-9xl lg:text-[140px] xl:text-[160px] font-black tracking-tighter text-slate-900/5 leading-none">
         2026
       </div>
 
-      {/* ===================================================================== */}
-      {/* 2. MAIN STAGE CONTENT (Left Headline + Right Floating Jersey)         */}
-      {/* ===================================================================== */}
       <div className="relative z-10 mx-auto max-w-7xl px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20 lg:px-8 lg:py-24">
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
-          {/* ----------------------------------------------------------------- */}
-          {/* LEFT COLUMN (Grid 6 cols): Typography, Eyebrow, CTAs, Watermark   */}
-          {/* ----------------------------------------------------------------- */}
           <div className="order-2 flex flex-col items-start lg:order-1 lg:col-span-6 xl:col-span-6">
-            {/* Tag / Eyebrow Row */}
             <div className="mb-4 sm:mb-6 flex flex-wrap items-center gap-2.5">
               <span
                 className="text-xs sm:text-sm font-black uppercase tracking-[0.22em] text-slate-800"
@@ -203,7 +181,6 @@ export function HeroInteractive({
               </span>
             </div>
 
-            {/* Dynamic Headline configured from Dashboard */}
             <h1
               className="font-display text-4xl sm:text-6xl lg:text-7xl xl:text-8xl uppercase leading-[0.92] tracking-tight text-slate-950 drop-shadow-xs"
               style={
@@ -219,7 +196,6 @@ export function HeroInteractive({
               )}
             </h1>
 
-            {/* Subheadline configured from Dashboard */}
             <p
               className="mt-4 sm:mt-6 max-w-xl text-xs sm:text-base leading-relaxed text-slate-600 font-medium"
               style={
@@ -232,7 +208,6 @@ export function HeroInteractive({
                 "Premium football jerseys crafted for the modern fan. Discover iconic club designs, authentic-inspired fits, and timeless football culture blended with contemporary streetwear style."}
             </p>
 
-            {/* CTA Buttons Row from Dashboard Config */}
             <div className="mt-7 sm:mt-9 flex flex-wrap items-center gap-3 sm:gap-4">
               {heroConfig?.buttons && heroConfig.buttons.length > 0 ? (
                 <>
@@ -258,15 +233,15 @@ export function HeroInteractive({
                         }
                         className={
                           isPrimary
-                            ? "group inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-950 shadow-md shadow-amber-400/25 hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
-                            : "inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                            ? "group inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 shadow-sm shadow-amber-400/25 hover:bg-amber-500 hover:shadow-md hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
+                            : "inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
                         }
                       >
                         <span>{btn.label}</span>
                         {(btn.icon === "arrow-right" ||
                           (!btn.icon && isPrimary)) && (
                           <ArrowRight
-                            size={16}
+                            size={14}
                             className="transition-transform duration-200 group-hover:translate-x-1"
                           />
                         )}
@@ -276,7 +251,7 @@ export function HeroInteractive({
                   {heroConfig.buttons.length === 1 && (
                     <Link
                       href="/category/club-jerseys"
-                      className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                      className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
                     >
                       <span>EXPLORE COLLECTION</span>
                     </Link>
@@ -286,18 +261,18 @@ export function HeroInteractive({
                 <>
                   <Link
                     href="/shop"
-                    className="group inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-950 shadow-md shadow-amber-400/25 hover:bg-amber-500 hover:shadow-lg hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
+                    className="group inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 shadow-sm shadow-amber-400/25 hover:bg-amber-500 hover:shadow-md hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <span>SHOP NEW KITS</span>
                     <ArrowRight
-                      size={16}
+                      size={14}
                       className="transition-transform duration-200 group-hover:translate-x-1"
                     />
                   </Link>
 
                   <Link
                     href="/category/club-jerseys"
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-7 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white/80 backdrop-blur-xs px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <span>EXPLORE COLLECTION</span>
                   </Link>
@@ -323,7 +298,6 @@ export function HeroInteractive({
               </div>
             </div>
 
-            {/* Bottom-Left Ethos Watermark (Image 5 style) */}
             <div className="mt-10 sm:mt-14 flex items-center gap-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
               <span>MORE THAN A JERSEY</span>
               <span className="inline-block h-0.5 w-5 bg-amber-400" />
@@ -331,19 +305,13 @@ export function HeroInteractive({
             </div>
           </div>
 
-          {/* ----------------------------------------------------------------- */}
-          {/* RIGHT COLUMN (Grid 6 cols): Suspended Floating Jersey & Badges     */}
-          {/* ----------------------------------------------------------------- */}
-          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-6 min-h-[460px] sm:min-h-[560px] lg:min-h-[640px] xl:min-h-[720px]">
-            {/* Top-Right Dynamic Kit Title Badge (Picture 2 style in Official Kit position) */}
+          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-6 min-h-115 sm:min-h-140 lg:min-h-160 xl:min-h-180">
             <div className="absolute right-0 sm:-right-2 -top-2 sm:-top-3 z-20 flex items-stretch gap-2.5 text-left rounded-xl bg-white/95 backdrop-blur-md px-3.5 sm:px-4 py-2 sm:py-2.5 border border-slate-200/90 shadow-sm select-none transition-all duration-300">
-              {/* Architectural bracket with top & bottom ticks */}
               <div className="relative w-1.5 border-l-2 border-slate-950 flex flex-col justify-between py-0.5">
                 <span className="h-0.5 w-1.5 bg-slate-950 block" />
                 <span className="h-0.5 w-1.5 bg-slate-950 block" />
               </div>
 
-              {/* Dynamic Kit Title Stack */}
               <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.18em] leading-tight">
                 <p className="text-[11px] sm:text-xs font-black text-slate-950 max-w-44 sm:max-w-64 leading-snug">
                   {currentSlide.name || "MATCHDAY KIT"}
@@ -355,19 +323,15 @@ export function HeroInteractive({
               </div>
             </div>
 
-            {/* Top Center "NEW DROP" Badge hovering above jersey */}
             <div className="absolute left-1/2 -translate-x-1/2 top-1 z-20">
               <span className="rounded-md bg-amber-400 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-slate-950 shadow-sm">
                 NEW DROP
               </span>
             </div>
 
-            {/* Floating Suspended Jersey Container (Hero Scale) */}
-            <div className="relative w-full max-w-[360px] sm:max-w-[460px] md:max-w-[520px] lg:max-w-[600px] xl:max-w-[680px] h-[400px] sm:h-[500px] md:h-[560px] lg:h-[640px] xl:h-[700px] flex items-center justify-center">
-              {/* Soft Ground Shadow underneath floating jersey */}
+            <div className="relative w-full max-w-90 sm:max-w-115 md:max-w-130 lg:max-w-150 xl:max-w-170 h-100 sm:h-125 md:h-140 lg:h-160 xl:h-175 flex items-center justify-center">
               <div className="absolute bottom-4 sm:bottom-6 h-8 sm:h-12 w-4/5 rounded-full bg-slate-950/15 blur-xl pointer-events-none" />
 
-              {/* Suspended Jersey with Float Keyframe Animation */}
               <div className="relative w-full h-full animate-jersey-float flex items-center justify-center">
                 {activeSlides.map((slide, idx) => {
                   const isCurrent = idx === active;
@@ -411,7 +375,6 @@ export function HeroInteractive({
                   );
                 })}
 
-                {/* Horizontal Leader Line pointing to Price Callout Pill (Image 5 style) */}
                 <div className="pointer-events-none absolute -right-2 sm:-right-4 lg:-right-6 top-1/2 -translate-y-1/2 z-30 flex items-center">
                   <span className="hidden sm:inline-block w-8 sm:w-14 h-0.5 bg-amber-400" />
                   <div className="rounded-full bg-white/95 px-4 py-1.5 shadow-lg border border-slate-200 backdrop-blur-md">
@@ -426,9 +389,6 @@ export function HeroInteractive({
         </div>
       </div>
 
-      {/* ===================================================================== */}
-      {/* BOTTOM-LEFT: Slider Indication Lines (Outside container, banner edge) */}
-      {/* ===================================================================== */}
       <div className="absolute left-5 bottom-5 sm:left-8 sm:bottom-7 lg:left-10 lg:bottom-8 xl:left-12 xl:bottom-9 z-30 flex items-center gap-2 sm:gap-3 select-none">
         {activeSlides.map((_, i) => {
           const isActive = i === active;
@@ -461,9 +421,6 @@ export function HeroInteractive({
         })}
       </div>
 
-      {/* ===================================================================== */}
-      {/* BOTTOM-RIGHT: Circular Navigation Arrow Controls (Outside container)   */}
-      {/* ===================================================================== */}
       <div className="absolute right-5 bottom-5 sm:right-8 sm:bottom-7 lg:right-10 lg:bottom-8 xl:right-12 xl:bottom-9 z-30 flex items-center gap-2 select-none">
         <button
           type="button"

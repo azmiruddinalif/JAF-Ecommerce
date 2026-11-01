@@ -16,9 +16,10 @@ const buttonVariants = cva(
         dark: "bg-slate-950 text-white shadow-xs hover:bg-black active:scale-[0.99]",
       },
       size: {
-        sm: "px-4 py-2 text-xs",
-        md: "px-6 py-3 text-sm",
-        lg: "px-8 py-4 text-base",
+        xs: "px-2.5 py-1 text-[10px] tracking-wide",
+        sm: "px-3 py-1.5 text-[11px] tracking-wider",
+        md: "px-4 py-2 text-xs tracking-wider",
+        lg: "px-5 py-2.5 text-xs sm:text-[13px] tracking-wider",
       },
     },
     defaultVariants: {

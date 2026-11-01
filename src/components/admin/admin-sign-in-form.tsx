@@ -396,7 +396,7 @@ export function AdminSignInForm() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex h-11 sm:h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 hover:shadow-emerald-600/30 active:scale-[0.99] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
+                  className="flex h-10 sm:h-10.5 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-xs sm:text-[13px] font-semibold text-white shadow-xs hover:bg-emerald-700 active:scale-[0.99] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isLoading ? (
                     <>
@@ -475,7 +475,7 @@ export function AdminSignInForm() {
                 <button
                   type="submit"
                   disabled={isLoading || otpCode.length !== 6}
-                  className="flex h-11 sm:h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 hover:shadow-emerald-600/30 active:scale-[0.99] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-10 sm:h-10.5 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-xs sm:text-[13px] font-semibold text-white shadow-xs hover:bg-emerald-700 active:scale-[0.99] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isLoading ? (
                     <>
@@ -565,7 +565,7 @@ export function AdminSignInForm() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex h-11 sm:h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 hover:shadow-emerald-600/30 active:scale-[0.99] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
+                  className="flex h-10 sm:h-10.5 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-xs sm:text-[13px] font-semibold text-white shadow-xs hover:bg-emerald-700 active:scale-[0.99] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isLoading ? (
                     <>
@@ -723,7 +723,7 @@ export function AdminSignInForm() {
                 <button
                   type="submit"
                   disabled={isLoading || resetCode.length !== 6 || newPassword.length < 8}
-                  className="flex h-11 sm:h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 hover:shadow-emerald-600/30 active:scale-[0.99] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-10 sm:h-10.5 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-xs sm:text-[13px] font-semibold text-white shadow-xs hover:bg-emerald-700 active:scale-[0.99] transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isLoading ? (
                     <>

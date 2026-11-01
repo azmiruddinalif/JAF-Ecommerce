@@ -51,11 +51,13 @@ export function WishlistButton({ productId }: { productId: string }) {
       onClick={toggle}
       aria-pressed={isSaved}
       aria-label={isSaved ? "Remove from wishlist" : "Add to wishlist"}
-      className={`flex h-[3.25rem] w-[3.25rem] shrink-0 items-center justify-center border transition-colors ${
-        isSaved ? "border-gold text-gold" : "border-ink-border text-paper hover:border-gold hover:text-gold"
+      className={`flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl border transition-colors ${
+        isSaved
+          ? "border-amber-400 bg-amber-50 text-amber-500"
+          : "border-slate-300 bg-white text-slate-700 hover:border-slate-950 hover:text-slate-950 shadow-2xs"
       }`}
     >
-      <Heart size={18} fill={isSaved ? "currentColor" : "none"} />
+      <Heart size={16} fill={isSaved ? "currentColor" : "none"} />
     </button>
   );
 }

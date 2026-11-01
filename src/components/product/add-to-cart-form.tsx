@@ -245,12 +245,11 @@ export function AddToCartForm({
         )}
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-2.5 sm:flex-row">
         <Button
           type="button"
           variant="primary"
-          size="lg"
-          className="flex-1 rounded-xl py-4 font-extrabold uppercase tracking-wider bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-md shadow-amber-400/25 border border-amber-500/30 cursor-pointer"
+          className="flex-1 rounded-xl py-2.5 sm:py-3 text-xs sm:text-[13px] font-bold uppercase tracking-wider bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-xs shadow-amber-400/25 border border-amber-500/30 cursor-pointer"
           disabled={isPending || !inStock}
           onClick={() => handleAddToCart()}
         >
@@ -259,8 +258,7 @@ export function AddToCartForm({
         <Button
           type="button"
           variant="outline"
-          size="lg"
-          className="flex-1 rounded-xl py-4 font-bold uppercase tracking-wider border-slate-900 bg-white hover:bg-slate-950 hover:text-white text-slate-900 cursor-pointer"
+          className="flex-1 rounded-xl py-2.5 sm:py-3 text-xs sm:text-[13px] font-bold uppercase tracking-wider border-slate-900 bg-white hover:bg-slate-950 hover:text-white text-slate-900 cursor-pointer"
           disabled={isPending || !inStock}
           onClick={() => handleAddToCart({ redirectToCheckout: true })}
         >

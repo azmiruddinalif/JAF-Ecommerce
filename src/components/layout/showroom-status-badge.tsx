@@ -41,9 +41,9 @@ export function ShowroomStatusBadge({
     return (
       <span
         title={fallbackHours ? `Store Hours: ${fallbackHours}` : undefined}
-        className={`inline-flex items-center gap-2 rounded-full border border-amber-300 bg-emerald-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-amber-500 shadow-[0_0_12px_rgba(74,222,128,0.15)] transition-all ${className}`}
+        className={`inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-amber-500 transition-all ${className}`}
       >
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-600" />
         <span>{status.statusText}</span>
       </span>
     );
