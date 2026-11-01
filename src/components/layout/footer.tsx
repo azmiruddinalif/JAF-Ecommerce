@@ -113,7 +113,6 @@ export async function Footer() {
 
   return (
     <footer className="relative overflow-hidden border-t border-amber-400/20 bg-ink text-paper">
-      {/* Refined ambient radial lighting & architectural micro-grid with yellow opacity */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-[0.06]"
@@ -123,7 +122,6 @@ export async function Footer() {
         }}
       />
 
-      {/* Sleek top edge gradient line with yellow color opacity */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-amber-400/60 to-transparent"
@@ -178,7 +176,7 @@ export async function Footer() {
                           key={badge.id || badge.label}
                           className={
                             badge.highlight
-                              ? "inline-flex items-center gap-1.5 rounded-sm border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-1 font-mono text-[10px] uppercase text-emerald-400"
+                              ? "inline-flex items-center gap-1.5 rounded-sm border border-amber-400/40 bg-amber-400/10 px-3.5 py-1.5 font-mono text-xs font-bold text-amber-500 transition-all duration-200 hover:border-amber-400 hover:bg-amber-400/20 hover:text-slate-950"
                               : "inline-flex items-center gap-1.5 rounded-sm border border-ink-border bg-ink px-2.5 py-1 font-mono text-[10px] uppercase text-paper-dim"
                           }
                         >
@@ -199,7 +197,7 @@ export async function Footer() {
                     {shopInfo.phone && (
                       <a
                         href={`tel:${shopInfo.phone.replace(/[^0-9+]/g, "")}`}
-                        className="group inline-flex items-center gap-2 border border-amber-400/40 bg-amber-400/10 px-3.5 py-1.5 font-mono text-xs font-bold text-amber-600 transition-all duration-200 hover:border-amber-400 hover:bg-amber-400/20 hover:text-slate-950 hover:shadow-[0_0_16px_rgba(245,158,11,0.25)]"
+                        className="group inline-flex items-center gap-2 border border-amber-400/40 bg-amber-400/10 px-3.5 py-1.5 font-mono text-xs font-bold text-amber-500 transition-all duration-200 hover:border-amber-400 hover:bg-amber-400/20 hover:text-slate-950"
                       >
                         <Phone
                           size={13}
@@ -211,7 +209,7 @@ export async function Footer() {
                     {shopInfo.secondaryPhone && (
                       <a
                         href={`tel:${shopInfo.secondaryPhone.replace(/[^0-9+]/g, "")}`}
-                        className="group inline-flex items-center gap-2 border border-amber-400/40 bg-amber-400/10 px-3.5 py-1.5 font-mono text-xs font-bold text-amber-600 transition-all duration-200 hover:border-amber-400 hover:bg-amber-400/20 hover:text-slate-950 hover:shadow-[0_0_16px_rgba(245,158,11,0.25)]"
+                        className="group inline-flex items-center gap-2 border border-amber-400/40 bg-amber-400/10 px-3.5 py-1.5 font-mono text-xs font-bold text-amber-500 transition-all duration-200 hover:border-amber-400 hover:bg-amber-400/20 hover:text-slate-950"
                       >
                         <Phone
                           size={13}

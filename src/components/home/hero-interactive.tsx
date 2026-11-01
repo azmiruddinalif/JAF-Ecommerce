@@ -183,9 +183,9 @@ export function HeroInteractive({
       <div className="relative z-10 mx-auto max-w-7xl px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20 lg:px-8 lg:py-24">
         <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
           {/* ----------------------------------------------------------------- */}
-          {/* LEFT COLUMN (Grid 7 cols): Typography, Eyebrow, CTAs, Watermark   */}
+          {/* LEFT COLUMN (Grid 6 cols): Typography, Eyebrow, CTAs, Watermark   */}
           {/* ----------------------------------------------------------------- */}
-          <div className="order-2 flex flex-col items-start lg:order-1 lg:col-span-6 xl:col-span-7">
+          <div className="order-2 flex flex-col items-start lg:order-1 lg:col-span-6 xl:col-span-6">
             {/* Tag / Eyebrow Row */}
             <div className="mb-4 sm:mb-6 flex flex-wrap items-center gap-2.5">
               <span
@@ -332,18 +332,25 @@ export function HeroInteractive({
           </div>
 
           {/* ----------------------------------------------------------------- */}
-          {/* RIGHT COLUMN (Grid 5 cols): Suspended Floating Jersey & Badges     */}
+          {/* RIGHT COLUMN (Grid 6 cols): Suspended Floating Jersey & Badges     */}
           {/* ----------------------------------------------------------------- */}
-          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-5 min-h-95 sm:min-h-115 lg:min-h-130">
-            {/* Top-Right Official Kit Badge (Floating Pill) */}
-            <div className="absolute right-0 top-0 z-20 flex items-center gap-2 rounded-xl border border-slate-200/90 bg-white/90 px-3.5 py-1.5 shadow-sm backdrop-blur-md">
-              <span className="text-base">🛡️</span>
-              <div className="text-left">
-                <div className="text-[10px] font-extrabold uppercase tracking-widest text-slate-950 leading-tight">
-                  OFFICIAL KIT
-                </div>
-                <div className="text-[9px] font-semibold text-slate-500 leading-none">
-                  2026 EDITION
+          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-6 min-h-[460px] sm:min-h-[560px] lg:min-h-[640px] xl:min-h-[720px]">
+            {/* Top-Right Dynamic Kit Title Badge (Picture 2 style in Official Kit position) */}
+            <div className="absolute right-0 sm:-right-2 -top-2 sm:-top-3 z-20 flex items-stretch gap-2.5 text-left rounded-xl bg-white/95 backdrop-blur-md px-3.5 sm:px-4 py-2 sm:py-2.5 border border-slate-200/90 shadow-sm select-none transition-all duration-300">
+              {/* Architectural bracket with top & bottom ticks */}
+              <div className="relative w-1.5 border-l-2 border-slate-950 flex flex-col justify-between py-0.5">
+                <span className="h-0.5 w-1.5 bg-slate-950 block" />
+                <span className="h-0.5 w-1.5 bg-slate-950 block" />
+              </div>
+
+              {/* Dynamic Kit Title Stack */}
+              <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.18em] leading-tight">
+                <p className="text-[11px] sm:text-xs font-black text-slate-950 max-w-44 sm:max-w-64 leading-snug">
+                  {currentSlide.name || "MATCHDAY KIT"}
+                </p>
+                <div className="flex items-center gap-1.5 mt-0.5 text-[9px] sm:text-[10px] font-extrabold">
+                  <span className="text-slate-500">AUTHENTIC FIT</span>
+                  <span className="text-amber-500 font-black">• 2026</span>
                 </div>
               </div>
             </div>
@@ -355,10 +362,10 @@ export function HeroInteractive({
               </span>
             </div>
 
-            {/* Floating Suspended Jersey Container */}
-            <div className="relative w-full max-w-85 sm:max-w-105 lg:max-w-115 aspect-square flex items-center justify-center">
+            {/* Floating Suspended Jersey Container (Hero Scale) */}
+            <div className="relative w-full max-w-[360px] sm:max-w-[460px] md:max-w-[520px] lg:max-w-[600px] xl:max-w-[680px] h-[400px] sm:h-[500px] md:h-[560px] lg:h-[640px] xl:h-[700px] flex items-center justify-center">
               {/* Soft Ground Shadow underneath floating jersey */}
-              <div className="absolute bottom-6 h-8 w-3/4 rounded-full bg-slate-950/15 blur-xl pointer-events-none" />
+              <div className="absolute bottom-4 sm:bottom-6 h-8 sm:h-12 w-4/5 rounded-full bg-slate-950/15 blur-xl pointer-events-none" />
 
               {/* Suspended Jersey with Float Keyframe Animation */}
               <div className="relative w-full h-full animate-jersey-float flex items-center justify-center">
@@ -384,8 +391,8 @@ export function HeroInteractive({
                             alt={slide.name || "Matchday Kit"}
                             fill
                             priority={idx === 0}
-                            sizes="(max-width: 768px) 85vw, 45vw"
-                            className="object-contain filter drop-shadow-[0_25px_35px_rgba(0,0,0,0.18)] transition-transform duration-500 group-hover:scale-105"
+                            sizes="(max-width: 768px) 90vw, (max-width: 1200px) 50vw, 45vw"
+                            className="object-contain filter drop-shadow-[0_28px_40px_rgba(0,0,0,0.20)] transition-transform duration-500 group-hover:scale-105"
                           />
                         </Link>
                       ) : (
@@ -395,8 +402,8 @@ export function HeroInteractive({
                             alt={slide.name || "Matchday Kit"}
                             fill
                             priority={idx === 0}
-                            sizes="(max-width: 768px) 85vw, 45vw"
-                            className="object-contain filter drop-shadow-[0_25px_35px_rgba(0,0,0,0.18)]"
+                            sizes="(max-width: 768px) 90vw, (max-width: 1200px) 50vw, 45vw"
+                            className="object-contain filter drop-shadow-[0_28px_40px_rgba(0,0,0,0.20)]"
                           />
                         </div>
                       )}
@@ -405,8 +412,8 @@ export function HeroInteractive({
                 })}
 
                 {/* Horizontal Leader Line pointing to Price Callout Pill (Image 5 style) */}
-                <div className="pointer-events-none absolute -right-2.5 sm:right-2 top-1/2 -translate-y-1/2 z-30 flex items-center">
-                  <span className="hidden sm:inline-block w-10 sm:w-16 h-0.5 bg-amber-400" />
+                <div className="pointer-events-none absolute -right-2 sm:-right-4 lg:-right-6 top-1/2 -translate-y-1/2 z-30 flex items-center">
+                  <span className="hidden sm:inline-block w-8 sm:w-14 h-0.5 bg-amber-400" />
                   <div className="rounded-full bg-white/95 px-4 py-1.5 shadow-lg border border-slate-200 backdrop-blur-md">
                     <span className="text-xs sm:text-sm font-extrabold tracking-wide text-slate-950 font-sans">
                       {formattedPrice}
@@ -455,51 +462,25 @@ export function HeroInteractive({
       </div>
 
       {/* ===================================================================== */}
-      {/* BOTTOM-RIGHT: Technical Bracket Kit Title + Circular Arrow Controls   */}
-      {/* Positioned outside max-w-7xl container, at the banner's outer edge   */}
+      {/* BOTTOM-RIGHT: Circular Navigation Arrow Controls (Outside container)   */}
       {/* ===================================================================== */}
-      <div className="absolute right-5 bottom-5 sm:right-8 sm:bottom-7 lg:right-10 lg:bottom-8 xl:right-12 xl:bottom-9 z-30 flex flex-col items-end gap-3 sm:gap-4 select-none">
-        {/* Technical Bracket + Stacked Kit Title (Picture 2 clean minimal style) */}
-        <div className="flex items-stretch gap-2.5 text-left rounded-lg bg-white/80 backdrop-blur-md px-3 py-1.5 border border-slate-200/90 shadow-2xs">
-          {/* Architectural bracket with top & bottom ticks */}
-          <div className="relative w-1.5 border-l-2 border-slate-950 flex flex-col justify-between py-0.5">
-            <span className="h-0.5 w-1.5 bg-slate-950 block" />
-            <span className="h-0.5 w-1.5 bg-slate-950 block" />
-          </div>
-
-          {/* Stacked typography */}
-          <div className="flex flex-col gap-0.5 font-sans uppercase tracking-[0.2em] leading-tight">
-            <p className="text-[11px] sm:text-xs font-black text-slate-950 max-w-44 sm:max-w-56 leading-snug">
-              {currentSlide.name || "MATCHDAY KIT"}
-            </p>
-            <p className="text-[9px] sm:text-[10px] font-extrabold text-slate-500">
-              AUTHENTIC FIT
-            </p>
-            <p className="text-[9px] sm:text-[10px] font-black text-amber-500">
-              2026
-            </p>
-          </div>
-        </div>
-
-        {/* Circular Navigation Buttons (Picture 2 minimal white pills) */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handlePrev}
-            aria-label="Previous jersey"
-            className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xs shadow-2xs hover:border-slate-950 hover:bg-white active:scale-95 flex items-center justify-center transition-all cursor-pointer"
-          >
-            <ChevronLeft size={15} />
-          </button>
-          <button
-            type="button"
-            onClick={handleNext}
-            aria-label="Next jersey"
-            className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xs shadow-2xs hover:border-slate-950 hover:bg-white active:scale-95 flex items-center justify-center transition-all cursor-pointer"
-          >
-            <ChevronRight size={15} />
-          </button>
-        </div>
+      <div className="absolute right-5 bottom-5 sm:right-8 sm:bottom-7 lg:right-10 lg:bottom-8 xl:right-12 xl:bottom-9 z-30 flex items-center gap-2 select-none">
+        <button
+          type="button"
+          onClick={handlePrev}
+          aria-label="Previous jersey"
+          className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xs shadow-2xs hover:border-slate-950 hover:bg-white active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+        >
+          <ChevronLeft size={15} />
+        </button>
+        <button
+          type="button"
+          onClick={handleNext}
+          aria-label="Next jersey"
+          className="size-8 sm:size-9 rounded-full border border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xs shadow-2xs hover:border-slate-950 hover:bg-white active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+        >
+          <ChevronRight size={15} />
+        </button>
       </div>
     </section>
   );

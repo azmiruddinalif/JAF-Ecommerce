@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -21,7 +22,7 @@ export function ShowroomStatusBadge({
 }: ShowroomStatusBadgeProps) {
   // Initialize with the evaluated store status
   const [status, setStatus] = useState<StoreStatusResult>(() =>
-    getStoreStatus(schedule)
+    getStoreStatus(schedule),
   );
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export function ShowroomStatusBadge({
     return (
       <span
         title={fallbackHours ? `Store Hours: ${fallbackHours}` : undefined}
-        className={`inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-emerald-400 shadow-[0_0_12px_rgba(74,222,128,0.15)] transition-all ${className}`}
+        className={`inline-flex items-center gap-2 rounded-full border border-amber-300 bg-emerald-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-amber-500 shadow-[0_0_12px_rgba(74,222,128,0.15)] transition-all ${className}`}
       >
         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
         <span>{status.statusText}</span>
@@ -70,4 +71,3 @@ export function ShowroomStatusBadge({
     </span>
   );
 }
-
