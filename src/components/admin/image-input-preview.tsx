@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AlertTriangle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { normalizePublicImageUrl } from "@/lib/data/settings-shared";
 
 export function ImageInputWithPreview({
   id,
@@ -38,14 +39,12 @@ export function ImageInputWithPreview({
     setImageError(false);
   }, [preview, currentUrl]);
 
-  const displayUrl = preview ?? currentUrl ?? null;
-  const isWebpageUrl =
-    typeof displayUrl === "string" && displayUrl.includes("unsplash.com/photos/");
+  const displayUrl = preview ?? (currentUrl ? normalizePublicImageUrl(currentUrl) : null);
 
   return (
     <div className={wrapperClassName}>
       <div className={`relative shrink-0 overflow-hidden border border-ink-border bg-ink ${boxClassName}`}>
-        {displayUrl && !imageError && !isWebpageUrl ? (
+        {displayUrl && !imageError ? (
           <Image
             src={displayUrl}
             alt={alt}
@@ -60,16 +59,14 @@ export function ImageInputWithPreview({
                 !displayUrl.startsWith("/"))
             }
           />
-        ) : isWebpageUrl || imageError ? (
+        ) : imageError ? (
           <div className="flex h-full w-full flex-col items-center justify-center p-2 text-center bg-ink-raised border border-amber-500/30">
             <AlertTriangle size={16} className="text-amber-400 mb-1" />
             <span className="text-[10px] font-bold text-amber-300 leading-tight">
-              {isWebpageUrl ? "Webpage Link Detected" : "Preview Failed"}
+              Preview Failed
             </span>
             <span className="text-[9px] text-paper-dim leading-tight mt-0.5">
-              {isWebpageUrl
-                ? "Upload file or use direct image address"
-                : "Invalid or blocked image URL"}
+              URL could not be loaded as an image
             </span>
           </div>
         ) : (

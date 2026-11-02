@@ -57,9 +57,13 @@ function sanitizeBannerUrl(url?: string | null): string {
   if (!url || typeof url !== "string") return STADIUM_DAYLIGHT_BG;
   const trimmed = url.trim();
   if (!trimmed) return STADIUM_DAYLIGHT_BG;
-  // If an Unsplash photo webpage was passed instead of a direct image URL, resolve to high-res direct image:
   if (trimmed.includes("unsplash.com/photos/")) {
-    return "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=2000&q=85&auto=format";
+    const clean = trimmed.split("?")[0].replace(/\/+$/, "");
+    const segment = clean.split("/").pop() ?? "";
+    const photoId = segment.includes("-") ? segment.split("-").pop() : segment;
+    if (photoId && /^[a-zA-Z0-9_]+$/.test(photoId)) {
+      return `https://unsplash.com/photos/${photoId}/download?force=true`;
+    }
   }
   return trimmed;
 }
@@ -113,6 +117,11 @@ export function HeroInteractive({
     ? STADIUM_DAYLIGHT_BG
     : sanitizeBannerUrl(rawBg);
   const dynamicYear = new Date().getFullYear();
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBgFailed(false);
+  }, [bannerImageUrl, fallbackImageUrl]);
 
   const activeSlides = useMemo(() => {
     if (slides.length > 0) {
@@ -180,7 +189,7 @@ export function HeroInteractive({
       </div>
 
       {/* Dynamic Architectural Watermark Year — subtly visible with athletic elegance */}
-      <div className="pointer-events-none absolute right-4 sm:right-8 lg:right-12 bottom-12 sm:bottom-16 lg:bottom-20 z-10 select-none font-display text-8xl sm:text-9xl lg:text-[140px] xl:text-[170px] font-black tracking-tighter text-slate-900/[0.11] sm:text-slate-900/[0.14] leading-none">
+      <div className="pointer-events-none absolute right-4 sm:right-8 lg:right-12 bottom-12 sm:bottom-16 lg:bottom-20 z-10 select-none font-display text-8xl sm:text-9xl lg:text-[140px] xl:text-[170px] font-black tracking-tighter text-slate-900/11 sm:text-slate-900/[0.14] leading-none">
         {dynamicYear}
       </div>
 

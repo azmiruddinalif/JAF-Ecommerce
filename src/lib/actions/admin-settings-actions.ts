@@ -202,9 +202,26 @@ export async function updateStoreSettingsAction(
         }
 
         if (directUrl) {
-          const resolvedDirect = directUrl.includes("unsplash.com/photos/")
-            ? "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=2000&q=85&auto=format"
-            : directUrl;
+          let resolvedDirect = directUrl;
+          if (directUrl.includes("unsplash.com/photos/")) {
+            const clean = directUrl.split("?")[0].replace(/\/+$/, "");
+            const segment = clean.split("/").pop() ?? "";
+            const photoId = segment.includes("-") ? segment.split("-").pop() : segment;
+            if (photoId && /^[a-zA-Z0-9_]+$/.test(photoId)) {
+              try {
+                const downloadUrl = `https://unsplash.com/photos/${photoId}/download?force=true`;
+                const res = await fetch(downloadUrl, { method: "HEAD", redirect: "follow" });
+                if (res.ok && res.url && res.url.includes("images.unsplash.com")) {
+                  resolvedDirect = res.url;
+                } else {
+                  resolvedDirect = downloadUrl;
+                }
+              } catch {
+                resolvedDirect = `https://unsplash.com/photos/${photoId}/download?force=true`;
+              }
+            }
+          }
+
           if (resolvedDirect !== existing?.[slot.urlColumn]) {
             if (previousPublicId) {
               await imageStorage.remove(previousPublicId).catch(() => {});

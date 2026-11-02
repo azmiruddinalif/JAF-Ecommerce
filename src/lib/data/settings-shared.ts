@@ -709,3 +709,25 @@ export function normalizeTrustCards(raw: unknown): TrustStripCard[] {
   return DEFAULT_TRUST_CARDS;
 }
 
+/**
+ * Normalizes any public image URL or Unsplash page link into a direct browser-loadable image URL.
+ * If an Unsplash webpage URL is provided (e.g. unsplash.com/photos/some-slug-PHOTOID),
+ * extracts the photo ID and returns the direct Unsplash CDN download URL.
+ */
+export function normalizePublicImageUrl(url?: string | null): string {
+  if (!url || typeof url !== "string") return "";
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+
+  if (trimmed.includes("unsplash.com/photos/")) {
+    const clean = trimmed.split("?")[0].replace(/\/+$/, "");
+    const segment = clean.split("/").pop() ?? "";
+    const photoId = segment.includes("-") ? segment.split("-").pop() : segment;
+    if (photoId && /^[a-zA-Z0-9_]+$/.test(photoId)) {
+      return `https://unsplash.com/photos/${photoId}/download?force=true`;
+    }
+  }
+
+  return trimmed;
+}
+
