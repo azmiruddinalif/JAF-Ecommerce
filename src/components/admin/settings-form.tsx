@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { ArrowDown, ArrowUp, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, AlertTriangle, Plus, RotateCcw, Trash2 } from "lucide-react";
 import {
   Input,
   Textarea,
@@ -34,7 +34,7 @@ import {
   type HeroPromoSlide,
   type LocationBadgeItem,
   type ShowroomScheduleConfig,
-  type ShowroomStatusMode,
+  // type ShowroomStatusMode,
   type StoreSettingsView,
   type TrustCardIcon,
   type TrustStripCard,
@@ -349,6 +349,10 @@ export function SettingsForm({
   const [isSubmitTransition, startSubmitTransition] = useTransition();
   const isPending = isActionPending || isSubmitTransition;
   const [slot1, slot2, slot3] = settings.heroShowcaseProductIds;
+
+  const [heroDirectUrl, setHeroDirectUrl] = useState(
+    settings.heroImageUrl?.startsWith("http") ? settings.heroImageUrl : "",
+  );
 
   const [trustCards, setTrustCards] = useState<TrustStripCard[]>(
     settings.trustCards && settings.trustCards.length > 0
@@ -766,7 +770,7 @@ export function SettingsForm({
               <ImageField
                 name="heroImage"
                 label="Upload Banner Image (JPG, PNG, WEBP, AVIF)"
-                currentUrl={settings.heroImageUrl}
+                currentUrl={heroDirectUrl.trim() || settings.heroImageUrl}
                 boxClassName="aspect-video w-52 sm:w-64"
               />
               <div>
@@ -776,17 +780,34 @@ export function SettingsForm({
                 <Input
                   id="heroImageUrlDirect"
                   name="heroImageUrlDirect"
-                  defaultValue={
-                    settings.heroImageUrl?.startsWith("http")
-                      ? settings.heroImageUrl
-                      : ""
-                  }
+                  value={heroDirectUrl}
+                  onChange={(e) => setHeroDirectUrl(e.target.value)}
                   placeholder="https://images.unsplash.com/... or https://res.cloudinary.com/..."
                 />
-                <p className="mt-1 text-[11px] text-paper-dim">
-                  Optional: Enter a public image URL directly if you prefer not
-                  uploading a file. Uploaded files take priority.
-                </p>
+                {heroDirectUrl.trim().includes("unsplash.com/photos/") ? (
+                  <div className="mt-2.5 rounded-none border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-200">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-400">
+                      <AlertTriangle size={15} />
+                      <span>Unsplash Webpage Link Detected</span>
+                    </div>
+                    <p className="mt-1 text-[11px] leading-relaxed text-amber-200/90">
+                      You pasted an Unsplash <strong>webpage address</strong> (<code>unsplash.com/photos/...</code>). Browsers cannot render webpages inside image tags.
+                    </p>
+                    <div className="mt-2 space-y-1.5 text-[11px] text-slate-300">
+                      <p className="font-semibold text-white">How to fix this:</p>
+                      <p>
+                        ✅ <strong>Method 1 (Recommended):</strong> Download the photo from Unsplash to your device, then click <strong>&quot;Choose File&quot;</strong> above to upload it directly.
+                      </p>
+                      <p>
+                        ✅ <strong>Method 2:</strong> On the Unsplash page, right-click directly on the photo and select <strong>&quot;Copy image address&quot;</strong> (starts with <code>https://images.unsplash.com/...</code>), then paste it here.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mt-1 text-[11px] text-paper-dim">
+                    Optional: Enter a direct image URL (starting with <code>https://images.unsplash.com/</code> or <code>https://res.cloudinary.com/</code>) if you prefer not uploading a file. Uploaded files take priority.
+                  </p>
+                )}
               </div>
             </div>
           </div>

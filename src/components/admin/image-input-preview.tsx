@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { AlertTriangle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export function ImageInputWithPreview({
@@ -22,6 +23,7 @@ export function ImageInputWithPreview({
   wrapperClassName?: string;
 }) {
   const [preview, setPreview] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   // Revoke the previous object URL whenever the selection changes or the
   // field unmounts, so picking several files in a row doesn't leak memory.
@@ -31,18 +33,26 @@ export function ImageInputWithPreview({
     };
   }, [preview]);
 
+  // Reset error when preview or currentUrl changes
+  useEffect(() => {
+    setImageError(false);
+  }, [preview, currentUrl]);
+
   const displayUrl = preview ?? currentUrl ?? null;
+  const isWebpageUrl =
+    typeof displayUrl === "string" && displayUrl.includes("unsplash.com/photos/");
 
   return (
     <div className={wrapperClassName}>
       <div className={`relative shrink-0 overflow-hidden border border-ink-border bg-ink ${boxClassName}`}>
-        {displayUrl ? (
+        {displayUrl && !imageError && !isWebpageUrl ? (
           <Image
             src={displayUrl}
             alt={alt}
             fill
             sizes="200px"
             className="object-cover"
+            onError={() => setImageError(true)}
             unoptimized={
               !!preview ||
               (typeof displayUrl === "string" &&
@@ -50,6 +60,18 @@ export function ImageInputWithPreview({
                 !displayUrl.startsWith("/"))
             }
           />
+        ) : isWebpageUrl || imageError ? (
+          <div className="flex h-full w-full flex-col items-center justify-center p-2 text-center bg-ink-raised border border-amber-500/30">
+            <AlertTriangle size={16} className="text-amber-400 mb-1" />
+            <span className="text-[10px] font-bold text-amber-300 leading-tight">
+              {isWebpageUrl ? "Webpage Link Detected" : "Preview Failed"}
+            </span>
+            <span className="text-[9px] text-paper-dim leading-tight mt-0.5">
+              {isWebpageUrl
+                ? "Upload file or use direct image address"
+                : "Invalid or blocked image URL"}
+            </span>
+          </div>
         ) : (
           <div className="flex h-full items-center justify-center text-[10px] text-paper-dim">No image</div>
         )}
@@ -60,10 +82,11 @@ export function ImageInputWithPreview({
           name={name}
           type="file"
           accept="image/*,image/jpeg,image/png,image/webp,image/avif"
-          className="w-full text-xs text-paper-dim file:mr-2 file:border file:border-ink-border file:bg-ink-raised file:px-2 file:py-1 file:text-xs"
+          className="w-full text-xs text-paper-dim file:mr-2 file:border file:border-ink-border file:bg-ink-raised file:px-2 file:py-1 file:text-xs cursor-pointer"
           onChange={(e) => {
             const file = e.target.files?.[0];
             setPreview(file ? URL.createObjectURL(file) : null);
+            setImageError(false);
           }}
         />
         {currentUrl && removeName && (
