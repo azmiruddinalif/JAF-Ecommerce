@@ -7,13 +7,23 @@ function niceCeil(value: number): number {
   const exp = Math.floor(Math.log10(value));
   const base = 10 ** exp;
   const residual = value / base;
-  const niceResidual = residual <= 1 ? 1 : residual <= 2 ? 2 : residual <= 5 ? 5 : 10;
+  const niceResidual =
+    residual <= 1 ? 1 : residual <= 2 ? 2 : residual <= 5 ? 5 : 10;
   return niceResidual * base;
 }
 
-const dayLabel = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+const dayLabel = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+});
 
-export function SalesChart({ series, totalCents }: { series: SalesPoint[]; totalCents: number }) {
+export function SalesChart({
+  series,
+  totalCents,
+}: {
+  series: SalesPoint[];
+  totalCents: number;
+}) {
   const max = Math.max(...series.map((d) => d.totalCents));
   const niceMax = niceCeil(max);
   const ticks = [niceMax, niceMax / 2, 0];
@@ -22,17 +32,25 @@ export function SalesChart({ series, totalCents }: { series: SalesPoint[]; total
     <div className="flex h-full flex-col rounded-xl border border-slate-200/80 bg-white shadow-xs overflow-hidden">
       <div className="flex items-center justify-between border-b border-slate-200/80 px-5 py-4">
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-900">Sales</h2>
-          <p className="mt-0.5 text-xs text-slate-500">Last {series.length} days</p>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-900">
+            Sales
+          </h2>
+          <p className="mt-0.5 text-xs text-slate-500">
+            Last {series.length} days
+          </p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] uppercase tracking-wider text-slate-400">Total revenue</p>
-          <p className="text-2xl font-bold tracking-tight text-slate-900">{formatCents(totalCents)}</p>
+          <p className="text-[11px] uppercase tracking-wider text-slate-400">
+            Total revenue
+          </p>
+          <p className="text-2xl font-bold tracking-tight text-slate-900">
+            {formatCents(totalCents)}
+          </p>
         </div>
       </div>
 
       <div className="flex flex-1 gap-3 px-5 pb-6 pt-14">
-        <div className="flex h-40 flex-col justify-between py-[1px] text-right text-[10px] text-paper-dim">
+        <div className="flex h-40 flex-col justify-between py-px text-right text-[10px] text-paper-dim">
           {ticks.map((t) => (
             <span key={t}>{formatCents(t)}</span>
           ))}
@@ -45,13 +63,19 @@ export function SalesChart({ series, totalCents }: { series: SalesPoint[]; total
             ))}
           </div>
 
-          <div className="relative flex h-40 items-stretch gap-[3px]">
+          <div className="relative flex h-40 items-stretch gap-0.75">
             {series.map((d, i) => {
               const pct = niceMax > 0 ? (d.totalCents / niceMax) * 100 : 0;
-              const showLabel = i === 0 || i === series.length - 1 || i % 3 === 0;
-              const edge = i <= 1 ? "left" : i >= series.length - 2 ? "right" : "center";
+              const showLabel =
+                i === 0 || i === series.length - 1 || i % 3 === 0;
+              const edge =
+                i <= 1 ? "left" : i >= series.length - 2 ? "right" : "center";
               const tooltipAlign =
-                edge === "left" ? "justify-start" : edge === "right" ? "justify-end" : "justify-center";
+                edge === "left"
+                  ? "justify-start"
+                  : edge === "right"
+                    ? "justify-end"
+                    : "justify-center";
               return (
                 <div
                   key={dayLabel.format(d.date) + i}
@@ -68,11 +92,13 @@ export function SalesChart({ series, totalCents }: { series: SalesPoint[]; total
                   <div
                     className={`pointer-events-none absolute inset-x-0 bottom-full z-10 mb-2 flex opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 ${tooltipAlign}`}
                   >
-
                     <div className="whitespace-nowrap border border-ink-border bg-ink px-2.5 py-1.5 text-xs">
-                      <p className="font-semibold text-paper">{formatCents(d.totalCents)}</p>
+                      <p className="font-semibold text-paper">
+                        {formatCents(d.totalCents)}
+                      </p>
                       <p className="text-paper-dim">
-                        {dayLabel.format(d.date)} · {d.orderCount} order{d.orderCount === 1 ? "" : "s"}
+                        {dayLabel.format(d.date)} · {d.orderCount} order
+                        {d.orderCount === 1 ? "" : "s"}
                       </p>
                     </div>
                   </div>

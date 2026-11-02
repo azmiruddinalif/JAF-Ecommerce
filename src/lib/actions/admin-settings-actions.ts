@@ -127,52 +127,57 @@ export async function updateStoreSettingsAction(
   formData: FormData
 ): Promise<SettingsActionResult> {
   try {
-    await requirePermission("settings:manage");
-  } catch {
-    return { success: false, message: "You must be signed in as an admin." };
-  }
-
-  const parsed = storeSettingsSchema.safeParse({
-    announcementText: formData.get("announcementText")?.toString() ?? "",
-    announcementEnabled: formData.get("announcementEnabled") === "on",
-
-    heroHeadline: formData.get("heroHeadline")?.toString() ?? "",
-    heroSubheadline: formData.get("heroSubheadline")?.toString() ?? "",
-    heroProduct1: formData.get("heroProduct1")?.toString() ?? "",
-    heroProduct2: formData.get("heroProduct2")?.toString() ?? "",
-    heroProduct3: formData.get("heroProduct3")?.toString() ?? "",
-
-    editorialEyebrow: formData.get("editorialEyebrow")?.toString() ?? "",
-    editorialHeading: formData.get("editorialHeading")?.toString() ?? "",
-    editorialBody: formData.get("editorialBody")?.toString() ?? "",
-    editorialCtaLabel: formData.get("editorialCtaLabel")?.toString() ?? "",
-
-    brandStatementHeading: formData.get("brandStatementHeading")?.toString() ?? "",
-    brandStatementBody: formData.get("brandStatementBody")?.toString() ?? "",
-
-    finalCtaHeadingLine1: formData.get("finalCtaHeadingLine1")?.toString() ?? "",
-    finalCtaHeadingLine2: formData.get("finalCtaHeadingLine2")?.toString() ?? "",
-    finalCtaButtonLabel: formData.get("finalCtaButtonLabel")?.toString() ?? "",
-
-    // These inputs hold Taka, not cents — convert before validation.
-    deliveryFeeCents: unitsToCents(Number(formData.get("deliveryFeeCents")?.toString() ?? "0")),
-    freeDeliveryThresholdCents: unitsToCents(
-      Number(formData.get("freeDeliveryThresholdCents")?.toString() ?? "0")
-    ),
-    codEnabled: formData.get("codEnabled") === "on",
-  });
-
-  if (!parsed.success) {
-    const fieldErrors: Record<string, string> = {};
-    for (const issue of parsed.error.issues) {
-      const key = issue.path[0];
-      if (typeof key === "string" && !fieldErrors[key]) fieldErrors[key] = issue.message;
+    try {
+      await requirePermission("settings:manage");
+    } catch {
+      return { success: false, message: "You must be signed in as an admin." };
     }
-    return { success: false, message: "Please fix the errors below.", fieldErrors };
-  }
 
-  try {
-  const existing = await prisma.storeSetting.findUnique({ where: { id: 1 } });
+    const rawDeliveryFee = formData.get("deliveryFeeCents")?.toString() ?? "";
+    const rawThreshold = formData.get("freeDeliveryThresholdCents")?.toString() ?? "";
+    const numDeliveryFee = Number(rawDeliveryFee);
+    const numThreshold = Number(rawThreshold);
+
+    const parsed = storeSettingsSchema.safeParse({
+      announcementText: formData.get("announcementText")?.toString() ?? "",
+      announcementEnabled: formData.get("announcementEnabled") === "on",
+
+      heroHeadline: formData.get("heroHeadline")?.toString() ?? "",
+      heroSubheadline: formData.get("heroSubheadline")?.toString() ?? "",
+      heroProduct1: formData.get("heroProduct1")?.toString() ?? "",
+      heroProduct2: formData.get("heroProduct2")?.toString() ?? "",
+      heroProduct3: formData.get("heroProduct3")?.toString() ?? "",
+
+      editorialEyebrow: formData.get("editorialEyebrow")?.toString() ?? "",
+      editorialHeading: formData.get("editorialHeading")?.toString() ?? "",
+      editorialBody: formData.get("editorialBody")?.toString() ?? "",
+      editorialCtaLabel: formData.get("editorialCtaLabel")?.toString() ?? "",
+
+      brandStatementHeading: formData.get("brandStatementHeading")?.toString() ?? "",
+      brandStatementBody: formData.get("brandStatementBody")?.toString() ?? "",
+
+      finalCtaHeadingLine1: formData.get("finalCtaHeadingLine1")?.toString() ?? "",
+      finalCtaHeadingLine2: formData.get("finalCtaHeadingLine2")?.toString() ?? "",
+      finalCtaButtonLabel: formData.get("finalCtaButtonLabel")?.toString() ?? "",
+
+      // These inputs hold Taka, not cents — convert before validation.
+      deliveryFeeCents: unitsToCents(Number.isFinite(numDeliveryFee) ? numDeliveryFee : 0),
+      freeDeliveryThresholdCents: unitsToCents(
+        Number.isFinite(numThreshold) ? numThreshold : 0
+      ),
+      codEnabled: formData.get("codEnabled") === "on",
+    });
+
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0];
+        if (typeof key === "string" && !fieldErrors[key]) fieldErrors[key] = issue.message;
+      }
+      return { success: false, message: "Please fix the errors below.", fieldErrors };
+    }
+
+    const existing = await prisma.storeSetting.findUnique({ where: { id: 1 } });
 
   const imageUpdates: Record<string, string | null> = {};
   const uploadErrors: string[] = [];
@@ -455,8 +460,12 @@ export async function updateStoreSettingsAction(
     update: data as Prisma.StoreSettingUpdateInput,
   });
 
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/settings");
+  try {
+    revalidatePath("/", "layout");
+    revalidatePath("/admin/settings");
+  } catch (revalError) {
+    console.warn("[updateStoreSettingsAction] Revalidation notice (non-fatal):", revalError);
+  }
 
   if (uploadErrors.length > 0) {
     return {
@@ -465,8 +474,13 @@ export async function updateStoreSettingsAction(
     };
   }
 
-  return { success: true, message: "Settings saved." };
-  } catch {
-    return { success: false, message: "Couldn't save settings — the database is unreachable. Please try again shortly." };
+  return { success: true, message: "Settings saved successfully." };
+  } catch (error) {
+    console.error("[updateStoreSettingsAction] Failed to update settings:", error);
+    const detail = error instanceof Error ? error.message : "Database or connection issue";
+    return {
+      success: false,
+      message: `Couldn't save settings: ${detail}`,
+    };
   }
 }

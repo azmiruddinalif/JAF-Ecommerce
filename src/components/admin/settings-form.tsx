@@ -346,6 +346,7 @@ export function SettingsForm({
     updateStoreSettingsAction,
     initialState,
   );
+  const [clientError, setClientError] = useState<string | null>(null);
   const [isSubmitTransition, startSubmitTransition] = useTransition();
   const isPending = isActionPending || isSubmitTransition;
   const [slot1, slot2, slot3] = settings.heroShowcaseProductIds;
@@ -607,9 +608,19 @@ export function SettingsForm({
     <form
       onSubmit={(e) => {
         e.preventDefault();
+        setClientError(null);
         const formData = new FormData(e.currentTarget);
-        startSubmitTransition(() => {
-          formAction(formData);
+        startSubmitTransition(async () => {
+          try {
+            await formAction(formData);
+          } catch (err) {
+            console.error("[settings-form] Form submit failed:", err);
+            setClientError(
+              err instanceof Error
+                ? err.message
+                : "Failed to save settings. Please check your network and try again."
+            );
+          }
         });
       }}
       className="flex flex-col gap-6"
@@ -630,15 +641,15 @@ export function SettingsForm({
         value={JSON.stringify(trustCards)}
       />
 
-      {state.message && (
+      {(clientError || state.message) && (
         <p
           className={`px-4 py-3 text-sm ${
-            state.success
+            !clientError && state.success
               ? "border border-gold/40 bg-gold/10 text-gold"
               : "border border-danger/40 bg-danger/10 text-danger"
           }`}
         >
-          {state.message}
+          {clientError || state.message}
         </p>
       )}
 
@@ -2349,14 +2360,24 @@ export function SettingsForm({
       </div>
 
       {/* Sticky Save Bar */}
-      <div className="sticky bottom-4 z-40 flex items-center justify-between border border-ink-border bg-ink-raised/95 p-4 shadow-lg backdrop-blur-md">
-        <div>
+      <div className="sticky bottom-4 z-40 flex flex-wrap items-center justify-between gap-3 border border-ink-border bg-ink-raised/95 p-4 shadow-lg backdrop-blur-md">
+        <div className="flex flex-col">
           <p className="text-xs font-bold uppercase tracking-wider text-paper">
             Store Configuration
           </p>
           <p className="text-[11px] text-paper-dim">
             Settings across all 5 separated tabs will be saved at once.
           </p>
+          {(clientError || state.message) && (
+            <p
+              className={`mt-1 text-xs font-semibold ${
+                !clientError && state.success ? "text-emerald-400" : "text-rose-400"
+              }`}
+            >
+              {!clientError && state.success ? "✓ " : "⚠️ "}
+              {clientError || state.message}
+            </p>
+          )}
         </div>
         <Button
           type="submit"

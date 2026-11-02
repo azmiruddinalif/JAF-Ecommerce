@@ -109,7 +109,9 @@ export function HeroInteractive({
 }) {
   const [bgFailed, setBgFailed] = useState(false);
   const rawBg = bannerImageUrl || fallbackImageUrl;
-  const activeBannerBg = bgFailed ? STADIUM_DAYLIGHT_BG : sanitizeBannerUrl(rawBg);
+  const activeBannerBg = bgFailed
+    ? STADIUM_DAYLIGHT_BG
+    : sanitizeBannerUrl(rawBg);
   const dynamicYear = new Date().getFullYear();
 
   const activeSlides = useMemo(() => {
@@ -146,7 +148,14 @@ export function HeroInteractive({
     : "BDT 1,200";
 
   return (
-    <section className="relative w-full overflow-hidden bg-white text-slate-900 select-none" style={heroConfig?.bgColor ? { backgroundColor: heroConfig.bgColor } : undefined}>
+    <section
+      className="relative w-full overflow-hidden bg-white text-slate-900 select-none"
+      style={
+        heroConfig?.bgColor
+          ? { backgroundColor: heroConfig.bgColor }
+          : undefined
+      }
+    >
       <div className="absolute inset-0 z-0">
         <Image
           src={activeBannerBg}
@@ -154,7 +163,11 @@ export function HeroInteractive({
           fill
           priority
           sizes="100vw"
-          unoptimized={activeBannerBg.startsWith("/") || (!activeBannerBg.includes("res.cloudinary.com") && !activeBannerBg.includes("images.unsplash.com"))}
+          unoptimized={
+            activeBannerBg.startsWith("/") ||
+            (!activeBannerBg.includes("res.cloudinary.com") &&
+              !activeBannerBg.includes("images.unsplash.com"))
+          }
           onError={() => setBgFailed(true)}
           className="object-cover object-center filter brightness-[1.03] contrast-[0.98] saturate-[0.80]"
         />
@@ -401,7 +414,6 @@ export function HeroInteractive({
         </button>
       </div>
 
-      {/* Architectural White Triangular Parapet Shape Divider (clean minimalist stadium architecture) */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 w-full overflow-hidden leading-none select-none">
         <svg
           viewBox="0 0 1440 160"
