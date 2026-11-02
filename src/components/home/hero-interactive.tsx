@@ -430,7 +430,7 @@ export function HeroInteractive({
         </button>
       </div>
 
-      {/* Architectural White Triangular Parapet Shape Divider (as in matchday stadium architecture) */}
+      {/* Architectural White Triangular Parapet Shape Divider (clean minimalist stadium architecture) */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 w-full overflow-hidden leading-none select-none">
         <svg
           viewBox="0 0 1440 160"
@@ -439,29 +439,6 @@ export function HeroInteractive({
           preserveAspectRatio="none"
           className="relative block w-full h-14 sm:h-20 md:h-28 lg:h-36 xl:h-40 drop-shadow-[0_-6px_16px_rgba(0,0,0,0.04)]"
         >
-          <defs>
-            {/* Fancy Gold / Metallic Ridge Gradient with Brilliant Sunlit Glint at Peak (380px is ~26.4% of 1440px) */}
-            <linearGradient id="hero-ridge-gold-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.35" />
-              <stop offset="18%" stopColor="#f59e0b" stopOpacity="0.85" />
-              <stop offset="25.5%" stopColor="#fef08a" stopOpacity="1" />
-              <stop offset="26.39%" stopColor="#ffffff" stopOpacity="1" />
-              <stop offset="27.2%" stopColor="#fbbf24" stopOpacity="1" />
-              <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.8" />
-              <stop offset="85%" stopColor="#d97706" stopOpacity="0.65" />
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.3" />
-            </linearGradient>
-
-            {/* Subtle Glint Glow Filter */}
-            <filter id="hero-ridge-glint-glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="2.5" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
           {/* Top Bevel / Sunlit Facet */}
           <polygon
             points="0,104 380,3 1440,99 1440,105 380,8 0,110"
@@ -473,32 +450,6 @@ export function HeroInteractive({
             points="0,110 380,8 1440,105 1440,160 0,160"
             fill="#ffffff"
           />
-
-          {/* Subtle Ambient Warm Glow Path */}
-          <path
-            d="M 0 110 L 380 8 L 1440 105"
-            fill="none"
-            stroke="rgba(245, 158, 11, 0.22)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-
-          {/* Main Thin Fancy Metallic Sunlit Gold Ridge Line (crisp 1.25px stroke) */}
-          <path
-            d="M 0 110 L 380 8 L 1440 105"
-            fill="none"
-            stroke="url(#hero-ridge-gold-gradient)"
-            strokeWidth="1.25"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-
-          {/* Architectural Peak Diamond Glint Accent */}
-          <g filter="url(#hero-ridge-glint-glow)">
-            <polygon points="380,4 383.5,8 380,12 376.5,8" fill="#fbbf24" />
-            <circle cx="380" cy="8" r="1.2" fill="#ffffff" />
-          </g>
         </svg>
       </div>
     </section>
