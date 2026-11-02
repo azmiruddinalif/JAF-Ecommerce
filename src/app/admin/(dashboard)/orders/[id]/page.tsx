@@ -55,6 +55,8 @@ async function OrderDetailContent({
           invoicePdfUrl={order.invoicePdfUrl}
           invoiceEmailSentAt={order.invoiceEmailSentAt}
           invoiceEmailError={order.invoiceEmailError}
+          invoiceWhatsAppSentAt={order.invoiceWhatsAppSentAt}
+          invoiceWhatsAppError={order.invoiceWhatsAppError}
           hasCustomerEmail={Boolean(order.customerEmail)}
           whatsappLink={buildInvoiceWhatsAppLink({
             orderNumber: order.orderNumber,

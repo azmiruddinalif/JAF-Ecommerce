@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkoutSchema } from "@/lib/validation/schemas";
 import { CART_COOKIE_NAME } from "@/lib/cart/constants";
@@ -179,14 +180,19 @@ export async function placeOrderAction(
   revalidatePath("/shop");
   revalidatePath("/", "layout");
 
-  // Best-effort — a slow or failing invoice/email provider must never block
-  // an otherwise-successful order. Failures are recorded on the order for
-  // admin to see and retry from the dashboard.
-  try {
-    await generateAndDeliverInvoice(order.id);
-  } catch {
-    // generateAndDeliverInvoice itself never throws, but guard anyway.
-  }
+  // Runs after the customer has been redirected, so a slow or failing
+  // invoice/email/WhatsApp provider never delays or blocks an otherwise
+  // successful order. Failures are recorded on the order for admin to see and
+  // retry from the dashboard.
+  const orderId = order.id;
+  after(async () => {
+    try {
+      await generateAndDeliverInvoice(orderId);
+    } catch (error) {
+      // generateAndDeliverInvoice itself never throws, but guard anyway.
+      console.error(`[Invoice] Delivery crashed for order ${orderId}:`, error);
+    }
+  });
 
   redirect(`/order-success/${order.id}`);
 }
