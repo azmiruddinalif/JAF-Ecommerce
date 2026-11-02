@@ -141,14 +141,14 @@ export function HeroInteractive({
           priority
           sizes="100vw"
           unoptimized={!activeBannerBg.startsWith("/") && !activeBannerBg.includes("res.cloudinary.com")}
-          className="object-cover object-center filter brightness-[1.16] contrast-[0.92] saturate-[0.55]"
+          className="object-cover object-center filter brightness-[1.03] contrast-[0.98] saturate-[0.80]"
         />
 
-        <div className="pointer-events-none absolute inset-0 bg-white/20 backdrop-blur-[0.5px]" />
-        <div className="pointer-events-none absolute inset-0 bg-radial-at-t from-amber-100/40 via-sky-50/20 to-transparent" />
-        <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-white via-white/80 to-white/20 sm:via-white/70 sm:to-white/10" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-linear-to-b from-white/10 via-white/35 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 sm:h-52 bg-linear-to-t from-white via-white/70 to-transparent" />
+        {/* Reduced white overlay shade so the stadium background remains clearly visible */}
+        <div className="pointer-events-none absolute inset-0 bg-radial-at-t from-amber-100/20 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-white/90 via-white/40 to-transparent sm:from-white/85 sm:via-white/25 sm:to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b from-white/35 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 sm:h-40 bg-linear-to-t from-white/60 via-white/20 to-transparent" />
       </div>
 
       <div className="pointer-events-none absolute right-4 sm:right-10 bottom-6 sm:bottom-10 z-10 select-none font-display text-8xl sm:text-9xl lg:text-[140px] xl:text-[160px] font-black tracking-tighter text-slate-900/5 leading-none">
@@ -226,7 +226,7 @@ export function HeroInteractive({
                         }
                         className={
                           isPrimary
-                            ? "group inline-flex items-center justify-center gap-2 rounded-none bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 shadow-sm shadow-amber-400/25 hover:bg-amber-500 hover:shadow-md hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
+                            ? "group inline-flex items-center justify-center gap-2 rounded-none bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 border border-amber-500/30 hover:bg-amber-500 active:scale-[0.98] transition-all cursor-pointer"
                             : "inline-flex items-center justify-center gap-2 rounded-none border border-slate-300 bg-white/80 backdrop-blur-xs px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
                         }
                       >
@@ -254,7 +254,7 @@ export function HeroInteractive({
                 <>
                   <Link
                     href="/shop"
-                    className="group inline-flex items-center justify-center gap-2 rounded-none bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 shadow-sm shadow-amber-400/25 hover:bg-amber-500 hover:shadow-md hover:shadow-amber-400/35 active:scale-[0.98] transition-all cursor-pointer"
+                    className="group inline-flex items-center justify-center gap-2 rounded-none bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 border border-amber-500/30 hover:bg-amber-500 active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <span>SHOP NEW KITS</span>
                     <ArrowRight
@@ -298,24 +298,24 @@ export function HeroInteractive({
             </div>
           </div>
 
-          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-6 min-h-115 sm:min-h-140 lg:min-h-160 xl:min-h-180">
+          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-6 min-h-120 sm:min-h-145 lg:min-h-165 xl:min-h-185 overflow-visible">
             <div className="absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 z-20 max-w-[90%] flex items-center justify-center select-none">
               <span className="truncate rounded-none bg-amber-400 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-slate-950 shadow-sm">
                 {currentSlide.name || "MATCHDAY KIT"}
               </span>
             </div>
 
-            <div className="relative w-full max-w-90 sm:max-w-115 md:max-w-130 lg:max-w-150 xl:max-w-170 h-100 sm:h-125 md:h-140 lg:h-160 xl:h-175 flex items-center justify-center">
-              <div className="absolute bottom-4 sm:bottom-6 h-8 sm:h-12 w-4/5 rounded-none bg-slate-950/15 blur-xl pointer-events-none" />
+            <div className="relative w-full max-w-105 sm:max-w-130 md:max-w-150 lg:max-w-185 xl:max-w-220 h-110 sm:h-135 md:h-155 lg:h-180 xl:h-205 flex items-center justify-center overflow-visible">
+              <div className="absolute bottom-2 sm:bottom-4 h-10 sm:h-14 w-4/5 rounded-none bg-slate-950/20 blur-2xl pointer-events-none" />
 
-              <div className="relative w-full h-full animate-jersey-float flex items-center justify-center">
+              <div className="relative w-full h-full animate-jersey-float flex items-center justify-center overflow-visible scale-105 sm:scale-110 lg:scale-120 xl:scale-130 lg:-mr-6 xl:-mr-14">
                 {activeSlides.map((slide, idx) => {
                   const isCurrent = idx === active;
                   return (
                     <div
                       key={slide.id}
                       aria-hidden={!isCurrent}
-                      className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ease-in-out ${
+                      className={`absolute inset-0 flex items-center justify-center overflow-visible transition-all duration-700 ease-in-out ${
                         isCurrent
                           ? "opacity-100 scale-100"
                           : "opacity-0 scale-95 pointer-events-none"
@@ -324,26 +324,26 @@ export function HeroInteractive({
                       {slide.slug ? (
                         <Link
                           href={`/product/${slide.slug}`}
-                          className="relative w-full h-full flex items-center justify-center cursor-pointer group"
+                          className="relative w-full h-full flex items-center justify-center cursor-pointer group overflow-visible"
                         >
                           <Image
                             src={slide.imageUrl}
                             alt={slide.name || "Matchday Kit"}
                             fill
                             priority={idx === 0}
-                            sizes="(max-width: 768px) 90vw, (max-width: 1200px) 50vw, 45vw"
-                            className="object-contain filter drop-shadow-[0_28px_40px_rgba(0,0,0,0.20)] transition-transform duration-500 group-hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 60vw, 55vw"
+                            className="object-contain filter drop-shadow-[0_32px_48px_rgba(0,0,0,0.22)] transition-transform duration-500 group-hover:scale-105"
                           />
                         </Link>
                       ) : (
-                        <div className="relative w-full h-full flex items-center justify-center">
+                        <div className="relative w-full h-full flex items-center justify-center overflow-visible">
                           <Image
                             src={slide.imageUrl}
                             alt={slide.name || "Matchday Kit"}
                             fill
                             priority={idx === 0}
-                            sizes="(max-width: 768px) 90vw, (max-width: 1200px) 50vw, 45vw"
-                            className="object-contain filter drop-shadow-[0_28px_40px_rgba(0,0,0,0.20)]"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 60vw, 55vw"
+                            className="object-contain filter drop-shadow-[0_32px_48px_rgba(0,0,0,0.22)]"
                           />
                         </div>
                       )}

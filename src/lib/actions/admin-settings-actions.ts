@@ -418,16 +418,38 @@ export async function updateStoreSettingsAction(
     footerConfig: nextFooterConfig,
   } as unknown as Prisma.InputJsonValue;
 
+  const trustCardsJsonRaw = formData.get("trustCardsJson")?.toString();
+  let nextTrustStripItems: Prisma.InputJsonValue | undefined = undefined;
+  if (trustCardsJsonRaw) {
+    try {
+      const parsedTrust = JSON.parse(trustCardsJsonRaw);
+      if (Array.isArray(parsedTrust)) {
+        nextTrustStripItems = parsedTrust as unknown as Prisma.InputJsonValue;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   const { heroProduct1, heroProduct2, heroProduct3, ...rest } = parsed.data;
   // Keep position: a blank slot means "auto-fill this slide", not "shift the others up".
   const heroShowcaseProductIds = [heroProduct1 || null, heroProduct2 || null, heroProduct3 || null];
 
-  const data = { ...rest, heroShowcaseProductIds, ...imageUpdates, socialLinks };
+  const data: Record<string, unknown> = {
+    ...rest,
+    heroShowcaseProductIds,
+    ...imageUpdates,
+    socialLinks,
+  };
+
+  if (nextTrustStripItems !== undefined) {
+    data.trustStripItems = nextTrustStripItems;
+  }
 
   await prisma.storeSetting.upsert({
     where: { id: 1 },
-    create: { id: 1, ...data },
-    update: data,
+    create: { id: 1, ...data } as Prisma.StoreSettingCreateInput,
+    update: data as Prisma.StoreSettingUpdateInput,
   });
 
   revalidatePath("/", "layout");

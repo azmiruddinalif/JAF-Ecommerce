@@ -2,6 +2,53 @@ export interface TrustStripItem {
   label: string;
 }
 
+export type TrustCardIcon =
+  | "shield"
+  | "truck"
+  | "refresh"
+  | "headphones"
+  | "zap"
+  | "star"
+  | "package";
+
+export interface TrustStripCard {
+  id?: string;
+  icon: TrustCardIcon;
+  title: string;
+  description: string;
+}
+
+export const DEFAULT_TRUST_CARDS: TrustStripCard[] = [
+  {
+    id: "trust-card-1",
+    icon: "shield",
+    title: "100% Authentic Kits",
+    description:
+      "Player & fan version performance mesh with crisp embroidery & official club crests.",
+  },
+  {
+    id: "trust-card-2",
+    icon: "truck",
+    title: "Cash On Delivery",
+    description:
+      "Doorstep delivery across all 64 districts in Bangladesh with open-box verification.",
+  },
+  {
+    id: "trust-card-3",
+    icon: "refresh",
+    title: "Size Exchange Guarantee",
+    description:
+      "Wrong fit? Seamless exchange support directly through our WhatsApp hotline.",
+  },
+  {
+    id: "trust-card-4",
+    icon: "headphones",
+    title: "24/7 Matchday Support",
+    description:
+      "Fast customer assistance & sizing recommendations via our WhatsApp hotline.",
+  },
+];
+
 export type HeroBannerMode = "default" | "full-slider";
 
 export type HeroButtonIcon =
@@ -130,6 +177,7 @@ export interface StoreSettingsView {
   heroConfig: HeroCustomConfig;
 
   trustStripItems: TrustStripItem[];
+  trustCards: TrustStripCard[];
 
   editorialEyebrow: string;
   editorialHeading: string;
@@ -218,6 +266,7 @@ export const DEFAULTS: StoreSettingsView = {
     { label: "Easy Exchange" },
     { label: "Authentic Products" },
   ],
+  trustCards: DEFAULT_TRUST_CARDS,
 
   editorialEyebrow: "The Edit",
   editorialHeading: "CULTURE ON THE PITCH & THE STREET",
@@ -617,5 +666,27 @@ export function getStoreStatus(
     statusText: `Closed Now · Opens Tomorrow at ${openFormatted}`,
     badgeVariant: "closed",
   };
+}
+
+export function normalizeTrustCards(raw: unknown): TrustStripCard[] {
+  if (Array.isArray(raw) && raw.length > 0) {
+    const hasCardShape = raw.some(
+      (item) => item && typeof item === "object" && ("title" in item || "description" in item)
+    );
+    if (hasCardShape) {
+      return raw.slice(0, 8).map((item, idx) => {
+        const icon = (item.icon as TrustCardIcon) || "shield";
+        return {
+          id: typeof item.id === "string" ? item.id : `trust-card-${idx + 1}`,
+          icon: ["shield", "truck", "refresh", "headphones", "zap", "star", "package"].includes(icon)
+            ? icon
+            : "shield",
+          title: String(item.title || "").trim() || `Card ${idx + 1}`,
+          description: String(item.description || "").trim(),
+        };
+      });
+    }
+  }
+  return DEFAULT_TRUST_CARDS;
 }
 

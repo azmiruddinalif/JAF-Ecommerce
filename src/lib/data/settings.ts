@@ -7,6 +7,7 @@ import {
   DEFAULTS,
   normalizeHeroConfig,
   normalizeFooterConfig,
+  normalizeTrustCards,
   type StoreSettingsView,
   type TrustStripItem,
 } from "./settings-shared";
@@ -44,6 +45,7 @@ export async function getStoreSettings(): Promise<StoreSettingsView> {
     trustStripItems: Array.isArray(row.trustStripItems)
       ? (row.trustStripItems as unknown as TrustStripItem[])
       : DEFAULTS.trustStripItems,
+    trustCards: normalizeTrustCards(row.trustStripItems),
 
     editorialEyebrow: row.editorialEyebrow,
     editorialHeading: row.editorialHeading,

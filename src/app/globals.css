@@ -18,7 +18,7 @@
   --font-sans: var(--font-inter);
 
   /* shadcn/ui bridge — aliases our brand tokens to the names shadcn components expect */
-  --radius: 0px;
+  --radius: 0.5rem;
   --background: #ffffff;
   --foreground: #09090b;
   --card: #ffffff;
@@ -55,15 +55,10 @@
   --font-serif: var(--font-serif);
   --font-sans: var(--font-sans);
 
-  --radius: 0px;
-  --radius-xs: 0px;
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
-  --radius-4xl: 0px;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -85,10 +80,14 @@
   --color-ring: var(--ring);
 }
 
-*,
-*::before,
-*::after {
+* {
   border-color: var(--color-ink-border);
+}
+
+/* Sharp rectangular aesthetic specifically for buttons, keeping circular badges & avatars intact */
+button,
+[role="button"],
+.btn {
   border-radius: 0 !important;
 }
 
@@ -324,16 +323,27 @@ body.admin-theme [data-slot="card"],
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Primary buttons in Admin stay professional emerald */
+/* Primary buttons in Admin stay professional emerald with no yellow glow/shadow */
 body.admin-theme button[class*="bg-amber-400"],
 body.admin-theme a[class*="bg-amber-400"] {
   background-color: #059669 !important;
   color: #ffffff !important;
   border-color: #059669 !important;
+  box-shadow: none !important;
 }
 body.admin-theme button[class*="bg-amber-400"]:hover,
 body.admin-theme a[class*="bg-amber-400"]:hover {
   background-color: #047857 !important;
+  box-shadow: none !important;
+}
+
+/* Remove yellow/amber shadow behind buttons in dashboard */
+body.admin-theme button,
+body.admin-theme [role="button"],
+.admin-dashboard button,
+.admin-dashboard [role="button"] {
+  box-shadow: none !important;
+  text-shadow: none !important;
 }
 
 /* Matchday suspended jersey floating animation */

@@ -1,7 +1,22 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { ArrowDown, ArrowUp, Plus, RotateCcw, Trash2 } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Check,
+  Headphones,
+  Package,
+  Plus,
+  RefreshCw,
+  RotateCcw,
+  ShieldCheck,
+  Sliders,
+  Star,
+  Trash2,
+  Truck,
+  Zap,
+} from "lucide-react";
 import { Input, Textarea, Select, Label, FieldError } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,6 +31,7 @@ import {
   DEFAULT_FOOTER_CONFIG,
   DEFAULT_LOCATION_BADGES,
   DEFAULT_SHOWROOM_SCHEDULE,
+  DEFAULT_TRUST_CARDS,
   formatTime12Hour,
   getStoreStatus,
   type FooterSocialsConfig,
@@ -28,6 +44,8 @@ import {
   type ShowroomScheduleConfig,
   type ShowroomStatusMode,
   type StoreSettingsView,
+  type TrustCardIcon,
+  type TrustStripCard,
 } from "@/lib/data/settings-shared";
 
 const DAYS_OF_WEEK = [
@@ -254,6 +272,59 @@ const SOCIAL_PLATFORMS: {
   },
 ];
 
+const TRUST_CARD_ICONS: { value: TrustCardIcon; label: string }[] = [
+  { value: "shield", label: "Official Shield (100% Authentic)" },
+  { value: "truck", label: "Delivery Truck (Cash On Delivery)" },
+  { value: "refresh", label: "Cycle Arrows (Size Exchange)" },
+  { value: "headphones", label: "Headphones (24/7 Matchday Support)" },
+  { value: "zap", label: "Lightning (Express Dispatch)" },
+  { value: "star", label: "Star (Premium Quality)" },
+  { value: "package", label: "Package Box (Open-Box Verification)" },
+];
+
+type SettingsTab =
+  | "hero"
+  | "trust"
+  | "announcement_brand"
+  | "delivery"
+  | "footer";
+
+const SETTINGS_TABS: {
+  id: SettingsTab;
+  label: string;
+  badge?: string;
+  description: string;
+}[] = [
+  {
+    id: "hero",
+    label: "Hero & Banner",
+    badge: "Matchday",
+    description: "Layout mode, stadium background, showcase jersey slots & promo slider",
+  },
+  {
+    id: "trust",
+    label: "Trust Strip",
+    badge: "4 Cards",
+    description: "4 dynamic feature cards with customizable icons, titles & descriptions",
+  },
+  {
+    id: "announcement_brand",
+    label: "Announcement & Brand",
+    description: "Top bar notice, editorial fashion story, brand statement & final CTA",
+  },
+  {
+    id: "delivery",
+    label: "Delivery & Payment",
+    description: "Standard delivery fee, free shipping threshold & COD checkout toggle",
+  },
+  {
+    id: "footer",
+    label: "Footer & Showroom",
+    badge: "Outlet",
+    description: "Social media links, physical showroom address, hours & phone numbers",
+  },
+];
+
 export function SettingsForm({
   settings,
   products,
@@ -261,10 +332,45 @@ export function SettingsForm({
   settings: StoreSettingsView;
   products: { id: string; name: string; sku: string }[];
 }) {
+  const [activeTab, setActiveTab] = useState<SettingsTab>("hero");
   const [state, formAction, isActionPending] = useActionState(updateStoreSettingsAction, initialState);
   const [isSubmitTransition, startSubmitTransition] = useTransition();
   const isPending = isActionPending || isSubmitTransition;
   const [slot1, slot2, slot3] = settings.heroShowcaseProductIds;
+
+  const [trustCards, setTrustCards] = useState<TrustStripCard[]>(
+    settings.trustCards && settings.trustCards.length > 0
+      ? settings.trustCards
+      : DEFAULT_TRUST_CARDS
+  );
+
+  function updateTrustCard(index: number, patch: Partial<TrustStripCard>) {
+    setTrustCards((prev) =>
+      prev.map((c, i) => (i === index ? { ...c, ...patch } : c))
+    );
+  }
+
+  function addTrustCard() {
+    if (trustCards.length >= 8) return;
+    setTrustCards((prev) => [
+      ...prev,
+      {
+        id: makeId("trust-card"),
+        icon: "shield",
+        title: "New Guarantee",
+        description: "Official customer assurance or service description.",
+      },
+    ]);
+  }
+
+  function removeTrustCard(index: number) {
+    if (trustCards.length <= 1) return;
+    setTrustCards((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function resetTrustCards() {
+    setTrustCards(DEFAULT_TRUST_CARDS);
+  }
 
   const hc = settings.heroConfig;
   const [heroMode, setHeroMode] = useState<HeroBannerMode>(hc.mode);
@@ -475,6 +581,7 @@ export function SettingsForm({
     >
       <input type="hidden" name="heroButtonsJson" value={JSON.stringify(heroButtons)} />
       <input type="hidden" name="heroPromoSlidesJson" value={JSON.stringify(promoSlides)} />
+      <input type="hidden" name="trustCardsJson" value={JSON.stringify(trustCards)} />
 
       {state.message && (
         <p
@@ -488,17 +595,49 @@ export function SettingsForm({
         </p>
       )}
 
-      <SectionCard title="Announcement Bar" description="The thin banner above the navbar.">
-        <div>
-          <Label htmlFor="announcementText">Text</Label>
-          <Input id="announcementText" name="announcementText" defaultValue={settings.announcementText} />
-          <FieldError message={state.fieldErrors?.announcementText} />
+      {/* Settings Navigation Tabs */}
+      <div className="border border-ink-border bg-ink-raised/60 p-2 sm:p-2.5">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
+          {SETTINGS_TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`group flex items-center gap-2 px-3.5 py-2 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  isActive
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-ink text-slate-700 hover:bg-slate-200/60 hover:text-slate-950 border border-ink-border"
+                }`}
+              >
+                <span>{tab.label}</span>
+                {tab.badge && (
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                      isActive
+                        ? "bg-white/20 text-white"
+                        : "bg-emerald-100 text-emerald-800"
+                    }`}
+                  >
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
-        <label className="flex items-center gap-2 text-sm">
-          <Checkbox name="announcementEnabled" defaultChecked={settings.announcementEnabled} />
-          Show announcement bar
-        </label>
-      </SectionCard>
+        <div className="mt-2 text-[11px] text-paper-dim px-1">
+          Active section:{" "}
+          <strong className="text-paper">
+            {SETTINGS_TABS.find((t) => t.id === activeTab)?.label}
+          </strong>{" "}
+          — {SETTINGS_TABS.find((t) => t.id === activeTab)?.description}
+        </div>
+      </div>
+
+      {/* Tab 1: Hero & Banner */}
+      <div className={activeTab === "hero" ? "flex flex-col gap-6" : "hidden"}>
 
       <SectionCard
         title="Hero / Banner Section"
@@ -1098,11 +1237,179 @@ export function SettingsForm({
           )}
         </div>
       </SectionCard>
+      </div>
 
-      <SectionCard
-        title="Editorial Section"
-        description="The large two-column fashion editorial block on the homepage."
-      >
+      {/* Tab 2: Trust Strip (4 Feature Cards) */}
+      <div className={activeTab === "trust" ? "flex flex-col gap-6" : "hidden"}>
+        <SectionCard
+          title="Storefront Trust Strip (4 Feature Cards)"
+          description="Customize the 4 customer assurance feature cards displayed directly below the hero banner. These cards are rendered on a clean white background with no top/bottom section borders."
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-border pb-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-paper">
+                Feature Assurance Cards ({trustCards.length})
+              </p>
+              <p className="text-[11px] text-paper-dim">
+                Best displayed as 4 cards matching the standard desktop grid.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={resetTrustCards}
+                className="text-xs"
+              >
+                <RotateCcw size={13} />
+                <span>Reset to Default 4 Cards</span>
+              </Button>
+              {trustCards.length < 8 && (
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={addTrustCard}
+                  className="text-xs"
+                >
+                  <Plus size={13} />
+                  <span>Add Card</span>
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {trustCards.map((card, idx) => (
+              <div
+                key={card.id || idx}
+                className="relative border border-ink-border bg-ink p-4 space-y-3"
+              >
+                <div className="flex items-center justify-between border-b border-ink-border/60 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-6 items-center justify-center bg-gold/15 text-gold text-xs font-bold font-mono">
+                      #{idx + 1}
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-paper">
+                      Card {idx + 1}
+                    </span>
+                  </div>
+                  {trustCards.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeTrustCard(idx)}
+                      className="text-paper-dim hover:text-danger p-1 transition-colors cursor-pointer"
+                      title="Remove Card"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor={`trust_icon_${idx}`}>Card Icon</Label>
+                  <Select
+                    id={`trust_icon_${idx}`}
+                    value={card.icon}
+                    onChange={(e) =>
+                      updateTrustCard(idx, {
+                        icon: e.target.value as TrustCardIcon,
+                      })
+                    }
+                    className="mt-1 bg-ink-raised text-xs"
+                  >
+                    {TRUST_CARD_ICONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor={`trust_title_${idx}`}>Card Title</Label>
+                  <Input
+                    id={`trust_title_${idx}`}
+                    type="text"
+                    value={card.title}
+                    onChange={(e) =>
+                      updateTrustCard(idx, { title: e.target.value })
+                    }
+                    placeholder="e.g. 100% Authentic Kits"
+                    className="mt-1 bg-ink-raised text-xs font-semibold uppercase tracking-wider"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor={`trust_desc_${idx}`}>Description</Label>
+                  <Textarea
+                    id={`trust_desc_${idx}`}
+                    rows={2}
+                    value={card.description}
+                    onChange={(e) =>
+                      updateTrustCard(idx, { description: e.target.value })
+                    }
+                    placeholder="Brief description of the customer assurance..."
+                    className="mt-1 bg-ink-raised text-xs leading-relaxed"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Live Preview Box */}
+          <div className="mt-4 border-t border-ink-border pt-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-paper">
+              Live Storefront Preview
+            </h3>
+            <p className="mt-0.5 text-[11px] text-paper-dim">
+              This is how your trust feature cards will render on the white background under the hero banner.
+            </p>
+            <div className="mt-3 bg-white p-4 border border-slate-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {trustCards.map((c, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-3 border border-slate-200 p-3 bg-white"
+                  >
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center border border-amber-400/30 bg-amber-400/10 text-amber-500 text-xs font-bold">
+                      {c.icon === "truck" ? "🚚" : c.icon === "refresh" ? "🔄" : c.icon === "headphones" ? "🎧" : c.icon === "zap" ? "⚡" : c.icon === "star" ? "⭐" : c.icon === "package" ? "📦" : "🛡️"}
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-900">
+                        {c.title || `Feature ${i + 1}`}
+                      </p>
+                      <p className="mt-0.5 text-[10px] text-slate-500 leading-normal line-clamp-2">
+                        {c.description || "Description preview..."}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </SectionCard>
+      </div>
+
+      {/* Tab 3: Announcement & Brand */}
+      <div className={activeTab === "announcement_brand" ? "flex flex-col gap-6" : "hidden"}>
+        <SectionCard title="Announcement Bar" description="The thin banner above the navbar.">
+          <div>
+            <Label htmlFor="announcementText">Text</Label>
+            <Input id="announcementText" name="announcementText" defaultValue={settings.announcementText} />
+            <FieldError message={state.fieldErrors?.announcementText} />
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <Checkbox name="announcementEnabled" defaultChecked={settings.announcementEnabled} />
+            Show announcement bar
+          </label>
+        </SectionCard>
+
+        <SectionCard
+          title="Editorial Section"
+          description="The large two-column fashion editorial block on the homepage."
+        >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label htmlFor="editorialEyebrow">Eyebrow</Label>
@@ -1164,7 +1471,10 @@ export function SettingsForm({
         </div>
         <ImageField name="finalCtaImage" label="Background Image (optional)" currentUrl={settings.finalCtaImageUrl} />
       </SectionCard>
+      </div>
 
+      {/* Tab 4: Delivery & Payment */}
+      <div className={activeTab === "delivery" ? "flex flex-col gap-6" : "hidden"}>
       <SectionCard title="Delivery & Payment">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
@@ -1194,7 +1504,10 @@ export function SettingsForm({
           Enable Cash on Delivery
         </label>
       </SectionCard>
+      </div>
 
+      {/* Tab 5: Footer & Store Information */}
+      <div className={activeTab === "footer" ? "flex flex-col gap-6" : "hidden"}>
       <SectionCard
         title="Footer & Store Information"
         description="Configure social media links (with toggle checkboxes) and edit the physical outlet address & contact numbers displayed in the premium storefront footer."
@@ -1735,10 +2048,28 @@ export function SettingsForm({
           </div>
         </div>
       </SectionCard>
+      </div>
 
-      <Button type="submit" variant="primary" size="lg" disabled={isPending} className="self-start">
-        {isPending ? "SAVING..." : "SAVE SETTINGS"}
-      </Button>
+      {/* Sticky Save Bar */}
+      <div className="sticky bottom-4 z-40 flex items-center justify-between border border-ink-border bg-ink-raised/95 p-4 shadow-lg backdrop-blur-md">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-paper">
+            Store Configuration
+          </p>
+          <p className="text-[11px] text-paper-dim">
+            Settings across all 5 separated tabs will be saved at once.
+          </p>
+        </div>
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          disabled={isPending}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer shadow-none"
+        >
+          {isPending ? "SAVING..." : "SAVE ALL SETTINGS"}
+        </Button>
+      </div>
     </form>
   );
 }

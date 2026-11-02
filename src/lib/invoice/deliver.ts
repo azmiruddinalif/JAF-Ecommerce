@@ -1,12 +1,8 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { imageStorage } from "@/lib/storage";
-import { generateInvoicePdf } from "./generate-pdf";
+import { buildInvoiceNumber, renderInvoicePdf } from "./render";
 import { sendInvoiceEmail } from "@/lib/email/resend";
-
-function buildInvoiceNumber(orderNumber: string): string {
-  return `INV-${orderNumber.replace(/^JAF-/, "")}`;
-}
 
 /**
  * Generates the invoice PDF for an order, stores it, and emails it to the
@@ -29,22 +25,7 @@ export async function generateAndDeliverInvoice(orderId: string): Promise<{ succ
 
   let pdfBuffer: Uint8Array;
   try {
-    pdfBuffer = await generateInvoicePdf({
-      orderNumber: order.orderNumber,
-      invoiceNumber,
-      customerName: order.customerName,
-      customerPhone: order.customerPhone,
-      customerEmail: order.customerEmail,
-      address: order.address,
-      city: order.city,
-      area: order.area,
-      subtotalCents: order.subtotalCents,
-      deliveryFeeCents: order.deliveryFeeCents,
-      discountCents: order.discountCents,
-      totalCents: order.totalCents,
-      createdAt: order.createdAt,
-      items: order.items,
-    });
+    pdfBuffer = await renderInvoicePdf(order, invoiceNumber);
   } catch (error) {
     return {
       success: false,
@@ -54,6 +35,7 @@ export async function generateAndDeliverInvoice(orderId: string): Promise<{ succ
 
   let invoicePdfUrl = order.invoicePdfUrl;
   let invoicePdfPublicId = order.invoicePdfPublicId;
+  let storageError: string | null = null;
   try {
     const uploaded = await imageStorage.upload(Buffer.from(pdfBuffer), {
       folder: `invoices/${order.id}`,
@@ -63,14 +45,8 @@ export async function generateAndDeliverInvoice(orderId: string): Promise<{ succ
     invoicePdfUrl = uploaded.secureUrl;
     invoicePdfPublicId = uploaded.publicId;
   } catch (error) {
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { invoiceNumber },
-    }).catch(() => {});
-    return {
-      success: false,
-      message: `Could not store the invoice PDF: ${error instanceof Error ? error.message : "unknown error"}`,
-    };
+    storageError = error instanceof Error ? error.message : "unknown storage error";
+    console.warn(`[Invoice] Storage upload warning for order ${order.orderNumber}:`, storageError);
   }
 
   let invoiceEmailSentAt = order.invoiceEmailSentAt;
@@ -91,6 +67,7 @@ export async function generateAndDeliverInvoice(orderId: string): Promise<{ succ
       invoiceEmailSentAt = new Date();
     } catch (error) {
       invoiceEmailError = error instanceof Error ? error.message : "Failed to send invoice email.";
+      console.error(`[Invoice] Email delivery failed for order ${order.orderNumber}:`, invoiceEmailError);
     }
   }
 
@@ -105,6 +82,15 @@ export async function generateAndDeliverInvoice(orderId: string): Promise<{ succ
 
   if (order.customerEmail && invoiceEmailError) {
     return { success: false, message: `Invoice created, but the email failed to send: ${invoiceEmailError}` };
+  }
+
+  if (storageError && !invoicePdfUrl) {
+    return {
+      success: true,
+      message: order.customerEmail
+        ? "Invoice generated and emailed to customer (cloud copy pending)."
+        : "Invoice generated (cloud copy pending).",
+    };
   }
 
   return {

@@ -30,7 +30,10 @@ export function InvoicePanel({
   whatsappLink,
 }: InvoicePanelProps) {
   const [isPending, startTransition] = useTransition();
-  const [message, setMessage] = useState<{ text: string; success: boolean } | null>(null);
+  const [message, setMessage] = useState<{
+    text: string;
+    success: boolean;
+  } | null>(null);
 
   function regenerate() {
     setMessage(null);
@@ -42,7 +45,9 @@ export function InvoicePanel({
 
   return (
     <div className="border border-ink-border p-5">
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-paper-dim">Invoice</h2>
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-paper-dim">
+        Invoice
+      </h2>
 
       {invoiceNumber ? (
         <p className="text-sm">{invoiceNumber}</p>
@@ -61,18 +66,36 @@ export function InvoicePanel({
       )}
 
       {message && (
-        <p className={`mt-2 text-xs ${message.success ? "text-gold" : "text-danger"}`}>{message.text}</p>
+        <p
+          className={`mt-2 text-xs ${message.success ? "text-gold" : "text-danger"}`}
+        >
+          {message.text}
+        </p>
       )}
 
       <div className="mt-4 flex flex-wrap gap-3">
+        <a
+          href={`/api/admin/orders/${orderId}/invoice`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-700 hover:text-emerald-800"
+        >
+          <FileText size={14} /> View PDF
+        </a>
+        <a
+          href={`/api/admin/orders/${orderId}/invoice?download=1`}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900"
+        >
+          Download PDF
+        </a>
         {invoicePdfUrl && (
           <a
             href={invoicePdfUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-paper hover:text-gold"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-paper-dim hover:text-paper"
           >
-            <FileText size={14} /> Download PDF
+            Cloud Copy
           </a>
         )}
         <a
@@ -83,8 +106,17 @@ export function InvoicePanel({
         >
           <MessageCircle size={14} /> Send via WhatsApp
         </a>
-        <Button type="button" variant="secondary" size="sm" disabled={isPending} onClick={regenerate}>
-          <RefreshCw size={14} className={isPending ? "animate-spin" : undefined} />
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={isPending}
+          onClick={regenerate}
+        >
+          <RefreshCw
+            size={14}
+            className={isPending ? "animate-spin" : undefined}
+          />
           {invoicePdfUrl ? "Regenerate & Resend" : "Generate Invoice"}
         </Button>
       </div>

@@ -251,7 +251,7 @@ export function AddToCartForm({
           type="button"
           variant="primary"
           style={{ borderRadius: 0 }}
-          className="flex-1 !rounded-none rounded-none py-2.5 sm:py-3 text-xs sm:text-[13px] font-bold uppercase tracking-wider bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-xs shadow-amber-400/25 border border-amber-500/30 cursor-pointer"
+          className="flex-1 !rounded-none rounded-none py-2.5 sm:py-3 text-xs sm:text-[13px] font-bold uppercase tracking-wider bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-xs border border-amber-500/30 cursor-pointer"
           disabled={isPending || !inStock}
           onClick={() => handleAddToCart()}
         >
