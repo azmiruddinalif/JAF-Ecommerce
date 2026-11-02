@@ -365,23 +365,23 @@ export function HeroInteractive({
         </div>
       </div>
 
-      {/* Top-Right Gallery Navigation Arrows */}
-      <div className="absolute right-4 top-4 sm:right-6 sm:top-6 lg:right-8 lg:top-8 xl:right-10 xl:top-8 z-30 flex items-center gap-1.5 sm:gap-2 select-none">
+      {/* Glossy Rounded Gallery Navigation Arrows (Elevated comfortably above the bottom white architectural shape) */}
+      <div className="absolute right-4 sm:right-7 lg:right-9 xl:right-11 bottom-16 sm:bottom-20 md:bottom-24 lg:bottom-28 xl:bottom-32 z-30 flex items-center gap-2 sm:gap-2.5 select-none">
         <button
           type="button"
           onClick={handlePrev}
           aria-label="Previous jersey"
-          className="size-8 sm:size-9 rounded-none border border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xs shadow-2xs hover:border-slate-950 hover:bg-white active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+          className="size-9 sm:size-10 rounded-full bg-linear-to-b from-white/95 via-white/85 to-white/65 backdrop-blur-md text-slate-800 border border-white/90 shadow-[0_4px_16px_rgba(0,0,0,0.12),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:from-white hover:to-white/90 hover:text-slate-950 hover:shadow-[0_6px_20px_rgba(0,0,0,0.16),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
         >
-          <ChevronLeft size={15} />
+          <ChevronLeft size={16} />
         </button>
         <button
           type="button"
           onClick={handleNext}
           aria-label="Next jersey"
-          className="size-8 sm:size-9 rounded-none border border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xs shadow-2xs hover:border-slate-950 hover:bg-white active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+          className="size-9 sm:size-10 rounded-full bg-linear-to-b from-white/95 via-white/85 to-white/65 backdrop-blur-md text-slate-800 border border-white/90 shadow-[0_4px_16px_rgba(0,0,0,0.12),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:from-white hover:to-white/90 hover:text-slate-950 hover:shadow-[0_6px_20px_rgba(0,0,0,0.16),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
         >
-          <ChevronRight size={15} />
+          <ChevronRight size={16} />
         </button>
       </div>
 
