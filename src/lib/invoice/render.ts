@@ -38,3 +38,4 @@ export async function renderInvoicePdf(
 
   return generateInvoicePdf(invoiceOrder);
 }
+

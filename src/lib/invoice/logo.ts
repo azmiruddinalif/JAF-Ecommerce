@@ -14,3 +14,4 @@ export async function getLogoBuffer(): Promise<Buffer | null> {
     return null;
   }
 }
+
