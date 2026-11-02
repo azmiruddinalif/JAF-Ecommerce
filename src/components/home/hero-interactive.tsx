@@ -420,43 +420,32 @@ export function HeroInteractive({
       {/* Architectural White Triangular Parapet Shape Divider (as in matchday stadium architecture) */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 w-full overflow-hidden leading-none select-none">
         <svg
-          viewBox="0 0 1440 180"
+          viewBox="0 0 1440 160"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           preserveAspectRatio="none"
           className="relative block w-full h-14 sm:h-20 md:h-28 lg:h-36 xl:h-40 drop-shadow-[0_-6px_16px_rgba(0,0,0,0.04)]"
         >
-          {/* Top Bevel / Sunlit Facet on Right */}
+          {/* Top Bevel / Sunlit Facet */}
           <polygon
-            points="370,0 1440,128 1440,135 370,6"
+            points="0,104 380,3 1440,99 1440,105 380,8 0,110"
             fill="#f8fafc"
           />
 
-          {/* Main Pure White Architectural Shape from bottom-left (0, 180) to peak (370, 6) down to right (1440, 135) */}
+          {/* Main Pure White Architectural Facet from left (0, 110) to peak (380, 8) down to right (1440, 105) */}
           <polygon
-            points="0,180 370,6 1440,135 1440,180"
+            points="0,110 380,8 1440,105 1440,160 0,160"
             fill="#ffffff"
           />
 
-          {/* Right Ridge Accent Line */}
-          <line
-            x1="370"
-            y1="6"
-            x2="1440"
-            y2="135"
-            stroke="rgba(255, 255, 255, 0.95)"
-            strokeWidth="1.5"
-          />
-
-          {/* Yellow / Amber Line starting at bottom (0, 180) and ending at that white shade top (370, 6) */}
-          <line
-            x1="0"
-            y1="180"
-            x2="370"
-            y2="6"
+          {/* Continuous Yellow / Amber Ridge Line along the entire top edge (from left to peak to right) */}
+          <path
+            d="M 0 110 L 380 8 L 1440 105"
+            fill="none"
             stroke="#f59e0b"
-            strokeWidth="2.5"
+            strokeWidth="3"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       </div>
