@@ -55,10 +55,6 @@ const MINUTE_OPTIONS = Array.from({ length: 12 }, (_, i) =>
   String(i * 5).padStart(2, "0"),
 );
 
-/**
- * 12-hour time picker (hour / minute / AM-PM). Takes and emits the 24-hour
- * "HH:mm" string used by the schedule config, so storage is unchanged.
- */
 function TimePicker12({
   id,
   value,
@@ -1521,7 +1517,9 @@ export function SettingsForm({
               background under the hero banner.
             </p>
             <div className="mt-3 bg-white p-4 border border-slate-200">
-              <div className={`grid gap-3 ${getTrustGridColsClass(trustCards.length)}`}>
+              <div
+                className={`grid gap-3 ${getTrustGridColsClass(trustCards.length)}`}
+              >
                 {trustCards.map((c, i) => (
                   <div
                     key={i}
