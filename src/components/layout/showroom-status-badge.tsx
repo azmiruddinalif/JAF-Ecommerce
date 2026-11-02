@@ -41,9 +41,9 @@ export function ShowroomStatusBadge({
     return (
       <span
         title={fallbackHours ? `Store Hours: ${fallbackHours}` : undefined}
-        className={`inline-flex items-center gap-2 rounded-none border border-amber-300 bg-amber-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-amber-500 transition-all ${className}`}
+        className={`inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 font-mono text-[11px] font-semibold text-emerald-800 transition-all ${className}`}
       >
-        <span className="h-1.5 w-1.5 animate-pulse rounded-none bg-amber-600" />
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
         <span>{status.statusText}</span>
       </span>
     );
@@ -53,9 +53,9 @@ export function ShowroomStatusBadge({
     return (
       <span
         title="Showroom status set to temporarily inactive by store admin"
-        className={`inline-flex items-center gap-2 rounded-none border border-rose-500/30 bg-rose-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-rose-300 transition-all ${className}`}
+        className={`inline-flex items-center gap-2 rounded-full border border-rose-300 bg-rose-50 px-3 py-1 font-mono text-[11px] font-semibold text-rose-700 transition-all ${className}`}
       >
-        <span className="h-1.5 w-1.5 rounded-none bg-rose-400" />
+        <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
         <span>{status.statusText}</span>
       </span>
     );
@@ -64,9 +64,9 @@ export function ShowroomStatusBadge({
   return (
     <span
       title={fallbackHours ? `Regular Hours: ${fallbackHours}` : undefined}
-      className={`inline-flex items-center gap-2 rounded-none border border-ink-border bg-ink-raised/90 px-3 py-1 font-mono text-[11px] font-medium text-paper-dim transition-all ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 font-mono text-[11px] font-medium text-slate-600 transition-all ${className}`}
     >
-      <span className="h-1.5 w-1.5 rounded-none bg-paper-dim/60" />
+      <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
       <span>{status.statusText}</span>
     </span>
   );

@@ -49,6 +49,25 @@ export const DEFAULT_TRUST_CARDS: TrustStripCard[] = [
   },
 ];
 
+export function getTrustGridColsClass(count: number): string {
+  switch (count) {
+    case 1:
+      return "grid-cols-1 w-full max-w-lg mx-auto";
+    case 2:
+      return "grid-cols-1 sm:grid-cols-2 w-full max-w-4xl mx-auto";
+    case 3:
+      return "grid-cols-1 sm:grid-cols-3 w-full";
+    case 4:
+      return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 w-full";
+    case 5:
+      return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 w-full";
+    case 6:
+      return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full";
+    default:
+      return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 w-full";
+  }
+}
+
 export type HeroBannerMode = "default" | "full-slider";
 
 export type HeroButtonIcon =

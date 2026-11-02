@@ -23,6 +23,7 @@ import {
   DEFAULT_LOCATION_BADGES,
   DEFAULT_SHOWROOM_SCHEDULE,
   DEFAULT_TRUST_CARDS,
+  getTrustGridColsClass,
   formatTime12Hour,
   getStoreStatus,
   type FooterSocialsConfig,
@@ -1520,7 +1521,7 @@ export function SettingsForm({
               background under the hero banner.
             </p>
             <div className="mt-3 bg-white p-4 border border-slate-200">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className={`grid gap-3 ${getTrustGridColsClass(trustCards.length)}`}>
                 {trustCards.map((c, i) => (
                   <div
                     key={i}

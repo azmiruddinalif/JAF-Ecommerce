@@ -10,6 +10,7 @@ import {
 import { getStoreSettings } from "@/lib/data/settings";
 import {
   DEFAULT_TRUST_CARDS,
+  getTrustGridColsClass,
   type TrustCardIcon,
   type TrustStripCard,
 } from "@/lib/data/settings-shared";
@@ -31,10 +32,12 @@ export async function TrustStrip() {
       ? settings.trustCards
       : DEFAULT_TRUST_CARDS;
 
+  const gridClass = getTrustGridColsClass(cards.length);
+
   return (
     <section className="bg-white py-6 sm:py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4 lg:gap-5">
+        <div className={`grid gap-3.5 sm:gap-4 lg:gap-5 ${gridClass}`}>
           {cards.map((card, idx) => {
             const Icon = ICON_MAP[card.icon] || ShieldCheck;
             return (

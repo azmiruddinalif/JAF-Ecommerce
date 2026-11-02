@@ -5,9 +5,6 @@ import {
   Mail,
   MapPin,
   Phone,
-  RefreshCw,
-  ShieldCheck,
-  Truck,
 } from "lucide-react";
 import { Brand, BrandSlogan } from "./brand";
 import { ShowroomStatusBadge } from "./showroom-status-badge";
@@ -44,24 +41,6 @@ const navigationColumns = [
       { label: "Privacy Policy", href: "/privacy" },
       { label: "Terms of Service", href: "/terms" },
     ],
-  },
-];
-
-const trustPillars = [
-  {
-    icon: ShieldCheck,
-    title: "100% Authentic Kits",
-    desc: "Player & fan version performance mesh with crisp embroidery & official club crests.",
-  },
-  {
-    icon: Truck,
-    title: "Cash On Delivery",
-    desc: "Doorstep delivery across all 64 districts in Bangladesh with open-box verification.",
-  },
-  {
-    icon: RefreshCw,
-    title: "Size Exchange Guarantee",
-    desc: "Wrong fit? Seamless exchange support directly through our WhatsApp hotline.",
   },
 ];
 
@@ -106,40 +85,31 @@ export async function Footer() {
   );
 
   return (
-    <footer className="relative overflow-hidden border-t border-amber-400/20 bg-ink text-paper">
+    <footer className="relative overflow-hidden border-t border-slate-200 bg-white text-slate-900">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.06]"
-        style={{
-          backgroundImage:
-            "radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.15) 0%, transparent 60%), repeating-linear-gradient(115deg, rgba(245, 158, 11, 0.45) 0px, rgba(245, 158, 11, 0.45) 1px, transparent 1px, transparent 38px)",
-        }}
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-amber-400/50 to-transparent"
       />
 
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-amber-400/60 to-transparent"
-      />
-
-      <div className="relative mx-auto max-w-7xl px-4 pt-16 pb-12 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-4 pt-14 pb-12 sm:px-6 lg:px-8">
         {shopInfo.address && (
           <div
             tabIndex={0}
             role="region"
             aria-label="Flagship Showroom & Outlet Location"
-            className="group relative mb-14 w-full border border-slate-200/90 bg-white p-6 shadow-xs backdrop-blur-md transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-amber-400 select-text cursor-text sm:p-7"
+            className="group relative mb-12 sm:mb-14 w-full border border-slate-200 bg-slate-50/50 p-5 sm:p-7 transition-colors select-text"
           >
-            {/* Header Strip with Glowing Badge */}
-            <div className="flex flex-col gap-3 border-b border-amber-400/20 pb-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-none border border-amber-400/30 bg-amber-400/10 text-amber-500">
+            {/* Header: Title + Live Status Badge */}
+            <div className="flex flex-col gap-3 border-b border-slate-200/80 pb-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <span className="flex h-7 w-7 items-center justify-center border border-slate-200 bg-white text-amber-500 shadow-2xs">
                   <MapPin size={14} />
                 </span>
                 <div>
-                  <h3 className="font-display text-xs uppercase tracking-wider text-paper sm:text-sm">
+                  <h3 className="font-display text-xs uppercase tracking-wider text-slate-900 sm:text-sm">
                     Flagship Showroom &amp; Retail Outlet
                   </h3>
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-gold-bright">
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-slate-400">
                     Official Physical Store · Dhaka, Bangladesh
                   </p>
                 </div>
@@ -152,50 +122,46 @@ export async function Footer() {
               </div>
             </div>
 
+            {/* Content: Location details & Contact */}
             <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-12 md:gap-8">
               <div className="flex flex-col justify-between gap-3 md:col-span-7">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-paper-dim">
-                    Store Location &amp; Visit Address:
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    Store Location &amp; Visit Address
                   </span>
-                  <p className="mt-1.5 text-sm font-normal leading-relaxed text-paper">
+                  <p className="mt-1 text-xs sm:text-sm font-medium leading-relaxed text-slate-800">
                     {shopInfo.address}
                   </p>
                 </div>
-                {shopInfo.locationBadges &&
-                  shopInfo.locationBadges.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-paper-dim">
-                      {shopInfo.locationBadges.map((badge) => (
-                        <span
-                          key={badge.id || badge.label}
-                          className={
-                            badge.highlight
-                              ? "inline-flex items-center gap-1.5 rounded-none border border-amber-400/40 bg-amber-400/10 px-3.5 py-1.5 font-mono text-xs font-bold text-amber-500 transition-all duration-200 hover:border-amber-400 hover:bg-amber-400/20 hover:text-slate-950"
-                              : "inline-flex items-center gap-1.5 rounded-none border border-ink-border bg-ink px-2.5 py-1 font-mono text-[10px] uppercase text-paper-dim"
-                          }
-                        >
-                          {badge.label}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                {shopInfo.locationBadges && shopInfo.locationBadges.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    {shopInfo.locationBadges.map((badge) => (
+                      <span
+                        key={badge.id || badge.label}
+                        className="inline-flex items-center border border-slate-200 bg-white px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-slate-600 shadow-2xs"
+                      >
+                        {badge.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Right Column: Direct Hotline Buttons & Concierge */}
-              <div className="flex flex-col justify-between gap-4 border-t border-amber-400/20 pt-4 md:col-span-5 md:border-t-0 md:border-l md:border-amber-400/20 md:pl-8 md:pt-0">
+              {/* Right Column: Sleek Direct Contacts & Hours */}
+              <div className="flex flex-col justify-between gap-4 border-t border-slate-200/80 pt-4 md:col-span-5 md:border-t-0 md:border-l md:border-slate-200/80 md:pl-8 md:pt-0">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500">
-                    Direct Contact &amp; Order Hotline:
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    Direct Contact &amp; Order Hotline
                   </span>
-                  <div className="mt-2 flex flex-wrap items-center gap-2.5">
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
                     {shopInfo.phone && (
                       <a
                         href={`tel:${shopInfo.phone.replace(/[^0-9+]/g, "")}`}
-                        className="group inline-flex items-center gap-2 border border-amber-400/40 bg-amber-400/10 px-3.5 py-1.5 font-mono text-xs font-bold text-amber-500 transition-all duration-200 hover:border-amber-400 hover:bg-amber-400/20 hover:text-slate-950"
+                        className="group inline-flex items-center gap-2 border border-slate-200 bg-white px-3 py-1.5 font-mono text-xs font-semibold text-slate-800 shadow-2xs transition-all hover:border-slate-900 hover:bg-slate-900 hover:text-white"
                       >
                         <Phone
-                          size={13}
-                          className="text-amber-500 transition-transform duration-200 group-hover:scale-110"
+                          size={12}
+                          className="text-amber-500 transition-colors group-hover:text-white"
                         />
                         <span>{shopInfo.phone}</span>
                       </a>
@@ -203,11 +169,11 @@ export async function Footer() {
                     {shopInfo.secondaryPhone && (
                       <a
                         href={`tel:${shopInfo.secondaryPhone.replace(/[^0-9+]/g, "")}`}
-                        className="group inline-flex items-center gap-2 border border-amber-400/40 bg-amber-400/10 px-3.5 py-1.5 font-mono text-xs font-bold text-amber-500 transition-all duration-200 hover:border-amber-400 hover:bg-amber-400/20 hover:text-slate-950"
+                        className="group inline-flex items-center gap-2 border border-slate-200 bg-white px-3 py-1.5 font-mono text-xs font-semibold text-slate-800 shadow-2xs transition-all hover:border-slate-900 hover:bg-slate-900 hover:text-white"
                       >
                         <Phone
-                          size={13}
-                          className="text-amber-500 transition-transform duration-200 group-hover:scale-110"
+                          size={12}
+                          className="text-amber-500 transition-colors group-hover:text-white"
                         />
                         <span>{shopInfo.secondaryPhone}</span>
                       </a>
@@ -215,26 +181,20 @@ export async function Footer() {
                   </div>
                 </div>
 
-                {/* Email & Hours */}
-                <div className="flex flex-wrap items-center gap-4 text-xs text-paper-dim">
+                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500">
                   {shopInfo.email && (
                     <a
                       href={`mailto:${shopInfo.email}`}
-                      className="group inline-flex items-center gap-2 transition-colors hover:text-gold-bright"
+                      className="group inline-flex items-center gap-1.5 font-mono transition-colors hover:text-slate-900"
                     >
-                      <Mail
-                        size={13}
-                        className="text-gold-bright transition-transform duration-200 group-hover:scale-110"
-                      />
-                      <span className="font-mono text-paper-dim group-hover:text-gold-bright">
-                        {shopInfo.email}
-                      </span>
+                      <Mail size={12} className="text-amber-500" />
+                      <span>{shopInfo.email}</span>
                     </a>
                   )}
                   {shopInfo.hours && (
-                    <span className="inline-flex items-center gap-2 text-paper-dim">
-                      <Clock size={13} className="text-gold-bright" />
-                      <span className="font-mono">{shopInfo.hours}</span>
+                    <span className="inline-flex items-center gap-1.5 font-mono">
+                      <Clock size={12} className="text-amber-500" />
+                      <span>{shopInfo.hours}</span>
                     </span>
                   )}
                 </div>
@@ -244,36 +204,30 @@ export async function Footer() {
         )}
 
         {/* Main Grid: 12-Column Editorial Hierarchy */}
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-14">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
           {/* Left Column: Brand & Luxury Story (5 cols on lg) */}
-          <div className="flex flex-col gap-5 lg:col-span-5">
+          <div className="flex flex-col gap-4 lg:col-span-5">
             <div className="flex items-center gap-3">
-              <div className="relative w-fit">
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute -inset-4 -z-10 rounded-full bg-gold/20 blur-xl"
-                />
-                <Brand size="lg" />
-              </div>
-              <div className="h-8 w-px bg-ink-border" />
+              <Brand size="lg" />
+              <div className="h-6 w-px bg-slate-200" />
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-widest text-paper-dim">
+                <p className="font-mono text-[10px] uppercase tracking-widest text-slate-400">
                   Authentic Kits
                 </p>
-                <p className="text-xs font-bold tracking-wider text-paper">
+                <p className="text-xs font-bold tracking-wider text-slate-800">
                   DHAKA · BANGLADESH
                 </p>
               </div>
             </div>
 
-            <BrandSlogan className="text-sm font-semibold tracking-wide text-gold-bright" />
+            <BrandSlogan className="text-sm font-semibold tracking-wide text-amber-500" />
 
-            <p className="max-w-md text-xs leading-relaxed text-paper-dim sm:text-sm">
+            <p className="max-w-md text-xs leading-relaxed text-slate-500 sm:text-sm">
               {shopInfo.aboutText ||
                 "Premium football jerseys for those who live the game. Authentic club kits, retro classics, and streetwear-inspired fits crafted with performance fabrics."}
             </p>
 
-            {/* Social Media Dock (Admin Controlled) */}
+            {/* Social Media Dock */}
             {socialLinksList.length > 0 && (
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 {socialLinksList.map(({ label, href, icon: Icon }) => (
@@ -284,7 +238,7 @@ export async function Footer() {
                     rel="noopener noreferrer"
                     aria-label={label}
                     title={label}
-                    className="group flex h-10 w-10 items-center justify-center border border-ink-border bg-ink-raised text-paper-dim transition-all duration-200 hover:-translate-y-0.5 hover:border-gold-bright hover:bg-gold-bright/10 hover:text-gold-bright hover:shadow-[0_0_16px_-3px_var(--color-gold-bright)]"
+                    className="flex h-9 w-9 items-center justify-center border border-slate-200 bg-white text-slate-500 shadow-2xs transition-all duration-200 hover:border-slate-900 hover:bg-slate-900 hover:text-white"
                   >
                     <Icon className="h-4 w-4" />
                   </a>
@@ -293,24 +247,24 @@ export async function Footer() {
             )}
           </div>
 
-          {/* Right Section: Balanced 3-Column Navigation Grid (7 cols on lg) */}
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-10 lg:col-span-7 lg:pt-2">
+          {/* Right Section: Clean 3-Column Navigation Grid (7 cols on lg) */}
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-10 lg:col-span-7 lg:pt-1">
             {navigationColumns.map((col) => (
-              <div key={col.title} className="flex flex-col gap-4">
-                <div className="flex items-center gap-2 border-b border-amber-400/20 pb-2.5">
-                  <span className="font-display text-sm tracking-wider text-amber-500">
+              <div key={col.title} className="flex flex-col gap-3.5">
+                <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                  <span className="font-display text-xs tracking-wider text-amber-500">
                     {col.number}
                   </span>
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-paper">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
                     {col.title}
                   </h3>
                 </div>
-                <ul className="space-y-3">
+                <ul className="space-y-2.5">
                   {col.links.map((link) => (
                     <li key={link.label}>
                       <Link
                         href={link.href}
-                        className="group inline-flex items-center gap-1 text-xs text-paper-dim transition-colors hover:text-amber-500"
+                        className="group inline-flex items-center text-xs text-slate-500 transition-colors hover:text-slate-900"
                       >
                         <span className="transition-transform group-hover:translate-x-1">
                           {link.label}
@@ -324,52 +278,26 @@ export async function Footer() {
           </div>
         </div>
 
-        {/* 3 Luxury Trust Pillars */}
-        <div className="mt-16 grid grid-cols-1 gap-4 border-t border-amber-400/20 pt-10 sm:grid-cols-3 sm:gap-6">
-          {trustPillars.map((pillar) => {
-            const Icon = pillar.icon;
-            return (
-              <div
-                key={pillar.title}
-                className="flex items-start gap-3.5 border border-slate-200/90 bg-white p-4 transition-colors hover:border-amber-400/40 hover:shadow-xs"
-              >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none border border-amber-400/30 bg-amber-400/10 text-amber-500">
-                  <Icon size={18} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-paper">
-                    {pillar.title}
-                  </h4>
-                  <p className="mt-1 text-[11px] leading-relaxed text-paper-dim">
-                    {pillar.desc}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Bottom Bar: Copyright, Trust Badges & Italic Signature */}
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-amber-400/20 pt-6 sm:flex-row">
-          <p className="text-xs text-paper-dim">
-            © {currentYear} JAF™. All rights reserved. Crafted for Football
-            Culture.
+        {/* Bottom Bar: Copyright, Trust Badges & Signature */}
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-6 sm:flex-row">
+          <p className="text-xs text-slate-500">
+            © {currentYear} JAF™. All rights reserved. Crafted for Football Culture.
           </p>
 
-          <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-paper-dim">
+          <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] font-mono uppercase tracking-widest text-slate-400">
             {trustMarks.map((mark, i) => (
               <li key={mark} className="flex items-center gap-3">
                 <span>{mark}</span>
                 {i < trustMarks.length - 1 && (
-                  <span className="text-gold/40">•</span>
+                  <span className="text-slate-300">•</span>
                 )}
               </li>
             ))}
           </ul>
 
           <div className="flex items-center gap-2">
-            <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-gold-bright" />
-            <p className="font-serif-italic text-sm text-gold-bright">
+            <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+            <p className="font-serif-italic text-xs font-medium text-amber-600">
               WE ARE THE ION TO FASHION
             </p>
           </div>
