@@ -365,7 +365,8 @@ export function HeroInteractive({
         </div>
       </div>
 
-      <div className="absolute left-5 bottom-5 sm:left-8 sm:bottom-7 lg:left-10 lg:bottom-8 xl:left-12 xl:bottom-9 z-30 flex items-center gap-2 sm:gap-3 select-none">
+      {/* Left Vertical Slider Indicators */}
+      <div className="absolute left-4 bottom-5 sm:left-7 sm:bottom-7 lg:left-9 lg:bottom-9 xl:left-11 xl:bottom-10 z-30 flex flex-col items-start gap-1.5 sm:gap-2 select-none">
         {activeSlides.map((_, i) => {
           const isActive = i === active;
           return (
@@ -374,7 +375,7 @@ export function HeroInteractive({
               type="button"
               onClick={() => setActive(i)}
               aria-label={`Jump to slide ${i + 1}`}
-              className="group flex items-center gap-1.5 sm:gap-2 py-1.5 cursor-pointer transition-all focus:outline-none"
+              className="group flex items-center gap-2 py-0.5 cursor-pointer transition-all focus:outline-none"
             >
               <span
                 className={`font-mono text-[10px] sm:text-xs font-bold tabular-nums transition-colors ${
@@ -388,8 +389,8 @@ export function HeroInteractive({
               <span
                 className={`h-0.5 sm:h-1 transition-all duration-300 rounded-none ${
                   isActive
-                    ? "w-7 sm:w-10 bg-amber-400 shadow-xs"
-                    : "w-3 sm:w-4 bg-slate-300 group-hover:bg-slate-400 group-hover:w-5"
+                    ? "w-6 sm:w-8 bg-amber-400 shadow-xs"
+                    : "w-2.5 sm:w-3 bg-slate-300 group-hover:bg-slate-400 group-hover:w-4"
                 }`}
               />
             </button>
@@ -425,32 +426,37 @@ export function HeroInteractive({
           preserveAspectRatio="none"
           className="relative block w-full h-14 sm:h-20 md:h-28 lg:h-36 xl:h-40 drop-shadow-[0_-6px_16px_rgba(0,0,0,0.04)]"
         >
-          {/* Top Bevel / Sunlit Facet */}
+          {/* Top Bevel / Sunlit Facet on Right */}
           <polygon
-            points="0,115 370,0 1440,135 1440,145 370,8 0,125"
+            points="370,0 1440,128 1440,135 370,6"
             fill="#f8fafc"
           />
-          {/* Sunlit Ridge Accent Line */}
-          <line
-            x1="0"
-            y1="125"
-            x2="370"
-            y2="8"
-            stroke="rgba(245, 158, 11, 0.65)"
-            strokeWidth="2"
+
+          {/* Main Pure White Architectural Shape from bottom-left (0, 180) to peak (370, 6) down to right (1440, 135) */}
+          <polygon
+            points="0,180 370,6 1440,135 1440,180"
+            fill="#ffffff"
           />
+
+          {/* Right Ridge Accent Line */}
           <line
             x1="370"
-            y1="8"
+            y1="6"
             x2="1440"
-            y2="145"
+            y2="135"
             stroke="rgba(255, 255, 255, 0.95)"
             strokeWidth="1.5"
           />
-          {/* Main Pure White Architectural Facet extending to section boundary */}
-          <polygon
-            points="0,125 370,8 1440,145 1440,180 0,180"
-            fill="#ffffff"
+
+          {/* Yellow / Amber Line starting at bottom (0, 180) and ending at that white shade top (370, 6) */}
+          <line
+            x1="0"
+            y1="180"
+            x2="370"
+            y2="6"
+            stroke="#f59e0b"
+            strokeWidth="2.5"
+            strokeLinecap="round"
           />
         </svg>
       </div>
