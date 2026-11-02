@@ -86,6 +86,30 @@ export async function Footer() {
 
   return (
     <footer className="relative overflow-hidden border-t border-slate-200 bg-white text-slate-900">
+      {/* Background Geometric Triangle Grid with Black Opacity Lines */}
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.06] select-none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <pattern
+            id="footer-triangle-pattern"
+            width="40"
+            height="69.282"
+            patternUnits="userSpaceOnUse"
+          >
+            <path
+              d="M 0 0 L 40 0 M 0 34.641 L 40 34.641 M 0 34.641 L 20 0 M 20 69.282 L 40 34.641 M 0 69.282 L 40 0 M 0 0 L 40 69.282 M 20 0 L 40 34.641 M 0 34.641 L 20 69.282"
+              fill="none"
+              stroke="#000000"
+              strokeWidth="0.9"
+            />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#footer-triangle-pattern)" />
+      </svg>
+
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-amber-400/50 to-transparent"
