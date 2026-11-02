@@ -144,11 +144,11 @@ export function HeroInteractive({
           className="object-cover object-center filter brightness-[1.03] contrast-[0.98] saturate-[0.80]"
         />
 
-        {/* Reduced white overlay shade so the stadium background remains clearly visible */}
+        {/* Soft atmospheric white overlay so the stadium background remains clearly visible */}
         <div className="pointer-events-none absolute inset-0 bg-radial-at-t from-amber-100/20 via-transparent to-transparent" />
         <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-white/90 via-white/40 to-transparent sm:from-white/85 sm:via-white/25 sm:to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b from-white/35 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 sm:h-40 bg-linear-to-t from-white/60 via-white/20 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 sm:h-24 bg-linear-to-t from-white/30 to-transparent" />
       </div>
 
       <div className="pointer-events-none absolute right-4 sm:right-10 bottom-6 sm:bottom-10 z-10 select-none font-display text-8xl sm:text-9xl lg:text-[140px] xl:text-[160px] font-black tracking-tighter text-slate-900/5 leading-none">
@@ -414,6 +414,45 @@ export function HeroInteractive({
         >
           <ChevronRight size={15} />
         </button>
+      </div>
+
+      {/* Architectural White Triangular Parapet Shape Divider (as in matchday stadium architecture) */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 w-full overflow-hidden leading-none select-none">
+        <svg
+          viewBox="0 0 1440 80"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+          className="relative block w-full h-8 sm:h-12 md:h-16 lg:h-20 drop-shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
+        >
+          {/* Top Bevel / Sunlit Facet */}
+          <polygon
+            points="0,38 410,6 1440,50 1440,58 410,14 0,44"
+            fill="#f8fafc"
+          />
+          {/* Sunlit Ridge Accent Line */}
+          <line
+            x1="0"
+            y1="44"
+            x2="410"
+            y2="14"
+            stroke="rgba(245, 158, 11, 0.45)"
+            strokeWidth="1.5"
+          />
+          <line
+            x1="410"
+            y1="14"
+            x2="1440"
+            y2="58"
+            stroke="rgba(255, 255, 255, 0.9)"
+            strokeWidth="1"
+          />
+          {/* Main Pure White Architectural Facet extending to section boundary */}
+          <polygon
+            points="0,44 410,14 1440,58 1440,80 0,80"
+            fill="#ffffff"
+          />
+        </svg>
       </div>
     </section>
   );
