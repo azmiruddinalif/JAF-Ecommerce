@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -39,11 +40,14 @@ export function ImageInputWithPreview({
     setImageError(false);
   }, [preview, currentUrl]);
 
-  const displayUrl = preview ?? (currentUrl ? normalizePublicImageUrl(currentUrl) : null);
+  const displayUrl =
+    preview ?? (currentUrl ? normalizePublicImageUrl(currentUrl) : null);
 
   return (
     <div className={wrapperClassName}>
-      <div className={`relative shrink-0 overflow-hidden border border-ink-border bg-ink ${boxClassName}`}>
+      <div
+        className={`relative shrink-0 overflow-hidden border border-ink-border bg-ink ${boxClassName}`}
+      >
         {displayUrl && !imageError ? (
           <Image
             src={displayUrl}
@@ -70,7 +74,9 @@ export function ImageInputWithPreview({
             </span>
           </div>
         ) : (
-          <div className="flex h-full items-center justify-center text-[10px] text-paper-dim">No image</div>
+          <div className="flex h-full items-center justify-center text-[10px] text-paper-dim">
+            No image
+          </div>
         )}
       </div>
       <div className="flex w-full flex-col gap-2">

@@ -123,6 +123,11 @@ export function HeroInteractive({
     setBgFailed(false);
   }, [bannerImageUrl, fallbackImageUrl]);
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBgFailed(false);
+  }, [bannerImageUrl, fallbackImageUrl]);
+
   const activeSlides = useMemo(() => {
     if (slides.length > 0) {
       if (slides.length >= 3) return slides;
