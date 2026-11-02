@@ -438,12 +438,12 @@ export function HeroInteractive({
             fill="#ffffff"
           />
 
-          {/* Continuous Yellow / Amber Ridge Line along the entire top edge (from left to peak to right) */}
+          {/* Continuous Thin Yellow / Amber Ridge Hairline along the entire top edge */}
           <path
             d="M 0 110 L 380 8 L 1440 105"
             fill="none"
             stroke="#f59e0b"
-            strokeWidth="3"
+            strokeWidth="1"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
