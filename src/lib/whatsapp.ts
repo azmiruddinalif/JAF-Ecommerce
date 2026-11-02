@@ -26,8 +26,9 @@ export interface WhatsAppInvoiceOrder {
 
 /**
  * Builds a click-to-chat wa.me link pre-filled with the invoice message, for
- * staff to open and tap send from the admin dashboard. This is the manual
- * fallback; the automatic send after checkout lives in lib/whatsapp-cloud.
+ * staff to open and tap send from the admin dashboard. There is no WhatsApp
+ * Business API configured, so this is a manual, one-tap send rather than a
+ * fully automatic one.
  */
 export function buildInvoiceWhatsAppLink(order: WhatsAppInvoiceOrder): string {
   const digits = toWhatsAppDigits(order.customerPhone);

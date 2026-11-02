@@ -165,15 +165,12 @@ model Order {
   items                 OrderItem[]
 
   // Invoice — generated right after checkout, stored for admin download and
-  // resend, emailed automatically when the customer gave an email address,
-  // and sent to the customer's WhatsApp number via the WhatsApp Cloud API.
+  // resend, emailed automatically when the customer gave an email address.
   invoiceNumber         String?       @unique
   invoicePdfUrl         String?
   invoicePdfPublicId    String?
   invoiceEmailSentAt    DateTime?
   invoiceEmailError     String?
-  invoiceWhatsAppSentAt DateTime?
-  invoiceWhatsAppError  String?
 
   @@index([status])
   @@index([createdAt])

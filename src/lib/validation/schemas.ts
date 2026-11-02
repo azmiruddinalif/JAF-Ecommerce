@@ -59,7 +59,7 @@ export const checkoutSchema = z.object({
     .min(7, "Phone number is required")
     .max(20)
     .regex(/^[0-9+\-\s]+$/, "Enter a valid phone number"),
-  customerEmail: z.string().trim().email("Enter a valid email").optional().or(z.literal("")),
+  customerEmail: z.string().trim().min(1, "Email is required").email("Enter a valid email").max(254),
   address: z.string().trim().min(5, "Address is required").max(300),
   city: z.string().trim().min(2, "City is required").max(80),
   area: z.string().trim().min(2, "Area is required").max(80),

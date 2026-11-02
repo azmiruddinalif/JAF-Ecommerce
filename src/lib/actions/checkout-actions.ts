@@ -181,7 +181,7 @@ export async function placeOrderAction(
   revalidatePath("/", "layout");
 
   // Runs after the customer has been redirected, so a slow or failing
-  // invoice/email/WhatsApp provider never delays or blocks an otherwise
+  // invoice/email provider never delays or blocks an otherwise
   // successful order. Failures are recorded on the order for admin to see and
   // retry from the dashboard.
   const orderId = order.id;

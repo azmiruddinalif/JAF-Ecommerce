@@ -2,15 +2,13 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { imageStorage } from "@/lib/storage";
 import { buildInvoiceNumber, renderInvoicePdf } from "./render";
-import { sendInvoiceEmail } from "@/lib/email/resend";
-import { sendInvoiceWhatsApp } from "@/lib/whatsapp-cloud";
+import { sendInvoiceEmail } from "@/lib/email/invoice-email";
 
 /**
- * Generates the invoice PDF for an order, stores it, emails it to the
- * customer if they gave an email address, and sends it to their WhatsApp
- * number. Never throws — failures (storage, email or WhatsApp not configured,
- * etc.) are recorded on the order so checkout always succeeds and admin can
- * see what happened and retry.
+ * Generates the invoice PDF for an order, stores it, and emails it to the
+ * customer if they gave an email address. Never throws — failures (storage
+ * not configured, email not configured, etc.) are recorded on the order so
+ * checkout always succeeds and admin can see what happened and retry.
  */
 export async function generateAndDeliverInvoice(orderId: string): Promise<{ success: boolean; message: string }> {
   let order;
@@ -53,11 +51,8 @@ export async function generateAndDeliverInvoice(orderId: string): Promise<{ succ
 
   let invoiceEmailSentAt = order.invoiceEmailSentAt;
   let invoiceEmailError: string | null = null;
-  let invoiceWhatsAppSentAt = order.invoiceWhatsAppSentAt;
-  let invoiceWhatsAppError: string | null = null;
 
-  const sendEmail = async () => {
-    if (!order.customerEmail) return;
+  if (order.customerEmail) {
     try {
       await sendInvoiceEmail(
         {
@@ -74,60 +69,32 @@ export async function generateAndDeliverInvoice(orderId: string): Promise<{ succ
       invoiceEmailError = error instanceof Error ? error.message : "Failed to send invoice email.";
       console.error(`[Invoice] Email delivery failed for order ${order.orderNumber}:`, invoiceEmailError);
     }
-  };
-
-  const sendWhatsApp = async () => {
-    try {
-      await sendInvoiceWhatsApp(
-        {
-          orderNumber: order.orderNumber,
-          invoiceNumber,
-          customerName: order.customerName,
-          customerPhone: order.customerPhone,
-          totalCents: order.totalCents,
-        },
-        pdfBuffer
-      );
-      invoiceWhatsAppSentAt = new Date();
-    } catch (error) {
-      invoiceWhatsAppError = error instanceof Error ? error.message : "Failed to send invoice on WhatsApp.";
-      console.error(`[Invoice] WhatsApp delivery failed for order ${order.orderNumber}:`, invoiceWhatsAppError);
-    }
-  };
-
-  await Promise.all([sendEmail(), sendWhatsApp()]);
+  }
 
   try {
     await prisma.order.update({
       where: { id: order.id },
-      data: {
-        invoiceNumber,
-        invoicePdfUrl,
-        invoicePdfPublicId,
-        invoiceEmailSentAt,
-        invoiceEmailError,
-        invoiceWhatsAppSentAt,
-        invoiceWhatsAppError,
-      },
+      data: { invoiceNumber, invoicePdfUrl, invoicePdfPublicId, invoiceEmailSentAt, invoiceEmailError },
     });
   } catch {
     return { success: false, message: "Invoice generated, but could not save it to the order record." };
   }
 
-  const sent: string[] = [];
-  const failed: string[] = [];
-  if (order.customerEmail) {
-    if (invoiceEmailError) failed.push(`email failed: ${invoiceEmailError}`);
-    else sent.push("emailed");
+  if (order.customerEmail && invoiceEmailError) {
+    return { success: false, message: `Invoice created, but the email failed to send: ${invoiceEmailError}` };
   }
-  if (invoiceWhatsAppError) failed.push(`WhatsApp failed: ${invoiceWhatsAppError}`);
-  else sent.push("sent on WhatsApp");
 
-  const cloudNote = storageError && !invoicePdfUrl ? " (cloud copy pending)" : "";
-  const sentNote = sent.length > 0 ? ` and ${sent.join(" and ")}` : "";
-
-  if (failed.length > 0) {
-    return { success: false, message: `Invoice created${sentNote}${cloudNote}, but ${failed.join("; ")}` };
+  if (storageError && !invoicePdfUrl) {
+    return {
+      success: true,
+      message: order.customerEmail
+        ? "Invoice generated and emailed to customer (cloud copy pending)."
+        : "Invoice generated (cloud copy pending).",
+    };
   }
-  return { success: true, message: `Invoice created${sentNote}${cloudNote}.` };
+
+  return {
+    success: true,
+    message: order.customerEmail ? "Invoice created and emailed." : "Invoice created.",
+  };
 }

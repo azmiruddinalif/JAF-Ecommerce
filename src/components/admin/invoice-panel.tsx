@@ -11,8 +11,6 @@ export interface InvoicePanelProps {
   invoicePdfUrl: string | null;
   invoiceEmailSentAt: Date | null;
   invoiceEmailError: string | null;
-  invoiceWhatsAppSentAt: Date | null;
-  invoiceWhatsAppError: string | null;
   hasCustomerEmail: boolean;
   whatsappLink: string;
 }
@@ -28,8 +26,6 @@ export function InvoicePanel({
   invoicePdfUrl,
   invoiceEmailSentAt,
   invoiceEmailError,
-  invoiceWhatsAppSentAt,
-  invoiceWhatsAppError,
   hasCustomerEmail,
   whatsappLink,
 }: InvoicePanelProps) {
@@ -68,14 +64,6 @@ export function InvoicePanel({
               : "Not emailed yet."}
         </p>
       )}
-
-      <p className="mt-1 text-xs text-paper-dim">
-        {invoiceWhatsAppSentAt
-          ? `Sent on WhatsApp ${dateTimeFormatter.format(invoiceWhatsAppSentAt)}`
-          : invoiceWhatsAppError
-            ? `WhatsApp failed: ${invoiceWhatsAppError}`
-            : "Not sent on WhatsApp yet."}
-      </p>
 
       {message && (
         <p

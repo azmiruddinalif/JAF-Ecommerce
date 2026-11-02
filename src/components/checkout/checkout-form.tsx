@@ -40,8 +40,8 @@ export function CheckoutForm({ codEnabled }: { codEnabled: boolean }) {
           <FieldError message={state.fieldErrors?.customerPhone} />
         </div>
         <div>
-          <Label htmlFor="customerEmail">Email (optional)</Label>
-          <Input id="customerEmail" name="customerEmail" type="email" autoComplete="email" />
+          <Label htmlFor="customerEmail">Email</Label>
+          <Input id="customerEmail" name="customerEmail" type="email" required autoComplete="email" />
           <FieldError message={state.fieldErrors?.customerEmail} />
         </div>
       </div>

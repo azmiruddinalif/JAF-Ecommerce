@@ -1,19 +1,38 @@
 import "server-only";
+import nodemailer, { type Transporter } from "nodemailer";
 import { Resend } from "resend";
 import { formatCents } from "@/lib/money";
 
-let cachedClient: Resend | null = null;
+/**
+ * Sends the invoice email through Gmail (GMAIL_APP_PASSWORD, a Google App
+ * Password, for GMAIL_USER — defaulting to the store's ADMIN_EMAIL) when
+ * configured, otherwise through Resend (RESEND_API_KEY + RESEND_FROM_EMAIL on
+ * a verified domain).
+ */
 
-function getClient(): Resend {
-  if (cachedClient) return cachedClient;
+let cachedGmail: Transporter | null = null;
+let cachedResend: Resend | null = null;
 
+function gmailUser(): string | undefined {
+  return process.env.GMAIL_USER || process.env.ADMIN_EMAIL;
+}
+
+function getGmail(): Transporter | null {
+  const user = gmailUser();
+  // Google shows app passwords as "abcd efgh ijkl mnop"; the spaces aren't part of it.
+  const pass = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "");
+  if (!user || !pass) return null;
+
+  cachedGmail ??= nodemailer.createTransport({ service: "gmail", auth: { user, pass } });
+  return cachedGmail;
+}
+
+function getResend(): Resend | null {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    throw new Error("Email is not configured. Set RESEND_API_KEY.");
-  }
+  if (!apiKey) return null;
 
-  cachedClient = new Resend(apiKey);
-  return cachedClient;
+  cachedResend ??= new Resend(apiKey);
+  return cachedResend;
 }
 
 export interface InvoiceEmailOrder {
@@ -25,15 +44,44 @@ export interface InvoiceEmailOrder {
 }
 
 export async function sendInvoiceEmail(order: InvoiceEmailOrder, pdfBuffer: Uint8Array): Promise<void> {
-  const client = getClient();
-  const from = process.env.RESEND_FROM_EMAIL || "JAF <onboarding@resend.dev>";
+  const gmail = getGmail();
+  const resend = gmail ? null : getResend();
+  if (!gmail && !resend) {
+    throw new Error("Email is not configured. Set GMAIL_APP_PASSWORD (and GMAIL_USER if it isn't ADMIN_EMAIL).");
+  }
+
+  const subject = `Order Confirmed (${order.orderNumber}) — Invoice Attached | JAF`;
+  const html = buildInvoiceEmailHtml(order);
+  const attachment = { filename: `${order.invoiceNumber}.pdf`, content: Buffer.from(pdfBuffer) };
+
+  if (gmail) {
+    await gmail.sendMail({
+      from: { name: "JAF", address: gmailUser()! },
+      to: order.customerEmail,
+      subject,
+      html,
+      attachments: [{ ...attachment, contentType: "application/pdf" }],
+    });
+    return;
+  }
+
+  const { error } = await resend!.emails.send({
+    from: process.env.RESEND_FROM_EMAIL || "JAF <onboarding@resend.dev>",
+    to: order.customerEmail,
+    subject,
+    html,
+    attachments: [attachment],
+  });
+
+  if (error) {
+    throw new Error(error.message || "Failed to send invoice email.");
+  }
+}
+
+function buildInvoiceEmailHtml(order: InvoiceEmailOrder): string {
   const formattedTotal = formatCents(order.totalCents);
 
-  const { error } = await client.emails.send({
-    from,
-    to: order.customerEmail,
-    subject: `Order Confirmed (${order.orderNumber}) — Invoice Attached | JAF`,
-    html: `
+  return `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -120,18 +168,7 @@ export async function sendInvoiceEmail(order: InvoiceEmailOrder, pdfBuffer: Uint
         </table>
       </body>
       </html>
-    `,
-    attachments: [
-      {
-        filename: `${order.invoiceNumber}.pdf`,
-        content: Buffer.from(pdfBuffer),
-      },
-    ],
-  });
-
-  if (error) {
-    throw new Error(error.message || "Failed to send invoice email.");
-  }
+    `;
 }
 
 function escapeHtml(value: string): string {
