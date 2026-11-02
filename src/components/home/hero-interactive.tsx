@@ -365,53 +365,8 @@ export function HeroInteractive({
         </div>
       </div>
 
-      {/* Vertically Centered Left Slide Indicators with Continuous Vertical Center Line Track */}
-      <div className="absolute left-2.5 sm:left-5 lg:left-7 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center select-none pointer-events-auto">
-        {/* Top subtle vertical track hairline */}
-        <div className="w-px h-6 sm:h-10 bg-linear-to-b from-transparent to-slate-400/50 mb-2" />
-
-        {/* Slide Indicators Column */}
-        <div className="flex flex-col items-center gap-1.5 sm:gap-2">
-          {activeSlides.map((_, i) => {
-            const isActive = i === active;
-            return (
-              <div key={i} className="flex flex-col items-center">
-                {i > 0 && (
-                  <div className="w-px h-2 sm:h-3 bg-slate-300/60 my-0.5" />
-                )}
-                <button
-                  type="button"
-                  onClick={() => setActive(i)}
-                  aria-label={`Jump to slide ${i + 1}`}
-                  className="group flex flex-col items-center gap-1.5 py-1 px-1 cursor-pointer transition-all focus:outline-none"
-                >
-                  <span
-                    className={`font-mono text-[10px] sm:text-xs font-bold tabular-nums transition-all ${
-                      isActive
-                        ? "text-slate-950 font-black scale-110"
-                        : "text-slate-400 group-hover:text-slate-700"
-                    }`}
-                  >
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span
-                    className={`w-0.5 sm:w-1 transition-all duration-300 rounded-full ${
-                      isActive
-                        ? "h-5 sm:h-7 bg-amber-400 shadow-xs"
-                        : "h-2 sm:h-2.5 bg-slate-300 group-hover:bg-slate-400 group-hover:h-3.5"
-                    }`}
-                  />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Bottom subtle vertical track hairline */}
-        <div className="w-px h-6 sm:h-10 bg-linear-to-t from-transparent to-slate-400/50 mt-2" />
-      </div>
-
-      <div className="absolute right-5 bottom-5 sm:right-8 sm:bottom-7 lg:right-10 lg:bottom-8 xl:right-12 xl:bottom-9 z-30 flex items-center gap-2 select-none">
+      {/* Top-Right Gallery Navigation Arrows */}
+      <div className="absolute right-4 top-4 sm:right-6 sm:top-6 lg:right-8 lg:top-8 xl:right-10 xl:top-8 z-30 flex items-center gap-1.5 sm:gap-2 select-none">
         <button
           type="button"
           onClick={handlePrev}
