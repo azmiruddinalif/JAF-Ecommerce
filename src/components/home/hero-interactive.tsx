@@ -419,37 +419,37 @@ export function HeroInteractive({
       {/* Architectural White Triangular Parapet Shape Divider (as in matchday stadium architecture) */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 w-full overflow-hidden leading-none select-none">
         <svg
-          viewBox="0 0 1440 80"
+          viewBox="0 0 1440 180"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           preserveAspectRatio="none"
-          className="relative block w-full h-8 sm:h-12 md:h-16 lg:h-20 drop-shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
+          className="relative block w-full h-14 sm:h-20 md:h-28 lg:h-36 xl:h-40 drop-shadow-[0_-6px_16px_rgba(0,0,0,0.04)]"
         >
           {/* Top Bevel / Sunlit Facet */}
           <polygon
-            points="0,38 410,6 1440,50 1440,58 410,14 0,44"
+            points="0,115 370,0 1440,135 1440,145 370,8 0,125"
             fill="#f8fafc"
           />
           {/* Sunlit Ridge Accent Line */}
           <line
             x1="0"
-            y1="44"
-            x2="410"
-            y2="14"
-            stroke="rgba(245, 158, 11, 0.45)"
-            strokeWidth="1.5"
+            y1="125"
+            x2="370"
+            y2="8"
+            stroke="rgba(245, 158, 11, 0.65)"
+            strokeWidth="2"
           />
           <line
-            x1="410"
-            y1="14"
+            x1="370"
+            y1="8"
             x2="1440"
-            y2="58"
-            stroke="rgba(255, 255, 255, 0.9)"
-            strokeWidth="1"
+            y2="145"
+            stroke="rgba(255, 255, 255, 0.95)"
+            strokeWidth="1.5"
           />
           {/* Main Pure White Architectural Facet extending to section boundary */}
           <polygon
-            points="0,44 410,14 1440,58 1440,80 0,80"
+            points="0,125 370,8 1440,145 1440,180 0,180"
             fill="#ffffff"
           />
         </svg>
