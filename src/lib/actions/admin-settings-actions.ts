@@ -197,11 +197,14 @@ export async function updateStoreSettingsAction(
         }
 
         if (directUrl) {
-          if (directUrl !== existing?.[slot.urlColumn]) {
+          const resolvedDirect = directUrl.includes("unsplash.com/photos/")
+            ? "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=2000&q=85&auto=format"
+            : directUrl;
+          if (resolvedDirect !== existing?.[slot.urlColumn]) {
             if (previousPublicId) {
               await imageStorage.remove(previousPublicId).catch(() => {});
             }
-            imageUpdates[slot.urlColumn] = directUrl;
+            imageUpdates[slot.urlColumn] = resolvedDirect;
             imageUpdates[slot.publicIdColumn] = null;
           }
           continue;

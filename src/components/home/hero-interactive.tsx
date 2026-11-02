@@ -53,6 +53,17 @@ const DEFAULT_MATCHDAY_SHOWCASE: HeroSlide[] = [
 
 const STADIUM_DAYLIGHT_BG = "/images/hero-stadium-daylight.jpg";
 
+function sanitizeBannerUrl(url?: string | null): string {
+  if (!url || typeof url !== "string") return STADIUM_DAYLIGHT_BG;
+  const trimmed = url.trim();
+  if (!trimmed) return STADIUM_DAYLIGHT_BG;
+  // If an Unsplash photo webpage was passed instead of a direct image URL, resolve to high-res direct image:
+  if (trimmed.includes("unsplash.com/photos/")) {
+    return "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=2000&q=85&auto=format";
+  }
+  return trimmed;
+}
+
 function renderHeadline(
   headline: string,
   accentWord = "fashion",
@@ -96,7 +107,10 @@ export function HeroInteractive({
   slides: HeroSlide[];
   heroConfig: HeroCustomConfig;
 }) {
-  const activeBannerBg = bannerImageUrl || fallbackImageUrl || STADIUM_DAYLIGHT_BG;
+  const [bgFailed, setBgFailed] = useState(false);
+  const rawBg = bannerImageUrl || fallbackImageUrl;
+  const activeBannerBg = bgFailed ? STADIUM_DAYLIGHT_BG : sanitizeBannerUrl(rawBg);
+  const dynamicYear = new Date().getFullYear();
 
   const activeSlides = useMemo(() => {
     if (slides.length > 0) {
@@ -140,7 +154,8 @@ export function HeroInteractive({
           fill
           priority
           sizes="100vw"
-          unoptimized={!activeBannerBg.startsWith("/") && !activeBannerBg.includes("res.cloudinary.com")}
+          unoptimized={activeBannerBg.startsWith("/") || (!activeBannerBg.includes("res.cloudinary.com") && !activeBannerBg.includes("images.unsplash.com"))}
+          onError={() => setBgFailed(true)}
           className="object-cover object-center filter brightness-[1.03] contrast-[0.98] saturate-[0.80]"
         />
 
@@ -151,8 +166,9 @@ export function HeroInteractive({
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 sm:h-24 bg-linear-to-t from-white/30 to-transparent" />
       </div>
 
-      <div className="pointer-events-none absolute right-4 sm:right-10 bottom-6 sm:bottom-10 z-10 select-none font-display text-8xl sm:text-9xl lg:text-[140px] xl:text-[160px] font-black tracking-tighter text-slate-900/5 leading-none">
-        2026
+      {/* Dynamic Architectural Watermark Year — subtly visible with athletic elegance */}
+      <div className="pointer-events-none absolute right-4 sm:right-8 lg:right-12 bottom-12 sm:bottom-16 lg:bottom-20 z-10 select-none font-display text-8xl sm:text-9xl lg:text-[140px] xl:text-[170px] font-black tracking-tighter text-slate-900/[0.11] sm:text-slate-900/[0.14] leading-none">
+        {dynamicYear}
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20 lg:px-8 lg:py-24">
@@ -282,7 +298,7 @@ export function HeroInteractive({
               <span className="text-slate-300">|</span>
               <div className="flex items-center gap-1.5">
                 <Sparkles size={15} className="text-amber-500" />
-                <span>2026 DROP</span>
+                <span>{dynamicYear} DROP</span>
               </div>
               <span className="text-slate-300">|</span>
               <div className="flex items-center gap-1.5">
