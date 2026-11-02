@@ -91,6 +91,11 @@ button,
   border-radius: 0 !important;
 }
 
+/* Explicit escape hatch for genuinely circular buttons (e.g. carousel nav arrows) */
+.btn-circle {
+  border-radius: 9999px !important;
+}
+
 html {
   color-scheme: light;
 }
@@ -358,6 +363,21 @@ body.admin-theme [role="button"],
 
 .animate-jersey-float {
   animation: jersey-float 6s ease-in-out infinite;
+}
+
+@keyframes badge-shine {
+  0%,
+  20% {
+    transform: translateX(-100%);
+  }
+  40%,
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+.animate-badge-shine {
+  animation: badge-shine 3.2s ease-in-out infinite;
 }
 
 

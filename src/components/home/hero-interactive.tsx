@@ -85,7 +85,11 @@ function renderHeadline(
       return (
         <span
           key={i}
-          className="text-amber-500"
+          className={
+            accentColor
+              ? undefined
+              : "bg-linear-to-br from-amber-300 via-amber-400 to-amber-600 bg-clip-text text-transparent"
+          }
           style={accentColor ? { color: accentColor } : undefined}
         >
           {part}
@@ -183,25 +187,44 @@ export function HeroInteractive({
               !activeBannerBg.includes("images.unsplash.com"))
           }
           onError={() => setBgFailed(true)}
-          className="object-cover object-center filter brightness-[1.03] contrast-[0.98] saturate-[0.80]"
+          className="object-cover object-center filter brightness-[1.03] contrast-[1.02] saturate-[0.82]"
         />
 
         {/* Soft atmospheric white overlay so the stadium background remains clearly visible */}
         <div className="pointer-events-none absolute inset-0 bg-radial-at-t from-amber-100/20 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-radial-at-r from-amber-200/25 via-transparent to-transparent" />
         <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-white/90 via-white/40 to-transparent sm:from-white/85 sm:via-white/25 sm:to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b from-white/35 to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 sm:h-24 bg-linear-to-t from-white/30 to-transparent" />
+        {/* Subtle photographic vignette for a richer, more editorial finish */}
+        <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_180px_rgba(9,9,11,0.2)]" />
+        {/* Fine film grain for a cinematic, photographic finish */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.05] mix-blend-overlay"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")",
+          }}
+        />
       </div>
 
-      {/* Dynamic Architectural Watermark Year — subtly visible with athletic elegance */}
-      <div className="pointer-events-none absolute right-4 sm:right-8 lg:right-12 bottom-12 sm:bottom-16 lg:bottom-20 z-10 select-none font-display text-8xl sm:text-9xl lg:text-[140px] xl:text-[170px] font-black tracking-tighter text-slate-900/11 sm:text-slate-900/[0.14] leading-none">
+      {/* Hairline gold frame — boutique-store finish */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-px bg-linear-to-r from-transparent via-amber-400/70 to-transparent" />
+
+
+      {/* Dynamic Architectural Watermark Year — mix-blend-difference keeps it legible whether it's sitting over the bright pitch or the dark stands, instead of a fixed dark tint that disappears on dark photo areas. Low opacity keeps it a soft watermark rather than a solid block, and it's lifted clear of the wave edge so it never straddles that seam. */}
+      <div className="pointer-events-none absolute right-4 sm:right-8 lg:right-12 bottom-20 sm:bottom-24 lg:bottom-28 z-10 mix-blend-difference opacity-30 select-none font-display text-8xl sm:text-9xl lg:text-[140px] xl:text-[170px] font-black tracking-tighter text-slate-400 leading-none">
         {dynamicYear}
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20 lg:px-8 lg:py-24">
-        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
-          <div className="order-2 flex flex-col items-start lg:order-1 lg:col-span-6 xl:col-span-6">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pt-7 pb-10 sm:px-6 sm:pt-14 sm:pb-28 md:pb-36 lg:px-8 lg:pt-24 lg:pb-44 xl:pb-52">
+        <div className="grid grid-cols-1 items-center gap-5 sm:gap-8 lg:grid-cols-12 lg:gap-12">
+          <div className="relative order-2 flex flex-col items-start lg:order-1 lg:col-span-6 xl:col-span-6">
+            {/* Boutique corner mark */}
+            <span className="pointer-events-none absolute -top-3 -left-1 hidden h-4 w-4 border-t-2 border-l-2 border-amber-400/80 sm:block" />
+
             <div className="mb-4 sm:mb-6 flex flex-wrap items-center gap-2.5">
+              <span className="hidden sm:inline-block h-px w-6 bg-amber-400" />
               <span
                 className="text-xs sm:text-sm font-semibold uppercase tracking-[0.22em] text-slate-800"
                 style={
@@ -212,13 +235,18 @@ export function HeroInteractive({
               >
                 {heroConfig?.eyebrow || "Authentic Football Jerseys"}
               </span>
-              <span className="rounded-none bg-amber-400 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-950 shadow-xs">
-                NEW DROP
+              <span className="relative overflow-hidden rounded-none bg-linear-to-br from-amber-300 via-amber-400 to-amber-600 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-950 shadow-[0_2px_10px_rgba(217,119,6,0.4)] ring-1 ring-inset ring-amber-200/60">
+                <span className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/60 to-transparent animate-badge-shine" />
+                <span className="relative">NEW DROP</span>
               </span>
             </div>
 
             <h1
-              className="font-display text-4xl sm:text-6xl lg:text-7xl uppercase tracking-tight text-slate-950 drop-shadow-xs"
+              className={`font-display text-4xl sm:text-6xl lg:text-7xl uppercase tracking-tight drop-shadow-sm ${
+                heroConfig?.textColor
+                  ? "text-slate-950"
+                  : "bg-linear-to-br from-slate-950 via-slate-800 to-slate-600 bg-clip-text text-transparent"
+              }`}
               style={
                 heroConfig?.textColor
                   ? { color: heroConfig.textColor }
@@ -231,6 +259,7 @@ export function HeroInteractive({
                 heroConfig?.accentColor,
               )}
             </h1>
+            <span className="mt-3 sm:mt-4 inline-block h-[3px] w-14 sm:w-20 bg-linear-to-r from-amber-400 to-amber-200" />
 
             <p
               className="mt-4 sm:mt-6 max-w-xl text-xs sm:text-base leading-relaxed text-slate-600 font-medium"
@@ -269,16 +298,19 @@ export function HeroInteractive({
                         }
                         className={
                           isPrimary
-                            ? "group inline-flex items-center justify-center gap-2 rounded-none bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 border border-amber-500/30 hover:bg-amber-500 active:scale-[0.98] transition-all cursor-pointer"
-                            : "inline-flex items-center justify-center gap-2 rounded-none border border-slate-300 bg-white/80 backdrop-blur-xs px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                            ? "group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-none bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 border border-amber-500/30 shadow-[0_10px_28px_-8px_rgba(217,119,6,0.55)] ring-1 ring-inset ring-white/40 hover:bg-amber-500 hover:shadow-[0_14px_32px_-8px_rgba(217,119,6,0.65)] active:scale-[0.98] transition-all cursor-pointer"
+                            : "inline-flex items-center justify-center gap-2 rounded-none border border-slate-300 bg-white/80 backdrop-blur-sm px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.12)] hover:border-slate-950 hover:bg-white hover:shadow-[0_6px_20px_-4px_rgba(15,23,42,0.18)] active:scale-[0.98] transition-all cursor-pointer"
                         }
                       >
-                        <span>{btn.label}</span>
+                        {isPrimary && (
+                          <span className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-linear-to-r from-transparent via-white/50 to-transparent -translate-x-[150%] transition-transform duration-700 ease-out group-hover:translate-x-[420%]" />
+                        )}
+                        <span className="relative">{btn.label}</span>
                         {(btn.icon === "arrow-right" ||
                           (!btn.icon && isPrimary)) && (
                           <ArrowRight
                             size={14}
-                            className="transition-transform duration-200 group-hover:translate-x-1"
+                            className="relative transition-transform duration-200 group-hover:translate-x-1"
                           />
                         )}
                       </Link>
@@ -287,7 +319,7 @@ export function HeroInteractive({
                   {heroConfig.buttons.length === 1 && (
                     <Link
                       href="/category/club-jerseys"
-                      className="inline-flex items-center justify-center gap-2 rounded-none border border-slate-300 bg-white/80 backdrop-blur-xs px-5 py-2.5 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                      className="inline-flex items-center justify-center gap-2 rounded-none border border-slate-300 bg-white/80 backdrop-blur-sm px-5 py-2.5 sm:py-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.12)] hover:border-slate-950 hover:bg-white hover:shadow-[0_6px_20px_-4px_rgba(15,23,42,0.18)] active:scale-[0.98] transition-all cursor-pointer"
                     >
                       <span>EXPLORE COLLECTION</span>
                     </Link>
@@ -297,18 +329,19 @@ export function HeroInteractive({
                 <>
                   <Link
                     href="/shop"
-                    className="group inline-flex items-center justify-center gap-2 rounded-none bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 border border-amber-500/30 hover:bg-amber-500 active:scale-[0.98] transition-all cursor-pointer"
+                    className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-none bg-amber-400 px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-950 border border-amber-500/30 shadow-[0_10px_28px_-8px_rgba(217,119,6,0.55)] ring-1 ring-inset ring-white/40 hover:bg-amber-500 hover:shadow-[0_14px_32px_-8px_rgba(217,119,6,0.65)] active:scale-[0.98] transition-all cursor-pointer"
                   >
-                    <span>SHOP NEW KITS</span>
+                    <span className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-linear-to-r from-transparent via-white/50 to-transparent -translate-x-[150%] transition-transform duration-700 ease-out group-hover:translate-x-[420%]" />
+                    <span className="relative">SHOP NEW KITS</span>
                     <ArrowRight
                       size={14}
-                      className="transition-transform duration-200 group-hover:translate-x-1"
+                      className="relative transition-transform duration-200 group-hover:translate-x-1"
                     />
                   </Link>
 
                   <Link
                     href="/category/club-jerseys"
-                    className="inline-flex items-center justify-center gap-2 rounded-none border border-slate-300 bg-white/80 backdrop-blur-xs px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-2xs hover:border-slate-950 hover:bg-white active:scale-[0.98] transition-all cursor-pointer"
+                    className="inline-flex items-center justify-center gap-2 rounded-none border border-slate-300 bg-white/80 backdrop-blur-sm px-5 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.12)] hover:border-slate-950 hover:bg-white hover:shadow-[0_6px_20px_-4px_rgba(15,23,42,0.18)] active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <span>EXPLORE COLLECTION</span>
                   </Link>
@@ -317,41 +350,39 @@ export function HeroInteractive({
             </div>
 
             {/* Micro Feature Badges Row */}
-            <div className="mt-8 sm:mt-10 flex flex-wrap items-center gap-3 sm:gap-5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-600">
-              <div className="flex items-center gap-1.5">
-                <ShieldCheck size={15} className="text-slate-900" />
+            <div className="mt-8 sm:mt-10 flex flex-wrap items-center gap-2.5 sm:gap-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700">
+              <div className="flex items-center gap-2 rounded-none border border-slate-200/80 bg-white/70 backdrop-blur-sm px-3 py-1.5 shadow-[0_2px_10px_-4px_rgba(15,23,42,0.1)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_16px_-4px_rgba(15,23,42,0.18)]">
+                <span className="flex size-5 items-center justify-center bg-slate-900/5">
+                  <ShieldCheck size={13} className="text-slate-900" />
+                </span>
                 <span>OFFICIAL GRADE</span>
               </div>
-              <span className="text-slate-300">|</span>
-              <div className="flex items-center gap-1.5">
-                <Sparkles size={15} className="text-amber-500" />
+              <div className="flex items-center gap-2 rounded-none border border-amber-300/60 bg-amber-50/70 backdrop-blur-sm px-3 py-1.5 shadow-[0_2px_10px_-4px_rgba(217,119,6,0.18)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_16px_-4px_rgba(217,119,6,0.3)]">
+                <span className="flex size-5 items-center justify-center bg-amber-400/15">
+                  <Sparkles size={13} className="text-amber-500" />
+                </span>
                 <span>{dynamicYear} DROP</span>
               </div>
-              <span className="text-slate-300">|</span>
-              <div className="flex items-center gap-1.5">
-                <Truck size={15} className="text-slate-900" />
+              <div className="flex items-center gap-2 rounded-none border border-slate-200/80 bg-white/70 backdrop-blur-sm px-3 py-1.5 shadow-[0_2px_10px_-4px_rgba(15,23,42,0.1)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_16px_-4px_rgba(15,23,42,0.18)]">
+                <span className="flex size-5 items-center justify-center bg-slate-900/5">
+                  <Truck size={13} className="text-slate-900" />
+                </span>
                 <span>CASH ON DELIVERY</span>
               </div>
             </div>
-
-            <div className="mt-10 sm:mt-14 flex items-center gap-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
-              <span>MORE THAN A JERSEY</span>
-              <span className="inline-block h-0.5 w-5 bg-amber-400" />
-              <span className="text-slate-600">IT&apos;S A LIFESTYLE</span>
-            </div>
           </div>
 
-          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-6 min-h-120 sm:min-h-145 lg:min-h-165 xl:min-h-185 overflow-visible">
+          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-6 min-h-95 sm:min-h-145 lg:min-h-165 xl:min-h-185 overflow-visible">
             <div className="absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 z-20 max-w-[90%] flex items-center justify-center select-none">
               <span className="truncate rounded-none bg-amber-400 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-slate-950 shadow-sm">
                 {currentSlide.name || "MATCHDAY KIT"}
               </span>
             </div>
 
-            <div className="relative w-full max-w-105 sm:max-w-130 md:max-w-150 lg:max-w-185 xl:max-w-220 h-110 sm:h-135 md:h-155 lg:h-180 xl:h-205 flex items-center justify-center overflow-visible">
+            <div className="relative w-full max-w-90 sm:max-w-130 md:max-w-150 lg:max-w-185 xl:max-w-220 h-90 sm:h-135 md:h-155 lg:h-180 xl:h-205 flex items-center justify-center overflow-visible">
               <div className="absolute bottom-2 sm:bottom-4 h-10 sm:h-14 w-4/5 rounded-none bg-slate-950/20 blur-2xl pointer-events-none" />
 
-              <div className="relative w-full h-full animate-jersey-float flex items-center justify-center overflow-visible scale-105 sm:scale-110 lg:scale-120 xl:scale-130 lg:-mr-6 xl:-mr-14">
+              <div className="relative w-full h-full animate-jersey-float flex items-center justify-center overflow-visible scale-100 sm:scale-110 lg:scale-120 xl:scale-130 lg:-mr-6 xl:-mr-14">
                 {activeSlides.map((slide, idx) => {
                   const isCurrent = idx === active;
                   return (
@@ -404,38 +435,61 @@ export function HeroInteractive({
                 </div>
               </div>
             </div>
+
+            {/* Glossy Rounded Gallery Navigation Arrows — anchored to the jersey showcase itself so they never collide with the text column on mobile */}
+            <div className="absolute right-1 sm:right-2 lg:right-3 bottom-6 sm:bottom-7 lg:bottom-8 z-30 flex items-center gap-2 sm:gap-2.5 select-none">
+              <button
+                type="button"
+                onClick={handlePrev}
+                aria-label="Previous jersey"
+                className="btn-circle size-9 sm:size-10 rounded-full bg-linear-to-b from-white/95 via-white/85 to-white/65 backdrop-blur-md text-slate-800 border border-white/90 shadow-[0_4px_16px_rgba(0,0,0,0.12),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:from-white hover:to-white/90 hover:text-slate-950 hover:shadow-[0_6px_20px_rgba(0,0,0,0.16),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                aria-label="Next jersey"
+                className="btn-circle size-9 sm:size-10 rounded-full bg-linear-to-b from-white/95 via-white/85 to-white/65 backdrop-blur-md text-slate-800 border border-white/90 shadow-[0_4px_16px_rgba(0,0,0,0.12),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:from-white hover:to-white/90 hover:text-slate-950 hover:shadow-[0_6px_20px_rgba(0,0,0,0.16),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Glossy Rounded Gallery Navigation Arrows (Elevated comfortably above the bottom white architectural shape) */}
-      <div className="absolute right-4 sm:right-7 lg:right-9 xl:right-11 bottom-16 sm:bottom-20 md:bottom-24 lg:bottom-28 xl:bottom-32 z-30 flex items-center gap-2 sm:gap-2.5 select-none">
-        <button
-          type="button"
-          onClick={handlePrev}
-          aria-label="Previous jersey"
-          className="size-9 sm:size-10 rounded-full bg-linear-to-b from-white/95 via-white/85 to-white/65 backdrop-blur-md text-slate-800 border border-white/90 shadow-[0_4px_16px_rgba(0,0,0,0.12),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:from-white hover:to-white/90 hover:text-slate-950 hover:shadow-[0_6px_20px_rgba(0,0,0,0.16),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
-        >
-          <ChevronLeft size={16} />
-        </button>
-        <button
-          type="button"
-          onClick={handleNext}
-          aria-label="Next jersey"
-          className="size-9 sm:size-10 rounded-full bg-linear-to-b from-white/95 via-white/85 to-white/65 backdrop-blur-md text-slate-800 border border-white/90 shadow-[0_4px_16px_rgba(0,0,0,0.12),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:from-white hover:to-white/90 hover:text-slate-950 hover:shadow-[0_6px_20px_rgba(0,0,0,0.16),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
-        >
-          <ChevronRight size={16} />
-        </button>
-      </div>
+      {/* Mobile: simple soft white fade instead of the angular architectural shape, which reads as clutter at narrow widths. Sits at z-0 (behind the text/badges, above the photo) so it never washes out real content. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-28 w-full bg-linear-to-t from-white via-white/92 via-40% to-transparent sm:hidden" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-28 z-0 h-px w-full bg-linear-to-r from-transparent via-amber-400/80 to-transparent sm:hidden" />
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 w-full overflow-hidden leading-none select-none">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 hidden w-full overflow-hidden leading-none select-none sm:block">
         <svg
           viewBox="0 0 1440 160"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           preserveAspectRatio="none"
-          className="relative block w-full h-14 sm:h-20 md:h-28 lg:h-36 xl:h-40 drop-shadow-[0_-6px_16px_rgba(0,0,0,0.04)]"
+          className="relative block w-full h-24 md:h-32 lg:h-40 xl:h-48 drop-shadow-[0_-6px_16px_rgba(0,0,0,0.04)]"
         >
+          {/* Soft translucent facet — extra layered step for a richer transition */}
+          <defs>
+            <linearGradient
+              id="wave-soft-fade"
+              x1="0"
+              y1="-3"
+              x2="0"
+              y2="104"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
+              <stop offset="100%" stopColor="#ffffff" stopOpacity="0.95" />
+            </linearGradient>
+          </defs>
+          <polygon
+            points="0,98 380,-3 1440,93 1440,99 380,3 0,104"
+            fill="url(#wave-soft-fade)"
+          />
+
           {/* Top Bevel / Sunlit Facet */}
           <polygon
             points="0,104 380,3 1440,99 1440,105 380,8 0,110"
@@ -446,6 +500,23 @@ export function HeroInteractive({
           <polygon
             points="0,110 380,8 1440,105 1440,160 0,160"
             fill="#ffffff"
+          />
+
+          {/* Gold hairline tracing the architectural edge for a premium finish */}
+          <defs>
+            <linearGradient id="hero-edge-gold" x1="0" y1="0" x2="1440" y2="0">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0" />
+              <stop offset="26%" stopColor="#f59e0b" stopOpacity="0.55" />
+              <stop offset="50%" stopColor="#fbbf24" stopOpacity="0.8" />
+              <stop offset="74%" stopColor="#f59e0b" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <polyline
+            points="0,110 380,8 1440,105"
+            fill="none"
+            stroke="url(#hero-edge-gold)"
+            strokeWidth="2"
           />
         </svg>
       </div>

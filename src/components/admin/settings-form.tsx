@@ -193,17 +193,33 @@ function ColorPickerField({
   value,
   defaultHex,
   onChange,
+  previewText,
+  previewBg = "#0b0b0b",
 }: {
   name?: string;
   label: string;
   value: string;
   defaultHex: string;
   onChange: (next: string) => void;
+  /** The actual on-page text this color applies to, shown live so the admin can see exactly what they're recoloring. */
+  previewText?: string;
+  /** Backdrop for the preview swatch — matches the real banner background, not the admin theme's own colors. */
+  previewBg?: string;
 }) {
   const pickerVal = /^#[0-9a-fA-F]{6}$/.test(value) ? value : defaultHex;
   return (
     <div>
       <Label htmlFor={name}>{label}</Label>
+      {previewText !== undefined && (
+        <div
+          className="mb-1.5 truncate border border-ink-border px-2.5 py-1.5 text-sm font-semibold"
+          style={{ backgroundColor: previewBg }}
+        >
+          <span style={{ color: pickerVal }}>
+            {previewText.trim() || "Your text will appear here"}
+          </span>
+        </div>
+      )}
       <div className="flex items-center gap-2">
         <input
           type="color"
@@ -397,6 +413,19 @@ export function SettingsForm({
   const [accentColor, setAccentColor] = useState(hc.accentColor);
   const [subtextColor, setSubtextColor] = useState(hc.subtextColor);
   const [imageGlowColor, setImageGlowColor] = useState(hc.imageGlowColor);
+  const resolvedHeroBgColor = /^#[0-9a-fA-F]{6}$/.test(bgColor)
+    ? bgColor
+    : "#0b0b0b";
+  const [heroEyebrowValue, setHeroEyebrowValue] = useState(hc.eyebrow);
+  const [heroAccentWordValue, setHeroAccentWordValue] = useState(
+    hc.accentWord,
+  );
+  const [heroHeadlineValue, setHeroHeadlineValue] = useState(
+    settings.heroHeadline,
+  );
+  const [heroSubheadlineValue, setHeroSubheadlineValue] = useState(
+    settings.heroSubheadline,
+  );
   const [heroButtons, setHeroButtons] = useState<HeroButtonConfig[]>(
     hc.buttons,
   );
@@ -725,7 +754,8 @@ export function SettingsForm({
               <Input
                 id="heroEyebrow"
                 name="heroEyebrow"
-                defaultValue={hc.eyebrow}
+                value={heroEyebrowValue}
+                onChange={(e) => setHeroEyebrowValue(e.target.value)}
                 placeholder="Authentic Football Jerseys"
               />
             </div>
@@ -736,7 +766,8 @@ export function SettingsForm({
               <Input
                 id="heroAccentWord"
                 name="heroAccentWord"
-                defaultValue={hc.accentWord}
+                value={heroAccentWordValue}
+                onChange={(e) => setHeroAccentWordValue(e.target.value)}
                 placeholder="fashion"
               />
             </div>
@@ -747,7 +778,8 @@ export function SettingsForm({
             <Input
               id="heroHeadline"
               name="heroHeadline"
-              defaultValue={settings.heroHeadline}
+              value={heroHeadlineValue}
+              onChange={(e) => setHeroHeadlineValue(e.target.value)}
             />
             <FieldError message={state.fieldErrors?.heroHeadline} />
           </div>
@@ -758,7 +790,8 @@ export function SettingsForm({
               id="heroSubheadline"
               name="heroSubheadline"
               rows={2}
-              defaultValue={settings.heroSubheadline}
+              value={heroSubheadlineValue}
+              onChange={(e) => setHeroSubheadlineValue(e.target.value)}
             />
             <FieldError message={state.fieldErrors?.heroSubheadline} />
           </div>
@@ -843,6 +876,8 @@ export function SettingsForm({
                 value={textColor}
                 defaultHex="#f5f2eb"
                 onChange={setTextColor}
+                previewText={heroHeadlineValue}
+                previewBg={resolvedHeroBgColor}
               />
               <ColorPickerField
                 name="heroAccentColor"
@@ -850,6 +885,8 @@ export function SettingsForm({
                 value={accentColor}
                 defaultHex="#f0c419"
                 onChange={setAccentColor}
+                previewText={heroAccentWordValue}
+                previewBg={resolvedHeroBgColor}
               />
               <ColorPickerField
                 name="heroSubtextColor"
@@ -857,6 +894,8 @@ export function SettingsForm({
                 value={subtextColor}
                 defaultHex="#9a968e"
                 onChange={setSubtextColor}
+                previewText={heroSubheadlineValue}
+                previewBg={resolvedHeroBgColor}
               />
               <ColorPickerField
                 name="heroEyebrowColor"
@@ -864,6 +903,8 @@ export function SettingsForm({
                 value={eyebrowColor}
                 defaultHex="#9a968e"
                 onChange={setEyebrowColor}
+                previewText={heroEyebrowValue}
+                previewBg={resolvedHeroBgColor}
               />
               <ColorPickerField
                 name="heroBgColor"
