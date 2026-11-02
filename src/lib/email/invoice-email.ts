@@ -4,27 +4,55 @@ import { Resend } from "resend";
 import { formatCents } from "@/lib/money";
 
 /**
- * Sends the invoice email through Gmail (GMAIL_APP_PASSWORD, a Google App
- * Password, for GMAIL_USER — defaulting to the store's ADMIN_EMAIL) when
- * configured, otherwise through Resend (RESEND_API_KEY + RESEND_FROM_EMAIL on
- * a verified domain).
+ * Sends the invoice email through the first configured provider:
+ * 1. SMTP relay, e.g. Brevo (SMTP_USER + SMTP_PASS; SMTP_HOST/SMTP_PORT
+ *    default to Brevo). Sender is EMAIL_FROM, defaulting to ADMIN_EMAIL —
+ *    it must be a sender verified in the provider's dashboard.
+ * 2. Gmail (GMAIL_APP_PASSWORD, a Google App Password, for GMAIL_USER —
+ *    defaulting to ADMIN_EMAIL).
+ * 3. Resend (RESEND_API_KEY + RESEND_FROM_EMAIL on a verified domain).
  */
 
-let cachedGmail: Transporter | null = null;
-let cachedResend: Resend | null = null;
-
-function gmailUser(): string | undefined {
-  return process.env.GMAIL_USER || process.env.ADMIN_EMAIL;
+interface MailSender {
+  transporter: Transporter;
+  from: string;
 }
 
-function getGmail(): Transporter | null {
-  const user = gmailUser();
-  // Google shows app passwords as "abcd efgh ijkl mnop"; the spaces aren't part of it.
-  const pass = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "");
-  if (!user || !pass) return null;
+let cachedMailSender: MailSender | null = null;
+let cachedResend: Resend | null = null;
 
-  cachedGmail ??= nodemailer.createTransport({ service: "gmail", auth: { user, pass } });
-  return cachedGmail;
+function getMailSender(): MailSender | null {
+  if (cachedMailSender) return cachedMailSender;
+
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS?.trim();
+  const smtpFrom = process.env.EMAIL_FROM || process.env.ADMIN_EMAIL;
+  if (smtpUser && smtpPass && smtpFrom) {
+    const port = Number(process.env.SMTP_PORT) || 587;
+    cachedMailSender = {
+      transporter: nodemailer.createTransport({
+        host: process.env.SMTP_HOST || "smtp-relay.brevo.com",
+        port,
+        secure: port === 465,
+        auth: { user: smtpUser, pass: smtpPass },
+      }),
+      from: smtpFrom,
+    };
+    return cachedMailSender;
+  }
+
+  const gmailUser = process.env.GMAIL_USER || process.env.ADMIN_EMAIL;
+  // Google shows app passwords as "abcd efgh ijkl mnop"; the spaces aren't part of it.
+  const gmailPass = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "");
+  if (gmailUser && gmailPass) {
+    cachedMailSender = {
+      transporter: nodemailer.createTransport({ service: "gmail", auth: { user: gmailUser, pass: gmailPass } }),
+      from: gmailUser,
+    };
+    return cachedMailSender;
+  }
+
+  return null;
 }
 
 function getResend(): Resend | null {
@@ -44,19 +72,19 @@ export interface InvoiceEmailOrder {
 }
 
 export async function sendInvoiceEmail(order: InvoiceEmailOrder, pdfBuffer: Uint8Array): Promise<void> {
-  const gmail = getGmail();
-  const resend = gmail ? null : getResend();
-  if (!gmail && !resend) {
-    throw new Error("Email is not configured. Set GMAIL_APP_PASSWORD (and GMAIL_USER if it isn't ADMIN_EMAIL).");
+  const mailSender = getMailSender();
+  const resend = mailSender ? null : getResend();
+  if (!mailSender && !resend) {
+    throw new Error("Email is not configured. Set SMTP_USER and SMTP_PASS (Brevo SMTP key).");
   }
 
   const subject = `Order Confirmed (${order.orderNumber}) — Invoice Attached | JAF`;
   const html = buildInvoiceEmailHtml(order);
   const attachment = { filename: `${order.invoiceNumber}.pdf`, content: Buffer.from(pdfBuffer) };
 
-  if (gmail) {
-    await gmail.sendMail({
-      from: { name: "JAF", address: gmailUser()! },
+  if (mailSender) {
+    await mailSender.transporter.sendMail({
+      from: { name: "JAF", address: mailSender.from },
       to: order.customerEmail,
       subject,
       html,
