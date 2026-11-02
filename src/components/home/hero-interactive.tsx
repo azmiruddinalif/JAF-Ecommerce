@@ -365,37 +365,50 @@ export function HeroInteractive({
         </div>
       </div>
 
-      {/* Left Vertical Slider Indicators */}
-      <div className="absolute left-4 bottom-5 sm:left-7 sm:bottom-7 lg:left-9 lg:bottom-9 xl:left-11 xl:bottom-10 z-30 flex flex-col items-start gap-1.5 sm:gap-2 select-none">
-        {activeSlides.map((_, i) => {
-          const isActive = i === active;
-          return (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setActive(i)}
-              aria-label={`Jump to slide ${i + 1}`}
-              className="group flex items-center gap-2 py-0.5 cursor-pointer transition-all focus:outline-none"
-            >
-              <span
-                className={`font-mono text-[10px] sm:text-xs font-bold tabular-nums transition-colors ${
-                  isActive
-                    ? "text-slate-950 font-black"
-                    : "text-slate-400 group-hover:text-slate-700"
-                }`}
-              >
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <span
-                className={`h-0.5 sm:h-1 transition-all duration-300 rounded-none ${
-                  isActive
-                    ? "w-6 sm:w-8 bg-amber-400 shadow-xs"
-                    : "w-2.5 sm:w-3 bg-slate-300 group-hover:bg-slate-400 group-hover:w-4"
-                }`}
-              />
-            </button>
-          );
-        })}
+      {/* Vertically Centered Left Slide Indicators with Continuous Vertical Center Line Track */}
+      <div className="absolute left-2.5 sm:left-5 lg:left-7 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center select-none pointer-events-auto">
+        {/* Top subtle vertical track hairline */}
+        <div className="w-px h-6 sm:h-10 bg-linear-to-b from-transparent to-slate-400/50 mb-2" />
+
+        {/* Slide Indicators Column */}
+        <div className="flex flex-col items-center gap-1.5 sm:gap-2">
+          {activeSlides.map((_, i) => {
+            const isActive = i === active;
+            return (
+              <div key={i} className="flex flex-col items-center">
+                {i > 0 && (
+                  <div className="w-px h-2 sm:h-3 bg-slate-300/60 my-0.5" />
+                )}
+                <button
+                  type="button"
+                  onClick={() => setActive(i)}
+                  aria-label={`Jump to slide ${i + 1}`}
+                  className="group flex flex-col items-center gap-1.5 py-1 px-1 cursor-pointer transition-all focus:outline-none"
+                >
+                  <span
+                    className={`font-mono text-[10px] sm:text-xs font-bold tabular-nums transition-all ${
+                      isActive
+                        ? "text-slate-950 font-black scale-110"
+                        : "text-slate-400 group-hover:text-slate-700"
+                    }`}
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span
+                    className={`w-0.5 sm:w-1 transition-all duration-300 rounded-full ${
+                      isActive
+                        ? "h-5 sm:h-7 bg-amber-400 shadow-xs"
+                        : "h-2 sm:h-2.5 bg-slate-300 group-hover:bg-slate-400 group-hover:h-3.5"
+                    }`}
+                  />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Bottom subtle vertical track hairline */}
+        <div className="w-px h-6 sm:h-10 bg-linear-to-t from-transparent to-slate-400/50 mt-2" />
       </div>
 
       <div className="absolute right-5 bottom-5 sm:right-8 sm:bottom-7 lg:right-10 lg:bottom-8 xl:right-12 xl:bottom-9 z-30 flex items-center gap-2 select-none">
@@ -426,6 +439,29 @@ export function HeroInteractive({
           preserveAspectRatio="none"
           className="relative block w-full h-14 sm:h-20 md:h-28 lg:h-36 xl:h-40 drop-shadow-[0_-6px_16px_rgba(0,0,0,0.04)]"
         >
+          <defs>
+            {/* Fancy Gold / Metallic Ridge Gradient with Brilliant Sunlit Glint at Peak (380px is ~26.4% of 1440px) */}
+            <linearGradient id="hero-ridge-gold-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.35" />
+              <stop offset="18%" stopColor="#f59e0b" stopOpacity="0.85" />
+              <stop offset="25.5%" stopColor="#fef08a" stopOpacity="1" />
+              <stop offset="26.39%" stopColor="#ffffff" stopOpacity="1" />
+              <stop offset="27.2%" stopColor="#fbbf24" stopOpacity="1" />
+              <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.8" />
+              <stop offset="85%" stopColor="#d97706" stopOpacity="0.65" />
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.3" />
+            </linearGradient>
+
+            {/* Subtle Glint Glow Filter */}
+            <filter id="hero-ridge-glint-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
           {/* Top Bevel / Sunlit Facet */}
           <polygon
             points="0,104 380,3 1440,99 1440,105 380,8 0,110"
@@ -438,15 +474,31 @@ export function HeroInteractive({
             fill="#ffffff"
           />
 
-          {/* Continuous Thin Yellow / Amber Ridge Hairline along the entire top edge */}
+          {/* Subtle Ambient Warm Glow Path */}
           <path
             d="M 0 110 L 380 8 L 1440 105"
             fill="none"
-            stroke="#f59e0b"
-            strokeWidth="1"
+            stroke="rgba(245, 158, 11, 0.22)"
+            strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
+
+          {/* Main Thin Fancy Metallic Sunlit Gold Ridge Line (crisp 1.25px stroke) */}
+          <path
+            d="M 0 110 L 380 8 L 1440 105"
+            fill="none"
+            stroke="url(#hero-ridge-gold-gradient)"
+            strokeWidth="1.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Architectural Peak Diamond Glint Accent */}
+          <g filter="url(#hero-ridge-glint-glow)">
+            <polygon points="380,4 383.5,8 380,12 376.5,8" fill="#fbbf24" />
+            <circle cx="380" cy="8" r="1.2" fill="#ffffff" />
+          </g>
         </svg>
       </div>
     </section>
