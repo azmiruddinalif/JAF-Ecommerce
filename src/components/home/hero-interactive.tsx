@@ -3,14 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  ShieldCheck,
-  Sparkles,
-  Truck,
-} from "lucide-react";
+import { ArrowRight, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { formatCentsBDT } from "@/lib/money";
 import type { HeroCustomConfig } from "@/lib/data/settings";
 
@@ -152,14 +145,6 @@ export function HeroInteractive({
   }, [count]);
 
   const currentSlide = activeSlides[active] ?? activeSlides[0];
-
-  function handlePrev() {
-    setActive((prev) => (prev - 1 + count) % count);
-  }
-
-  function handleNext() {
-    setActive((prev) => (prev + 1) % count);
-  }
 
   const formattedPrice = currentSlide.priceCents
     ? formatCentsBDT(currentSlide.priceCents)
@@ -434,26 +419,6 @@ export function HeroInteractive({
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Glossy Rounded Gallery Navigation Arrows — anchored to the jersey showcase itself so they never collide with the text column on mobile */}
-            <div className="absolute right-1 sm:right-2 lg:right-3 bottom-6 sm:bottom-7 lg:bottom-8 z-30 flex items-center gap-2 sm:gap-2.5 select-none">
-              <button
-                type="button"
-                onClick={handlePrev}
-                aria-label="Previous jersey"
-                className="btn-circle size-9 sm:size-10 rounded-full bg-linear-to-b from-white/95 via-white/85 to-white/65 backdrop-blur-md text-slate-800 border border-white/90 shadow-[0_4px_16px_rgba(0,0,0,0.12),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:from-white hover:to-white/90 hover:text-slate-950 hover:shadow-[0_6px_20px_rgba(0,0,0,0.16),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={handleNext}
-                aria-label="Next jersey"
-                className="btn-circle size-9 sm:size-10 rounded-full bg-linear-to-b from-white/95 via-white/85 to-white/65 backdrop-blur-md text-slate-800 border border-white/90 shadow-[0_4px_16px_rgba(0,0,0,0.12),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:from-white hover:to-white/90 hover:text-slate-950 hover:shadow-[0_6px_20px_rgba(0,0,0,0.16),inset_0_1px_1.5px_rgba(255,255,255,1)] hover:scale-105 active:scale-95 flex items-center justify-center transition-all cursor-pointer"
-              >
-                <ChevronRight size={16} />
-              </button>
             </div>
           </div>
         </div>
