@@ -247,7 +247,7 @@ export function HeroInteractive({
             <span className="mt-3 sm:mt-4 inline-block h-[3px] w-14 sm:w-20 bg-linear-to-r from-amber-400 to-amber-200" />
 
             <p
-              className="mt-4 sm:mt-6 max-w-xl text-xs sm:text-base leading-relaxed text-slate-600 font-medium"
+              className="mt-4 sm:mt-6 max-w-xl text-xs sm:text-base leading-relaxed text-slate-950 font-medium"
               style={
                 heroConfig?.subtextColor
                   ? { color: heroConfig.subtextColor }
