@@ -441,29 +441,29 @@ export function HeroInteractive({
             <linearGradient
               id="wave-soft-fade"
               x1="0"
-              y1="-3"
+              y1="-4"
               x2="0"
-              y2="104"
+              y2="99"
               gradientUnits="userSpaceOnUse"
             >
               <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
               <stop offset="100%" stopColor="#ffffff" stopOpacity="0.95" />
             </linearGradient>
           </defs>
-          <polygon
-            points="0,98 380,-3 1440,93 1440,99 380,3 0,104"
+          <path
+            d="M0,98 C140,43 260,-4 400,-4 C700,-4 1000,78 1440,93 L1440,99 C1000,84 700,2 400,2 C260,2 140,49 0,104 Z"
             fill="url(#wave-soft-fade)"
           />
 
           {/* Top Bevel / Sunlit Facet */}
-          <polygon
-            points="0,104 380,3 1440,99 1440,105 380,8 0,110"
+          <path
+            d="M0,104 C140,49 260,2 400,2 C700,2 1000,84 1440,99 L1440,105 C1000,90 700,8 400,8 C260,8 140,55 0,110 Z"
             fill="#f8fafc"
           />
 
-          {/* Main Pure White Architectural Facet from left (0, 110) to peak (380, 8) down to right (1440, 105) */}
-          <polygon
-            points="0,110 380,8 1440,105 1440,160 0,160"
+          {/* Main Pure White Architectural Facet — a single flowing curve from left (0, 110) to a soft crest near (400, 8) easing down to (1440, 105) */}
+          <path
+            d="M0,110 C140,55 260,8 400,8 C700,8 1000,90 1440,105 L1440,160 L0,160 Z"
             fill="#ffffff"
           />
 
@@ -477,8 +477,8 @@ export function HeroInteractive({
               <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
             </linearGradient>
           </defs>
-          <polyline
-            points="0,110 380,8 1440,105"
+          <path
+            d="M0,110 C140,55 260,8 400,8 C700,8 1000,90 1440,105"
             fill="none"
             stroke="url(#hero-edge-gold)"
             strokeWidth="2"
