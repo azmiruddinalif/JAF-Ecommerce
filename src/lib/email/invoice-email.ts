@@ -1,6 +1,5 @@
 import "server-only";
 import nodemailer, { type Transporter } from "nodemailer";
-import { Resend } from "resend";
 import { formatCents } from "@/lib/money";
 
 /**
@@ -10,7 +9,6 @@ import { formatCents } from "@/lib/money";
  *    it must be a sender verified in the provider's dashboard.
  * 2. Gmail (GMAIL_APP_PASSWORD, a Google App Password, for GMAIL_USER —
  *    defaulting to ADMIN_EMAIL).
- * 3. Resend (RESEND_API_KEY + RESEND_FROM_EMAIL on a verified domain).
  */
 
 interface MailSender {
@@ -19,7 +17,6 @@ interface MailSender {
 }
 
 let cachedMailSender: MailSender | null = null;
-let cachedResend: Resend | null = null;
 
 function getMailSender(): MailSender | null {
   if (cachedMailSender) return cachedMailSender;
@@ -55,14 +52,6 @@ function getMailSender(): MailSender | null {
   return null;
 }
 
-function getResend(): Resend | null {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return null;
-
-  cachedResend ??= new Resend(apiKey);
-  return cachedResend;
-}
-
 export interface InvoiceEmailOrder {
   orderNumber: string;
   invoiceNumber: string;
@@ -73,8 +62,7 @@ export interface InvoiceEmailOrder {
 
 export async function sendInvoiceEmail(order: InvoiceEmailOrder, pdfBuffer: Uint8Array): Promise<void> {
   const mailSender = getMailSender();
-  const resend = mailSender ? null : getResend();
-  if (!mailSender && !resend) {
+  if (!mailSender) {
     throw new Error("Email is not configured. Set SMTP_USER and SMTP_PASS (Brevo SMTP key).");
   }
 
@@ -82,28 +70,13 @@ export async function sendInvoiceEmail(order: InvoiceEmailOrder, pdfBuffer: Uint
   const html = buildInvoiceEmailHtml(order);
   const attachment = { filename: `${order.invoiceNumber}.pdf`, content: Buffer.from(pdfBuffer) };
 
-  if (mailSender) {
-    await mailSender.transporter.sendMail({
-      from: { name: "JAF", address: mailSender.from },
-      to: order.customerEmail,
-      subject,
-      html,
-      attachments: [{ ...attachment, contentType: "application/pdf" }],
-    });
-    return;
-  }
-
-  const { error } = await resend!.emails.send({
-    from: process.env.RESEND_FROM_EMAIL || "JAF <onboarding@resend.dev>",
+  await mailSender.transporter.sendMail({
+    from: { name: "JAF", address: mailSender.from },
     to: order.customerEmail,
     subject,
     html,
-    attachments: [attachment],
+    attachments: [{ ...attachment, contentType: "application/pdf" }],
   });
-
-  if (error) {
-    throw new Error(error.message || "Failed to send invoice email.");
-  }
 }
 
 function buildInvoiceEmailHtml(order: InvoiceEmailOrder): string {
@@ -174,7 +147,7 @@ function buildInvoiceEmailHtml(order: InvoiceEmailOrder): string {
                     </div>
 
                     <p style="margin: 20px 0 0 0; font-size: 13px; color: #64748b; line-height: 1.5;">
-                      Please find your formal invoice PDF attached below for your records. If you have questions regarding your delivery, reach us at <a href="mailto:support@jafjersey.com" style="color: #d97706; text-decoration: none; font-weight: 600;">support@jafjersey.com</a> or WhatsApp <a href="https://wa.me/8801328366311" style="color: #d97706; text-decoration: none; font-weight: 600;">+880 1328-366311</a>.
+                      Please find your formal invoice PDF attached below for your records. If you have questions regarding your delivery, reach us at <a href="mailto:jjerseysandfashion@gmail.com" style="color: #d97706; text-decoration: none; font-weight: 600;">jjerseysandfashion@gmail.com</a> or WhatsApp <a href="https://wa.me/8801328366311" style="color: #d97706; text-decoration: none; font-weight: 600;">+880 1328-366311</a> / <a href="https://wa.me/8801846152393" style="color: #d97706; text-decoration: none; font-weight: 600;">+880 1846-152393</a>.
                     </p>
                   </td>
                 </tr>
