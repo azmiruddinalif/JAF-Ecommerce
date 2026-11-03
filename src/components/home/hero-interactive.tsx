@@ -202,7 +202,7 @@ export function HeroInteractive({
         {dynamicYear}
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 pt-7 pb-10 sm:px-6 sm:pt-14 sm:pb-28 md:pb-36 lg:px-8 lg:pt-24 lg:pb-44 xl:pb-52">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pt-5 pb-7 sm:px-6 sm:pt-10 sm:pb-20 md:pb-28 lg:px-8 lg:pt-16 lg:pb-32 xl:pb-40">
         <div className="grid grid-cols-1 items-center gap-5 sm:gap-8 lg:grid-cols-12 lg:gap-12">
           <div className="relative order-2 flex flex-col items-start lg:order-1 lg:col-span-6 xl:col-span-6">
             {/* Boutique corner mark */}
@@ -357,7 +357,7 @@ export function HeroInteractive({
             </div>
           </div>
 
-          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-6 min-h-95 sm:min-h-145 lg:min-h-165 xl:min-h-185 overflow-visible">
+          <div className="order-1 relative flex items-center justify-center lg:order-2 lg:col-span-6 xl:col-span-6 min-h-80 sm:min-h-120 lg:min-h-140 xl:min-h-160 overflow-visible">
             <div className="absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 z-20 max-w-[90%] flex items-center justify-center select-none">
               <span className="truncate rounded-none bg-amber-400 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-slate-950 shadow-sm">
                 {currentSlide.name || "MATCHDAY KIT"}
