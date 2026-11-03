@@ -29,6 +29,11 @@ async function OrderDetails({ orderId }: { orderId: string }) {
         Thank you, {order.customerName}. Your order <span className="text-gold">{order.orderNumber}</span> has
         been received and will be processed shortly.
       </p>
+      {order.customerEmail && (
+        <p className="mt-2 text-sm text-paper-dim">
+          A copy of your invoice is on its way to <span className="text-gold">{order.customerEmail}</span>.
+        </p>
+      )}
 
       <div className="mt-10 border border-ink-border p-6 text-left">
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-paper-dim">Order Summary</h2>
@@ -65,9 +70,6 @@ async function OrderDetails({ orderId }: { orderId: string }) {
           <a href={order.invoicePdfUrl} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">
             Download your invoice
           </a>
-          {order.customerEmail && order.invoiceEmailSentAt && (
-            <> — we&apos;ve also emailed a copy to {order.customerEmail}.</>
-          )}
         </p>
       )}
 
